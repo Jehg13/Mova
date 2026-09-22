@@ -6,7 +6,7 @@ import 'register_screen.dart';
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-  static const Color primaryTeal = Color(0xFF3398B1);
+  static const Color primaryTeal = Color(0xFF0C2340);
   static const Color darkBlue = Color(0xFF0C2340);
   static const Color subtitleGrey = Color(0xFF64748B);
   static const Color lightBlueBg = Color(0xFFEBF3F6);

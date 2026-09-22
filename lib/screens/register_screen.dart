@@ -6,7 +6,7 @@ import 'login_screen.dart';
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
-  static const Color primaryTeal = Color(0xFF3398B1);
+  static const Color primaryTeal = Color(0xFF0C2340);
   static const Color darkNavy = Color(0xFF0C2340);
   static const Color subtitleGrey = Color(0xFF64748B);
   static const Color inputBorderGrey = Color(0xFFE2E8F0);
@@ -54,27 +54,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: const TextStyle(
-        color: Color(0xFF94A3B8),
-        fontSize: 14,
-      ),
-      prefixIcon: Icon(
-        prefixIcon,
-        color: const Color(0xFF94A3B8),
-        size: 20,
-      ),
+      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+      prefixIcon: Icon(prefixIcon, color: const Color(0xFF94A3B8), size: 20),
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 15,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: _buildBorder(),
       enabledBorder: _buildBorder(),
-      focusedBorder: _buildBorder(
-        color: RegisterScreen.primaryTeal,
-      ),
+      focusedBorder: _buildBorder(color: RegisterScreen.primaryTeal),
     );
   }
 
@@ -86,9 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (nombre.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Completa todos los campos"),
-        ),
+        const SnackBar(content: Text("Completa todos los campos")),
       );
       return;
     }
@@ -96,9 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (password.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            "La contraseña debe tener mínimo 8 caracteres",
-          ),
+          content: Text("La contraseña debe tener mínimo 8 caracteres"),
         ),
       );
       return;
@@ -106,9 +90,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Las contraseñas no coinciden"),
-        ),
+        const SnackBar(content: Text("Las contraseñas no coinciden")),
       );
       return;
     }
@@ -116,43 +98,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_acceptTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            "Debes aceptar los términos y condiciones",
-          ),
+          content: Text("Debes aceptar los términos y condiciones"),
         ),
       );
       return;
     }
 
     try {
-      await _databaseHelper.insertUser(
-        nombre,
-        email,
-        password,
-      );
+      await _databaseHelper.insertUser(nombre, email, password);
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Cuenta creada correctamente"),
-        ),
+        const SnackBar(content: Text("Cuenta creada correctamente")),
       );
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            "El correo electrónico ya está registrado",
-          ),
+          content: Text("El correo electrónico ya está registrado"),
         ),
       );
     }
@@ -166,10 +136,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minHeight: constraints.maxHeight - 32,
@@ -393,7 +360,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               borderRadius: BorderRadius.circular(26),
                               boxShadow: [
                                 BoxShadow(
-                                  color: RegisterScreen.primaryTeal.withOpacity(0.3),
+                                  color: RegisterScreen.primaryTeal.withOpacity(
+                                    0.3,
+                                  ),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
