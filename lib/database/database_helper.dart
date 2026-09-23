@@ -6,6 +6,28 @@ import 'dart:typed_data';
 import 'package:mova/models/shared_goal.dart';
 
 class DatabaseHelper {
+  static const savingsDepositCategories = {
+    'Ahorro',
+    'Ahorro normal',
+    'Ahorro sin meta',
+    'Ahorro en meta',
+  };
+  static const savingsWithdrawalCategories = {
+    'Devolución de meta',
+    'Retiro de ahorro sin meta',
+    'Ahorro en meta',
+  };
+
+  static bool isSavingsDeposit(Map<String, dynamic> transaction) {
+    return transaction['is_income'] == 0 &&
+        savingsDepositCategories.contains(transaction['category']);
+  }
+
+  static bool isSavingsWithdrawal(Map<String, dynamic> transaction) {
+    return transaction['is_income'] == 1 &&
+        savingsWithdrawalCategories.contains(transaction['category']);
+  }
+
   static Database? _database;
 
   Future<Database> get database async {
@@ -318,7 +340,11 @@ class DatabaseHelper {
     });
   }
 
-  Future<Map<String, dynamic>?> loginUser(String email, String password) async {
+  Future<Map<String, dynamic>?> loginUser(
+    String email,
+    String password, {
+    bool rememberMe = false,
+  }) async {
     final db = await database;
 
     final result = await db.query(
@@ -333,10 +359,34 @@ class DatabaseHelper {
         'key': 'current_user_id',
         'value': result.first['id'].toString(),
       }, conflictAlgorithm: ConflictAlgorithm.replace);
+      await db.insert('app_settings', {
+        'key': 'remembered_session',
+        'value': rememberMe ? '1' : '0',
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
       return result.first;
     }
-
     return null;
+  }
+
+  Future<bool> hasRememberedSession() async {
+    final db = await database;
+    final rows = await db.query(
+      'app_settings',
+      columns: ['value'],
+      where: 'key = ?',
+      whereArgs: ['remembered_session'],
+      limit: 1,
+    );
+    return rows.isNotEmpty && rows.first['value'] == '1';
+  }
+
+  Future<void> logout() async {
+    final db = await database;
+    await db.delete(
+      'app_settings',
+      where: 'key IN (?, ?)',
+      whereArgs: ['current_user_id', 'remembered_session'],
+    );
   }
 
   Future<Map<String, dynamic>?> getCurrentUser() async {
@@ -429,12 +479,22 @@ class DatabaseHelper {
     final db = await database;
     final result = await db.rawQuery('''
       SELECT
-        COALESCE(SUM(CASE WHEN is_income = 1 THEN amount ELSE 0 END), 0) AS income,
-        COALESCE(SUM(CASE WHEN is_income = 0 THEN amount ELSE 0 END), 0) AS expenses,
+        COALESCE(SUM(CASE
+          WHEN is_income = 1
+            AND category NOT IN (
+              'Devolución de meta', 'Retiro de ahorro sin meta', 'Ahorro en meta'
+            )
+            THEN amount ELSE 0 END), 0) AS income,
+        COALESCE(SUM(CASE
+          WHEN is_income = 0
+            AND category NOT IN ('Ahorro', 'Ahorro normal', 'Ahorro sin meta', 'Ahorro en meta')
+            THEN amount ELSE 0 END), 0) AS expenses,
         COALESCE(SUM(CASE
           WHEN is_income = 0 AND category IN ('Ahorro', 'Ahorro normal', 'Ahorro sin meta', 'Ahorro en meta')
             THEN amount
-          WHEN is_income = 1 AND category IN ('Devolución de meta', 'Ahorro en meta')
+          WHEN is_income = 1 AND category IN (
+            'Devolución de meta', 'Retiro de ahorro sin meta', 'Ahorro en meta'
+          )
             THEN -amount
           ELSE 0 END), 0) AS savings
       FROM transactions
@@ -445,6 +505,11 @@ class DatabaseHelper {
       'expenses': (row['expenses'] as num).toDouble(),
       'savings': (row['savings'] as num).toDouble(),
     };
+  }
+
+  Future<double> getAvailableBalance() async {
+    final summary = await getTransactionSummary();
+    return summary['income']! - summary['expenses']! - summary['savings']!;
   }
 
   Future<List<Map<String, dynamic>>> getUsers() async {

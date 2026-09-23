@@ -320,9 +320,11 @@ class _SummaryCard extends StatelessWidget {
     var expenses = 0.0;
     for (final transaction in transactions) {
       final amount = (transaction['amount'] as num).toDouble();
-      if (transaction['is_income'] == 1) {
+      if (transaction['is_income'] == 1 &&
+          !DatabaseHelper.isSavingsWithdrawal(transaction)) {
         income += amount;
-      } else {
+      } else if (transaction['is_income'] == 0 &&
+          !DatabaseHelper.isSavingsDeposit(transaction)) {
         expenses += amount;
       }
     }
@@ -426,9 +428,11 @@ class _DailyChartCard extends StatelessWidget {
           continue;
         }
         final amount = (transaction['amount'] as num).toDouble();
-        if (transaction['is_income'] == 1) {
+        if (transaction['is_income'] == 1 &&
+            !DatabaseHelper.isSavingsWithdrawal(transaction)) {
           income += amount;
-        } else {
+        } else if (transaction['is_income'] == 0 &&
+            !DatabaseHelper.isSavingsDeposit(transaction)) {
           expense += amount;
         }
       }
@@ -588,7 +592,10 @@ class _CategorySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final totals = <String, double>{};
     for (final transaction in transactions) {
-      if (transaction['is_income'] == 1) continue;
+      if (transaction['is_income'] == 1 ||
+          DatabaseHelper.isSavingsDeposit(transaction)) {
+        continue;
+      }
       final category = (transaction['category'] as String?)?.trim();
       if (category == null || category.isEmpty) continue;
       totals[category] =
@@ -695,10 +702,16 @@ class _InsightCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final expenses = transactions
-        .where((row) => row['is_income'] == 0)
+        .where(
+          (row) =>
+              row['is_income'] == 0 && !DatabaseHelper.isSavingsDeposit(row),
+        )
         .fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble());
     final income = transactions
-        .where((row) => row['is_income'] == 1)
+        .where(
+          (row) =>
+              row['is_income'] == 1 && !DatabaseHelper.isSavingsWithdrawal(row),
+        )
         .fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble());
     final message = transactions.isEmpty
         ? 'Registra movimientos para obtener recomendaciones.'

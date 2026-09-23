@@ -65,7 +65,11 @@ class _LoginScreenState extends State<LoginScreen>
     }
     setState(() => _isLoading = true);
     try {
-      final usuario = await _databaseHelper.loginUser(email, password);
+      final usuario = await _databaseHelper.loginUser(
+        email,
+        password,
+        rememberMe: _rememberMe,
+      );
 
       if (!mounted) return;
       if (usuario != null) {

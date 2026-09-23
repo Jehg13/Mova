@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:mova/database/database_helper.dart';
 
 import 'welcome_screen.dart';
+import 'navigation_wrapper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,9 +58,13 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _goToWelcome() async {
     await Future<void>.delayed(const Duration(milliseconds: 2800));
     if (!mounted) return;
+    final remembered = await DatabaseHelper().hasRememberedSession();
+    if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, animation, _) => const WelcomeScreen(),
+        pageBuilder: (_, animation, _) => remembered
+            ? const NavigationWrapper()
+            : const WelcomeScreen(),
         transitionDuration: const Duration(milliseconds: 650),
         transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);

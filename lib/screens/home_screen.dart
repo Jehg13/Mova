@@ -118,7 +118,7 @@ class _HomeData {
   double get income => summary['income']!;
   double get expenses => summary['expenses']!;
   double get savings => summary['savings']!;
-  double get balance => income - expenses;
+  double get balance => income - expenses - savings;
 }
 
 // --- 1. ENCABEZADO ---

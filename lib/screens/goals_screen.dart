@@ -137,6 +137,7 @@ class _UnassignedSavingsCard extends StatefulWidget {
 class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
   final _database = DatabaseHelper();
   late Future<double> _balance;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -144,45 +145,19 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
     _load();
   }
 
-  void _load() => _balance = _database.getUnassignedSavings();
+  void _load() {
+    _balance = _database.getUnassignedSavings();
+  }
 
   Future<void> _openAmountDialog({required bool withdraw}) async {
-    final controller = TextEditingController();
+    if (_saving) return;
     final amount = await showDialog<double>(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: Text(withdraw ? 'Retirar ahorro libre' : 'Agregar ahorro libre'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            labelText: 'Cantidad',
-            prefixText: '${appCurrencyController.definition.symbol} ',
-            hintText: '0.00',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final value = double.tryParse(
-                controller.text.trim().replaceAll(',', '.'),
-              );
-              if (value == null || value <= 0) return;
-              Navigator.pop(context, value);
-            },
-            child: Text(withdraw ? 'Retirar' : 'Guardar'),
-          ),
-        ],
-      ),
+      builder: (_) =>
+          _SavingsAmountDialog(withdraw: withdraw, currentSavings: _balance),
     );
-    controller.dispose();
     if (amount == null || !mounted) return;
+    setState(() => _saving = true);
     try {
       if (withdraw) {
         await _database.withdrawUnassignedSavings(amount);
@@ -190,9 +165,16 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
         await _database.addUnassignedSavings(amount);
       }
       if (!mounted) return;
-      setState(_load);
-      widget.onChanged();
-      showMovaSuccess(
+      final updatedBalance = await _database.getUnassignedSavings();
+      if (!mounted) return;
+      setState(() {
+        _balance = Future.value(updatedBalance);
+        _saving = false;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onChanged();
+      });
+      await showMovaSuccess(
         context,
         withdraw
             ? 'Ahorro retirado correctamente.'
@@ -200,7 +182,14 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
       );
     } catch (error) {
       if (!mounted) return;
-      showMovaError(context, error.toString().replaceFirst('Bad state: ', ''));
+      setState(() => _saving = false);
+      await showMovaError(
+        context,
+        error.toString().replaceFirst('Bad state: ', ''),
+        title: 'No se pudo actualizar el ahorro',
+      );
+    } finally {
+      if (mounted && _saving) setState(() => _saving = false);
     }
   }
 
@@ -283,15 +272,23 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => _openAmountDialog(withdraw: false),
+                      onPressed: _saving
+                          ? null
+                          : () => _openAmountDialog(withdraw: false),
                       icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('Agregar'),
+                      label: _saving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Agregar'),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: FilledButton.tonalIcon(
-                      onPressed: balance > 0
+                      onPressed: !_saving && balance > 0
                           ? () => _openAmountDialog(withdraw: true)
                           : null,
                       icon: const Icon(Icons.remove_rounded, size: 18),
@@ -304,6 +301,218 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
           ),
         );
       },
+    );
+  }
+}
+
+class _SavingsAmountDialog extends StatefulWidget {
+  final bool withdraw;
+  final Future<double> currentSavings;
+
+  const _SavingsAmountDialog({
+    required this.withdraw,
+    required this.currentSavings,
+  });
+
+  @override
+  State<_SavingsAmountDialog> createState() => _SavingsAmountDialogState();
+}
+
+class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
+  final _controller = TextEditingController();
+  String? _error;
+  late Future<double> _availableBalance;
+
+  @override
+  void initState() {
+    super.initState();
+    _availableBalance = DatabaseHelper().getAvailableBalance();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final value = double.tryParse(_controller.text.trim().replaceAll(',', '.'));
+    if (value == null || value <= 0) {
+      setState(() => _error = 'Escribe una cantidad mayor a cero.');
+      return;
+    }
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final symbol = appCurrencyController.definition.symbol;
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(11),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE6EEF7),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Icon(
+                      widget.withdraw
+                          ? Icons.remove_rounded
+                          : Icons.savings_outlined,
+                      color: const Color(0xFF0C2340),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.withdraw
+                          ? 'Retirar ahorro libre'
+                          : 'Agregar ahorro libre',
+                      style: const TextStyle(
+                        color: Color(0xFF102A43),
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.withdraw
+                    ? 'Elige cuánto deseas devolver a tu dinero disponible.'
+                    : 'Aparta una cantidad sin asociarla a una meta.',
+                style: const TextStyle(color: Color(0xFF64748B), height: 1.35),
+              ),
+              const SizedBox(height: 16),
+              FutureBuilder<double>(
+                future: widget.currentSavings,
+                builder: (context, snapshot) {
+                  final savings = snapshot.data ?? 0;
+                  return FutureBuilder<double>(
+                    future: _availableBalance,
+                    builder: (context, availableSnapshot) {
+                      final available = availableSnapshot.data ?? 0;
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _SavingsInfo(
+                                label: 'Ahorrado',
+                                value: appCurrencyController.format(savings),
+                              ),
+                            ),
+                            Expanded(
+                              child: _SavingsInfo(
+                                label: 'Disponible',
+                                value: appCurrencyController.format(available),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _controller,
+                autofocus: true,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                onChanged: (_) {
+                  if (_error != null) setState(() => _error = null);
+                },
+                onSubmitted: (_) => _submit(),
+                decoration: InputDecoration(
+                  labelText: 'Cantidad',
+                  prefixText: '$symbol ',
+                  hintText: '0.00',
+                  errorText: _error,
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancelar'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: _submit,
+                      child: Text(widget.withdraw ? 'Retirar' : 'Guardar'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SavingsInfo extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _SavingsInfo({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Color(0xFF102A43),
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1035,6 +1244,7 @@ class _WithdrawGoalDialog extends StatefulWidget {
 class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
   final _database = DatabaseHelper();
   final _amount = TextEditingController();
+  String? _error;
   bool _saving = false;
 
   @override
@@ -1047,12 +1257,9 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
     final current = (widget.goal['saved_amount'] as num).toDouble();
     final amount = double.tryParse(_amount.text.trim().replaceAll(',', '.'));
     if (amount == null || amount <= 0 || amount > current) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Ingresa un retiro entre ${appCurrencyController.format(0.01)} y ${appCurrencyController.format(current)}',
-          ),
-        ),
+      setState(
+        () => _error =
+            'Ingresa un monto entre ${appCurrencyController.format(0.01)} y ${appCurrencyController.format(current)}.',
       );
       return;
     }
@@ -1066,8 +1273,8 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo retirar el dinero: $error')),
+      setState(
+        () => _error = 'No se pudo retirar el dinero. Intenta nuevamente.',
       );
     }
   }
@@ -1076,16 +1283,108 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
   Widget build(BuildContext context) {
     final current = (widget.goal['saved_amount'] as num).toDouble();
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      title: const Text('Retirar de la meta'),
-      content: TextField(
-        controller: _amount,
-        autofocus: true,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: InputDecoration(
-          labelText: 'Monto a retirar',
-          prefixText: '\$ ',
-          helperText: 'Disponible: ${appCurrencyController.format(current)}',
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 18, 0),
+      contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFDECEC),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.south_west_rounded,
+              color: Color(0xFFB42318),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Retirar de la meta',
+              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+            ),
+          ),
+          IconButton(
+            onPressed: _saving ? null : () => Navigator.pop(context),
+            icon: const Icon(Icons.close_rounded),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: 360,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Devuelve una parte de lo ahorrado a tu dinero disponible.',
+              style: TextStyle(color: Color(0xFF64748B), height: 1.35),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: Color(0xFF526D8D),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Disponible en la meta',
+                      style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                    ),
+                  ),
+                  Text(
+                    appCurrencyController.format(current),
+                    style: const TextStyle(
+                      color: Color(0xFF102A43),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _amount,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              onChanged: (_) {
+                if (_error != null) setState(() => _error = null);
+              },
+              onSubmitted: (_) => _withdraw(),
+              decoration: InputDecoration(
+                labelText: 'Monto a retirar',
+                prefixText: '${appCurrencyController.definition.symbol} ',
+                hintText: '0.00',
+                errorText: _error,
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       actions: [

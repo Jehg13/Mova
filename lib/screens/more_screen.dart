@@ -491,7 +491,8 @@ class _MoreScreenState extends State<MoreScreen> {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                   child: InkWell(
-                    onTap: () {
+                    onTap: () async {
+                      await DatabaseHelper().logout();
                       // Redirige al Login y borra las rutas anteriores de navegación
                       Navigator.pushAndRemoveUntil(
                         context,
