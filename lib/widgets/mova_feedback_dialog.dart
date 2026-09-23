@@ -9,7 +9,7 @@ Future<void> showMovaFeedback(
   return showDialog<void>(
     context: context,
     useRootNavigator: true,
-    builder: (_) => Dialog(
+    builder: (dialogContext) => Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       child: Padding(
@@ -60,7 +60,14 @@ Future<void> showMovaFeedback(
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  if (Navigator.of(
+                    dialogContext,
+                    rootNavigator: true,
+                  ).canPop()) {
+                    Navigator.of(dialogContext, rootNavigator: true).pop();
+                  }
+                },
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF0C2340),
                   foregroundColor: Colors.white,
