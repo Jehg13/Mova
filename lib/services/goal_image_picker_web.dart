@@ -8,5 +8,5 @@ Future<Uint8List?> pickGoalImageImpl() async {
     source: ImageSource.gallery,
     options: const ImagePickerOptions(imageQuality: 85, maxWidth: 1200),
   );
-  return file == null ? null : file.readAsBytes();
+  return file?.readAsBytes();
 }

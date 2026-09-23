@@ -82,6 +82,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
+                  _PeriodBanner(period: _period),
+                  const SizedBox(height: 14),
                   _SummaryCard(transactions: transactions, money: _money),
                   const SizedBox(height: 16),
                   _DailyChartCard(transactions: transactions, money: _money),
@@ -107,32 +109,201 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Expanded(
-          child: Text(
-            'Análisis',
-            style: TextStyle(
-              color: Color(0xFF102A43),
-              fontSize: 25,
-              fontWeight: FontWeight.w800,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final narrow = constraints.maxWidth < 390;
+        final selector = Container(
+          height: 44,
+          padding: const EdgeInsets.only(left: 11, right: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: const Color(0xFFD8E1EB)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A0C2340),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: period,
+              isDense: true,
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Color(0xFF0C2340),
+                size: 20,
+              ),
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              elevation: 8,
+              menuMaxHeight: 180,
+              style: const TextStyle(
+                color: Color(0xFF102A43),
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+              selectedItemBuilder: (context) => const [
+                _PeriodOptionLabel(label: 'Este mes', selected: true),
+                _PeriodOptionLabel(label: 'Mes anterior', selected: true),
+              ],
+              items: const [
+                DropdownMenuItem(
+                  value: 'Este mes',
+                  child: _PeriodOptionLabel(label: 'Este mes'),
+                ),
+                DropdownMenuItem(
+                  value: 'Mes anterior',
+                  child: _PeriodOptionLabel(label: 'Mes anterior'),
+                ),
+              ],
+              onChanged: onChanged,
             ),
           ),
+        );
+        final title = const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Análisis',
+                style: TextStyle(
+                  color: Color(0xFF102A43),
+                  fontSize: 25,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                'Conoce el comportamiento de tus finanzas',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+              ),
+            ],
+          ),
+        );
+        return narrow
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0C2340), Color(0xFF36577D)],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(
+                          Icons.insights_rounded,
+                          color: Colors.white,
+                          size: 23,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      title,
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  selector,
+                ],
+              )
+            : Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0C2340), Color(0xFF36577D)],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.insights_rounded,
+                      color: Colors.white,
+                      size: 23,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  title,
+                  selector,
+                ],
+              );
+      },
+    );
+  }
+}
+
+class _PeriodOptionLabel extends StatelessWidget {
+  final String label;
+  final bool selected;
+
+  const _PeriodOptionLabel({required this.label, this.selected = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          selected
+              ? Icons.calendar_month_rounded
+              : label == 'Este mes'
+              ? Icons.today_rounded
+              : Icons.history_rounded,
+          size: 17,
+          color: selected ? const Color(0xFF0C2340) : const Color(0xFF64748B),
         ),
-        DropdownButton<String>(
-          value: period,
-          underline: const SizedBox(),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded),
-          items: const [
-            DropdownMenuItem(value: 'Este mes', child: Text('Este mes')),
-            DropdownMenuItem(
-              value: 'Mes anterior',
-              child: Text('Mes anterior'),
-            ),
-          ],
-          onChanged: onChanged,
+        const SizedBox(width: 9),
+        Text(
+          label,
+          style: TextStyle(
+            color: selected ? const Color(0xFF0C2340) : const Color(0xFF334E68),
+            fontSize: 13,
+            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+          ),
         ),
       ],
+    );
+  }
+}
+
+class _PeriodBanner extends StatelessWidget {
+  final String period;
+
+  const _PeriodBanner({required this.period});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8EEF5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.calendar_month_outlined,
+            size: 18,
+            color: Color(0xFF0C2340),
+          ),
+          const SizedBox(width: 9),
+          Text(
+            'Mostrando resultados de $period',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1E3A5F),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -160,12 +331,22 @@ class _SummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Resumen del periodo',
-            style: TextStyle(
-              color: Color(0xFF102A43),
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            children: [
+              const Icon(
+                Icons.account_balance_wallet_outlined,
+                size: 19,
+                color: Color(0xFF0C2340),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Resumen del periodo',
+                style: TextStyle(
+                  color: Color(0xFF102A43),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 14),
           Row(
@@ -191,25 +372,34 @@ class _Stat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w800,
-              fontSize: 14,
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.fromLTRB(10, 11, 8, 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .07),
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(color: color.withValues(alpha: .12)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
             ),
-          ),
-        ],
+            const SizedBox(height: 5),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -553,6 +743,13 @@ class _Panel extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x090C2340),
+            blurRadius: 14,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
       child: child,
     );

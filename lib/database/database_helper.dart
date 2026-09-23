@@ -862,10 +862,46 @@ class DatabaseHelper {
     if (price == null || price <= 0) return 0;
     final quantityFactor = _shoppingUnitFactor(quantityUnit);
     final priceFactor = _shoppingUnitFactor(priceUnit);
-    if (quantityFactor == null || priceFactor == null) {
+    if (quantityFactor == null ||
+        priceFactor == null ||
+        _shoppingUnitGroup(quantityUnit) != _shoppingUnitGroup(priceUnit)) {
       return quantity * price;
     }
     return quantity * quantityFactor / priceFactor * price;
+  }
+
+  String? _shoppingUnitGroup(String unit) {
+    final normalized = unit.trim().toLowerCase();
+    if (const [
+      'gramo',
+      'gramos',
+      'kilogramo',
+      'kilogramos',
+      'kilo',
+      'kilos',
+    ].contains(normalized)) {
+      return 'weight';
+    }
+    if (const [
+      'mililitro',
+      'mililitros',
+      'litro',
+      'litros',
+    ].contains(normalized)) {
+      return 'volume';
+    }
+    if (const [
+      'milimetro',
+      'milimetros',
+      'centimetro',
+      'centimetros',
+      'metro',
+      'metros',
+    ].contains(normalized)) {
+      return 'length';
+    }
+    if (_shoppingUnitFactor(unit) != null) return 'count';
+    return null;
   }
 
   double? _shoppingUnitFactor(String unit) {

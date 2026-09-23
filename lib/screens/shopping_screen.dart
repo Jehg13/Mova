@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
+import 'package:mova/widgets/mova_feedback_dialog.dart';
 
 class ShoppingScreen extends StatefulWidget {
   const ShoppingScreen({super.key});
@@ -144,10 +145,6 @@ class _ShoppingScreenState extends State<ShoppingScreen>
         icon: Icons.delete_sweep_outlined,
         title: 'Eliminar lista',
         subtitle: 'Se eliminarán también sus productos.',
-        child: Text(
-          '¿Quieres eliminar "${list['name']}"? Esta acción no se puede deshacer.',
-          style: const TextStyle(color: Color(0xFF475569), height: 1.4),
-        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -162,6 +159,10 @@ class _ShoppingScreenState extends State<ShoppingScreen>
             label: const Text('Eliminar'),
           ),
         ],
+        child: Text(
+          '¿Quieres eliminar "${list['name']}"? Esta acción no se puede deshacer.',
+          style: const TextStyle(color: Color(0xFF475569), height: 1.4),
+        ),
       ),
     );
     if (confirmed != true) return;
@@ -776,10 +777,10 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
     if (_finishing) return;
     final total = (list['total'] as num).toDouble();
     if (total <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Agrega al menos un producto antes de finalizar'),
-        ),
+      await showMovaError(
+        context,
+        'Agrega al menos un producto antes de finalizar.',
+        title: 'Compra incompleta',
       );
       return;
     }
@@ -789,10 +790,6 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
         icon: Icons.receipt_long_rounded,
         title: 'Registrar compra',
         subtitle: 'Esta acción no se puede deshacer.',
-        child: Text(
-          'Se registrará un gasto de ${appCurrencyController.format(total)} en la categoría Compras.',
-          style: const TextStyle(color: Color(0xFF475569), height: 1.4),
-        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -804,6 +801,10 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
             label: const Text('Registrar gasto'),
           ),
         ],
+        child: Text(
+          'Se registrará un gasto de ${appCurrencyController.format(total)} en la categoría Compras.',
+          style: const TextStyle(color: Color(0xFF475569), height: 1.4),
+        ),
       ),
     );
     if (confirm == true) {
@@ -825,10 +826,11 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
       future: _list,
       builder: (context, snapshot) {
         final list = snapshot.data;
-        if (list == null)
+        if (list == null) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
+        }
         final completed = list['status'] == 'completed';
         return Scaffold(
           backgroundColor: const Color(0xFFF8FAFC),
@@ -957,7 +959,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                         : ListView.separated(
                             padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
                             itemCount: products.length,
-                            separatorBuilder: (_, __) =>
+                            separatorBuilder: (_, _) =>
                                 const SizedBox(height: 8),
                             itemBuilder: (_, i) {
                               final p = products[i];
@@ -981,13 +983,6 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                       title: 'Eliminar producto',
                                       subtitle:
                                           'Esta acción no se puede deshacer.',
-                                      child: Text(
-                                        '¿Quieres quitar "${p['name']}" de esta lista?',
-                                        style: const TextStyle(
-                                          color: Color(0xFF475569),
-                                          height: 1.4,
-                                        ),
-                                      ),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
@@ -1008,6 +1003,13 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                           label: const Text('Eliminar'),
                                         ),
                                       ],
+                                      child: Text(
+                                        '¿Quieres quitar "${p['name']}" de esta lista?',
+                                        style: const TextStyle(
+                                          color: Color(0xFF475569),
+                                          height: 1.4,
+                                        ),
+                                      ),
                                     ),
                                   );
                                   if (confirmed != true) return;
@@ -1157,21 +1159,6 @@ class _RenameDialogState extends State<_RenameDialog> {
     icon: Icons.edit_note_rounded,
     title: 'Renombrar lista',
     subtitle: 'Usa un nombre fácil de reconocer.',
-    child: Form(
-      key: _form,
-      child: TextFormField(
-        controller: _controller,
-        autofocus: true,
-        textCapitalization: TextCapitalization.sentences,
-        decoration: _inputDecoration(
-          'Nombre',
-          Icons.list_alt_rounded,
-          'Ej. Compras del mes',
-        ),
-        validator: (v) =>
-            v == null || v.trim().isEmpty ? 'Escribe un nombre' : null,
-      ),
-    ),
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
@@ -1189,6 +1176,21 @@ class _RenameDialogState extends State<_RenameDialog> {
         label: const Text('Guardar'),
       ),
     ],
+    child: Form(
+      key: _form,
+      child: TextFormField(
+        controller: _controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: _inputDecoration(
+          'Nombre',
+          Icons.list_alt_rounded,
+          'Ej. Compras del mes',
+        ),
+        validator: (v) =>
+            v == null || v.trim().isEmpty ? 'Escribe un nombre' : null,
+      ),
+    ),
   );
 }
 
@@ -1289,10 +1291,10 @@ class _ProductDialogState extends State<_ProductDialog> {
         q == null ||
         q <= 0 ||
         (p != null && p < 0)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Completa el producto con valores válidos'),
-        ),
+      showMovaError(
+        context,
+        'Completa el producto con valores válidos.',
+        title: 'Revisa el producto',
       );
       return;
     }
@@ -1310,6 +1312,23 @@ class _ProductDialogState extends State<_ProductDialog> {
         : Icons.edit_rounded,
     title: widget.product == null ? 'Agregar producto' : 'Editar producto',
     subtitle: 'Define qué necesitas y calcula el costo al instante.',
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cerrar'),
+      ),
+      FilledButton.icon(
+        onPressed: _saving ? null : _save,
+        icon: _saving
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.check_rounded),
+        label: const Text('Guardar'),
+      ),
+    ],
     child: SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1326,7 +1345,7 @@ class _ProductDialogState extends State<_ProductDialog> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            value: _units.contains(_unit.text) ? _unit.text : null,
+            initialValue: _units.contains(_unit.text) ? _unit.text : null,
             decoration: _inputDecoration(
               'Unidad',
               Icons.straighten_rounded,
@@ -1385,7 +1404,7 @@ class _ProductDialogState extends State<_ProductDialog> {
           ),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
-            value: _units.contains(_priceUnit.text)
+            initialValue: _units.contains(_priceUnit.text)
                 ? _priceUnit.text
                 : _unit.text,
             decoration: _inputDecoration(
@@ -1417,23 +1436,6 @@ class _ProductDialogState extends State<_ProductDialog> {
         ],
       ),
     ),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Cerrar'),
-      ),
-      FilledButton.icon(
-        onPressed: _saving ? null : _save,
-        icon: _saving
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.check_rounded),
-        label: const Text('Guardar'),
-      ),
-    ],
   );
 }
 
@@ -1516,6 +1518,23 @@ class _ListDialogState extends State<_ListDialog> {
     icon: Icons.playlist_add_rounded,
     title: 'Nueva lista',
     subtitle: 'Planifica tu próxima compra.',
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cancelar'),
+      ),
+      FilledButton.icon(
+        onPressed: _saving ? null : _save,
+        icon: _saving
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.check_rounded),
+        label: const Text('Crear lista'),
+      ),
+    ],
     child: Form(
       key: _form,
       child: SingleChildScrollView(
@@ -1534,6 +1553,7 @@ class _ListDialogState extends State<_ListDialog> {
               validator: (v) =>
                   v == null || v.trim().isEmpty ? 'Escribe un nombre' : null,
             ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _store,
               textCapitalization: TextCapitalization.sentences,
@@ -1584,6 +1604,7 @@ class _ListDialogState extends State<_ListDialog> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _notes,
               maxLines: 2,
@@ -1598,23 +1619,6 @@ class _ListDialogState extends State<_ListDialog> {
         ),
       ),
     ),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Cancelar'),
-      ),
-      FilledButton.icon(
-        onPressed: _saving ? null : _save,
-        icon: _saving
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.check_rounded),
-        label: const Text('Crear lista'),
-      ),
-    ],
   );
 }
 
@@ -1655,94 +1659,101 @@ class _MovaDialog extends StatelessWidget {
         ),
       ),
     ),
-    child: Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: 460,
-          maxHeight: MediaQuery.sizeOf(context).height - 48,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0C2340).withOpacity(0.18),
-                blurRadius: 30,
-                offset: const Offset(0, 12),
-              ),
-            ],
+    child: MediaQuery.removeViewInsets(
+      context: context,
+      removeBottom: true,
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+        insetAnimationDuration: Duration.zero,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 460,
+            maxHeight: (MediaQuery.sizeOf(context).height - 48)
+                .clamp(240.0, double.infinity)
+                .toDouble(),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFE8F4FA), Color(0xFFEAF6FA)],
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0C2340).withValues(alpha: 0.18),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFE8F4FA), Color(0xFFEAF6FA)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          borderRadius: BorderRadius.circular(16),
+                          child: Icon(icon, color: const Color(0xFF0C2340)),
                         ),
-                        child: Icon(icon, color: const Color(0xFF0C2340)),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: const TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF102A43),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: const TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF102A43),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              subtitle,
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                color: Color(0xFF64748B),
+                              const SizedBox(height: 3),
+                              Text(
+                                subtitle,
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  color: Color(0xFF64748B),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        tooltip: 'Cerrar',
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded),
-                        color: const Color(0xFF64748B),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  child,
-                  const SizedBox(height: 18),
-                  const Divider(height: 1, color: Color(0xFFE2E8F0)),
-                  const SizedBox(height: 14),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      alignment: WrapAlignment.end,
-                      children: actions,
+                        IconButton(
+                          tooltip: 'Cerrar',
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close_rounded),
+                          color: const Color(0xFF64748B),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    child,
+                    const SizedBox(height: 18),
+                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    const SizedBox(height: 14),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.end,
+                        children: actions,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

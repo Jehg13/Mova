@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
-import 'screens/welcome_screen.dart';
+import 'screens/splash_screen.dart';
 import 'database/database_helper.dart';
 import 'services/theme_controller.dart';
 import 'services/notification_service.dart';
@@ -37,7 +37,7 @@ class MovaApp extends StatelessWidget {
         theme: movaLightTheme(),
         darkTheme: movaDarkTheme(),
         themeMode: ThemeMode.light,
-        home: const WelcomeScreen(),
+        home: const SplashScreen(),
       ),
     );
   }

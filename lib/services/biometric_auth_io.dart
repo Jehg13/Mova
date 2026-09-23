@@ -5,6 +5,7 @@ import 'biometric_auth.dart';
 
 Future<BiometricResult> authenticate() async {
   final auth = LocalAuthentication();
+  biometricLastError = null;
   try {
     final supported = await auth.isDeviceSupported();
     final canCheck = await auth.canCheckBiometrics;
@@ -12,7 +13,7 @@ Future<BiometricResult> authenticate() async {
 
     final success = await auth.authenticate(
       localizedReason:
-          'Confirma tu identidad para cambiar la contraseña de Mova',
+          'Confirma tu identidad para activar la protección biométrica de MOVA',
       options: const AuthenticationOptions(
         biometricOnly: true,
         stickyAuth: true,
@@ -29,6 +30,8 @@ Future<BiometricResult> authenticate() async {
     if (error.code == 'UserCanceled' || error.code == 'SystemCanceled') {
       return BiometricResult.canceled;
     }
+    biometricLastError =
+        '${error.code}: ${error.message ?? 'Error del sistema biométrico'}';
     return BiometricResult.failed;
   }
 }

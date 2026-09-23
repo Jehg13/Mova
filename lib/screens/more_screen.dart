@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'dart:typed_data';
-
 import 'dart:convert';
 
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/biometric_auth.dart';
+import 'package:mova/widgets/mova_feedback_dialog.dart';
 import 'package:mova/services/notification_service.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/widgets/user_avatar.dart';
@@ -67,10 +66,11 @@ class _ProfileDialogState extends State<_ProfileDialog> {
     }
     if (!mounted) return;
     if (saved) profileChanged.value++;
-    if (saved)
+    if (saved) {
       Navigator.pop(context, true);
-    else
+    } else {
       setState(() => _saving = false);
+    }
   }
 
   Future<void> _pickImage() async {
@@ -664,7 +664,7 @@ class _MoreScreenState extends State<MoreScreen> {
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0C2340).withOpacity(.18),
+                color: const Color(0xFF0C2340).withValues(alpha: .18),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -719,9 +719,11 @@ class _MoreScreenState extends State<MoreScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(.1),
+                    color: Colors.white.withValues(alpha: .1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(.12)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: .12),
+                    ),
                   ),
                   child: const Row(
                     children: [
@@ -805,8 +807,11 @@ class _MoreScreenState extends State<MoreScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     TextButton.icon(
                       onPressed: () async {
@@ -816,7 +821,6 @@ class _MoreScreenState extends State<MoreScreen> {
                       icon: const Icon(Icons.copy_rounded, size: 18),
                       label: const Text('Copiar de nuevo'),
                     ),
-                    const SizedBox(width: 8),
                     FilledButton(
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Entendido'),
@@ -1122,7 +1126,10 @@ class _MoreScreenState extends State<MoreScreen> {
                 height: 42,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [accent.withOpacity(.18), accent.withOpacity(.07)],
+                    colors: [
+                      accent.withValues(alpha: .18),
+                      accent.withValues(alpha: .07),
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(13),
                 ),
@@ -1158,7 +1165,7 @@ class _MoreScreenState extends State<MoreScreen> {
               const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right_rounded,
-                color: accent.withOpacity(.7),
+                color: accent.withValues(alpha: .7),
                 size: 23,
               ),
             ],
@@ -1400,28 +1407,26 @@ Future<void> _showAbout(BuildContext context) async {
                 style: TextStyle(height: 1.4),
               ),
               const SizedBox(height: 22),
-              Row(
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 10,
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        showLicensePage(
-                          context: context,
-                          applicationName: 'MOVA',
-                          applicationVersion: '1.0.0',
-                        );
-                      },
-                      icon: const Icon(Icons.article_outlined, size: 18),
-                      label: const Text('Licencias'),
-                    ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      showLicensePage(
+                        context: context,
+                        applicationName: 'MOVA',
+                        applicationVersion: '1.0.0',
+                      );
+                    },
+                    icon: const Icon(Icons.article_outlined, size: 18),
+                    label: const Text('Licencias'),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cerrar'),
-                    ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cerrar'),
                   ),
                 ],
               ),
@@ -1450,11 +1455,12 @@ class _SecurityDialogState extends State<_SecurityDialog> {
   void initState() {
     super.initState();
     _database.getSecurityMode().then((mode) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _mode = mode;
           _loading = false;
         });
+      }
     });
   }
 
@@ -1468,12 +1474,27 @@ class _SecurityDialogState extends State<_SecurityDialog> {
     if (mode == 'biometric') {
       final result = await BiometricAuth().authenticate();
       if (result == BiometricResult.unavailable) {
-        if (mounted)
-          _message('La biometría no está disponible en este dispositivo.');
+        if (mounted) {
+          showMovaError(
+            context,
+            'La biometría no está disponible o no está configurada en este dispositivo.',
+            title: 'Biometría no disponible',
+          );
+        }
         return;
       }
       if (result != BiometricResult.authenticated) {
-        if (mounted) _message('No se pudo verificar la biometría.');
+        if (mounted) {
+          showMovaError(
+            context,
+            result == BiometricResult.canceled
+                ? 'La verificación fue cancelada.'
+                : biometricLastError == null
+                ? 'No se pudo verificar tu identidad. Confirma que tienes una huella o rostro registrado en los ajustes del teléfono.'
+                : 'El sistema biométrico devolvió un error. Verifica la biometría configurada en tu teléfono e inténtalo nuevamente.',
+            title: 'Verificación no completada',
+          );
+        }
         return;
       }
       await _database.setSecurity(mode: mode);
@@ -1488,13 +1509,11 @@ class _SecurityDialogState extends State<_SecurityDialog> {
     if (mounted) setState(() => _mode = mode);
   }
 
-  void _message(String text) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
-  }
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      scrollable: true,
       title: const Text('Seguridad'),
       content: _loading
           ? const SizedBox(
@@ -1509,21 +1528,27 @@ class _SecurityDialogState extends State<_SecurityDialog> {
                   child: Text('Elige cómo proteger tu sesión.'),
                 ),
                 const SizedBox(height: 12),
-                RadioListTile<String>(
-                  value: 'biometric',
+                RadioGroup<String>(
                   groupValue: _mode,
-                  title: const Text('Huella o biometría'),
-                  subtitle: const Text('Usa el sensor del dispositivo'),
-                  secondary: const Icon(Icons.fingerprint),
-                  onChanged: (value) => _choose(value!),
-                ),
-                RadioListTile<String>(
-                  value: 'pin',
-                  groupValue: _mode,
-                  title: const Text('Números (PIN)'),
-                  subtitle: const Text('Crea un código de 4 a 8 dígitos'),
-                  secondary: const Icon(Icons.pin_outlined),
-                  onChanged: (value) => _choose(value!),
+                  onChanged: (value) {
+                    if (value != null) _choose(value);
+                  },
+                  child: Column(
+                    children: [
+                      const RadioListTile<String>(
+                        value: 'biometric',
+                        title: Text('Huella o biometría'),
+                        subtitle: Text('Usa el sensor del dispositivo'),
+                        secondary: Icon(Icons.fingerprint),
+                      ),
+                      const RadioListTile<String>(
+                        value: 'pin',
+                        title: Text('Números (PIN)'),
+                        subtitle: Text('Crea un código de 4 a 8 dígitos'),
+                        secondary: Icon(Icons.pin_outlined),
+                      ),
+                    ],
+                  ),
                 ),
                 if (_mode != null)
                   TextButton(
@@ -1661,7 +1686,8 @@ class _BudgetDialogState extends State<_BudgetDialog> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(.12),
+              color: Theme.of(context).colorScheme.primary
+                  .withValues(alpha: .12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -1767,7 +1793,9 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                           child: CircularProgressIndicator(
                             value: progress,
                             strokeWidth: 7,
-                            backgroundColor: Colors.white.withOpacity(.75),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: .75,
+                            ),
                             color: exceeded
                                 ? Colors.red
                                 : const Color(0xFF0C2340),
@@ -1808,11 +1836,11 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.secondaryContainer
-                          .withOpacity(.45),
+                          .withValues(alpha: .45),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: Theme.of(context).colorScheme.secondary
-                            .withOpacity(.25),
+                            .withValues(alpha: .25),
                       ),
                     ),
                     child: Column(
@@ -1871,8 +1899,9 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                               )
                               .toList(),
                           onChanged: (value) {
-                            if (value != null)
+                            if (value != null) {
                               setState(() => _currency = value);
+                            }
                           },
                         ),
                       ],
@@ -2054,115 +2083,203 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   Widget build(BuildContext context) {
     final isIncome = _type == 'income';
-    final accent = isIncome ? const Color(0xFF0C2340) : const Color(0xFF007C91);
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 430),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 26, 24, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _categoryHeader(accent),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _name,
-                autofocus: true,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre de la categoría',
-                  hintText: 'Ej. Comida, transporte o freelance',
-                  prefixIcon: Icon(Icons.label_outline_rounded),
+    final accent = isIncome ? const Color(0xFF0C2340) : const Color(0xFF36577D);
+    return MediaQuery.removeViewInsets(
+      context: context,
+      removeBottom: true,
+      child: Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 430,
+            maxHeight: MediaQuery.sizeOf(context).height - 48,
+          ),
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _categoryHeader(accent),
+                const SizedBox(height: 18),
+                _inputLabel(
+                  'Nombre de la categoría',
+                  Icons.label_outline_rounded,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '¿Qué tipo de movimiento será?',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _typeOption(
-                      'expense',
-                      'Gasto',
-                      Icons.arrow_downward_rounded,
-                      const Color(0xFF007C91),
-                    ),
+                const SizedBox(height: 7),
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F9FC),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: const Color(0xFFD8E1EB)),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _typeOption(
-                      'income',
-                      'Ingreso',
-                      Icons.arrow_upward_rounded,
-                      const Color(0xFF0C2340),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                maxLength: 2,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  labelText: 'Icono o emoji',
-                  hintText: '📦',
-                  prefixIcon: const Icon(Icons.emoji_emotions_outlined),
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Center(
-                      widthFactor: 1,
-                      child: Text(_emoji, style: const TextStyle(fontSize: 23)),
+                  child: TextField(
+                    controller: _name,
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      hintText: 'Ej. Comida, transporte o freelance',
+                      hintStyle: TextStyle(color: Color(0xFF94A3B8)),
+                      prefixIcon: Icon(Icons.edit_rounded, size: 20),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 15,
+                      ),
                     ),
                   ),
                 ),
-                onChanged: (value) {
-                  final trimmed = value.trim();
-                  if (trimmed.isNotEmpty) setState(() => _emoji = trimmed);
-                },
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Puedes usar un emoji para identificarla más rápido.',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                const SizedBox(height: 17),
+                Text(
+                  '¿Qué tipo de movimiento será?',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancelar'),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _typeOption(
+                        'expense',
+                        'Gasto',
+                        Icons.arrow_downward_rounded,
+                        const Color(0xFF36577D),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _typeOption(
+                        'income',
+                        'Ingreso',
+                        Icons.arrow_upward_rounded,
+                        const Color(0xFF0C2340),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 17),
+                _inputLabel('Icono o emoji', Icons.emoji_emotions_outlined),
+                const SizedBox(height: 7),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 5,
                   ),
-                  const SizedBox(width: 8),
-                  FilledButton.icon(
-                    onPressed: () {
-                      if (_name.text.trim().isEmpty) return;
-                      Navigator.pop(
-                        context,
-                        _CategoryInput(_name.text.trim(), _type, _emoji),
-                      );
-                    },
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Crear categoría'),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F9FC),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: const Color(0xFFD8E1EB)),
                   ),
-                ],
-              ),
-            ],
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: accent.withValues(alpha: .1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _emoji,
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          maxLength: 2,
+                          onChanged: (value) {
+                            final trimmed = value.trim();
+                            if (trimmed.isNotEmpty) {
+                              setState(() => _emoji = trimmed);
+                            }
+                          },
+                          decoration: const InputDecoration(
+                            hintText: 'Elige un emoji',
+                            counterText: '',
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.keyboard_rounded,
+                        color: Color(0xFF94A3B8),
+                        size: 19,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  'Puedes usar un emoji para identificarla más rápido.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancelar'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      onPressed: () {
+                        if (_name.text.trim().isEmpty) return;
+                        Navigator.pop(
+                          context,
+                          _CategoryInput(_name.text.trim(), _type, _emoji),
+                        );
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF0C2340),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 17,
+                          vertical: 13,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                      ),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Crear categoría'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _inputLabel(String text, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 17, color: const Color(0xFF0C2340)),
+        const SizedBox(width: 7),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF334E68),
+          ),
+        ),
+      ],
     );
   }
 
@@ -2196,6 +2313,11 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             ],
           ),
         ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+        ),
       ],
     );
   }
@@ -2210,13 +2332,22 @@ class _CategoryDialogState extends State<_CategoryDialog> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: selected
-              ? color.withValues(alpha: .1)
-              : const Color(0xFFF8FAFC),
+              ? color.withValues(alpha: .12)
+              : const Color(0xFFF7F9FC),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: selected ? color : const Color(0xFFD7E3E8),
             width: selected ? 1.5 : 1,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: .14),
+                    blurRadius: 9,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           children: [

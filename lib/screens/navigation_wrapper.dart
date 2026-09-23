@@ -7,6 +7,8 @@ import 'package:mova/screens/more_screen.dart';
 
 import 'home_screen.dart';
 import 'transaction_screen.dart';
+import '../widgets/mova_loading_overlay.dart';
+import '../widgets/mova_feedback_dialog.dart';
 
 class NavigationWrapper extends StatefulWidget {
   const NavigationWrapper({super.key});
@@ -19,6 +21,7 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   final _database = DatabaseHelper();
   bool _locked = false;
   bool _checkingLock = true;
+  bool _isSwitchingSection = false;
   int _selectedIndex = 0;
   final GlobalKey<HomeScreenState> _homeKey = GlobalKey<HomeScreenState>();
   final GlobalKey<AddTransactionScreenState> _transactionKey =
@@ -68,8 +71,11 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
     if (entered == pin) {
       setState(() => _locked = false);
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('PIN incorrecto')));
+      await showMovaError(
+        context,
+        'El PIN ingresado no es correcto.',
+        title: 'PIN incorrecto',
+      );
       await _unlock(mode);
     }
   }
@@ -86,41 +92,54 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
           IndexedStack(index: _selectedIndex, children: _screens),
           if (_locked)
             const ModalBarrier(dismissible: false, color: Color(0xDDFFFFFF)),
+          if (_isSwitchingSection)
+            const MovaLoadingOverlay(message: 'Cargando tu sección'),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF1E3A5F),
-        unselectedItemColor: Colors.grey,
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index; // Actualiza el índice al hacer tap
-          });
-          if (index == 0) {
-            _homeKey.currentState?.refresh();
-          }
+      bottomNavigationBar: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.only(bottom: 4),
+        child: IgnorePointer(
+          ignoring: _isSwitchingSection || _locked,
+          child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: const Color(0xFF1E3A5F),
+            unselectedItemColor: Colors.grey,
+            currentIndex: _selectedIndex,
+            onTap: (index) async {
+              if (index == _selectedIndex) return;
+              setState(() {
+                _isSwitchingSection = true;
+                _selectedIndex = index;
+              });
+              if (index == 0) {
+                _homeKey.currentState?.refresh();
+              }
 
-          if (index == 2) {
-            _transactionKey.currentState?.refreshCategories();
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: "Análisis",
+              if (index == 2) {
+                _transactionKey.currentState?.refreshCategories();
+              }
+              await Future<void>.delayed(const Duration(milliseconds: 360));
+              if (mounted) setState(() => _isSwitchingSection = false);
+            },
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.bar_chart),
+                label: "Análisis",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.add_circle, size: 40),
+                label: "Agregar",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.track_changes),
+                label: "Metas",
+              ),
+              BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Más"),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle, size: 40),
-            label: "Agregar",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.track_changes),
-            label: "Metas",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Más"),
-        ],
+        ),
       ),
     );
   }

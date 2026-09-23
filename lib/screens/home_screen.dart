@@ -129,7 +129,7 @@ class HeaderSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: profileChanged,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         return FutureBuilder<Map<String, dynamic>?>(
           future: DatabaseHelper().getCurrentUser(),
           builder: (context, snapshot) {
@@ -356,7 +356,7 @@ class BalanceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0C2340).withOpacity(0.2),
+            color: const Color(0xFF0C2340).withValues(alpha: 0.2),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -370,7 +370,7 @@ class BalanceCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.12),
+                  color: Colors.white.withValues(alpha: .12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -404,9 +404,9 @@ class BalanceCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.13),
+              color: Colors.white.withValues(alpha: 0.13),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: .1)),
             ),
             child: Text(
               appCurrencyController.code,
@@ -507,7 +507,7 @@ class SummaryItem extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 12,
-            backgroundColor: color.withOpacity(0.12),
+            backgroundColor: color.withValues(alpha: 0.12),
             child: Icon(icon, size: 14, color: color),
           ),
           const SizedBox(height: 8),
@@ -702,7 +702,7 @@ class TransactionItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.12),
+              color: iconColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: iconColor, size: 18),
@@ -850,7 +850,7 @@ class _ActiveGoalSummary extends StatelessWidget {
                 ? Image.memory(
                     image,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const _GoalFallbackIcon(),
+                    errorBuilder: (_, _, _) => const _GoalFallbackIcon(),
                   )
                 : const _GoalFallbackIcon(),
           ),

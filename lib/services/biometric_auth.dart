@@ -7,3 +7,5 @@ class BiometricAuth {
 }
 
 enum BiometricResult { authenticated, unavailable, failed, canceled }
+
+String? biometricLastError;

@@ -14,7 +14,7 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: profileChanged,
-      builder: (context, _, __) => FutureBuilder<Map<String, dynamic>?>(
+      builder: (context, _, _) => FutureBuilder<Map<String, dynamic>?>(
         future: DatabaseHelper().getCurrentUser(),
         builder: (context, snapshot) {
           final raw = snapshot.data?['profile_image'];

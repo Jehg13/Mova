@@ -6,6 +6,7 @@ import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/goal_image_picker.dart';
 import 'package:mova/models/shared_goal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:mova/widgets/mova_feedback_dialog.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
@@ -71,27 +72,13 @@ class _GoalsScreenState extends State<GoalsScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 100),
                 children: [
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Mis metas',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF102A43),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Importar QR',
-                        onPressed: () => _importQr(context),
-                        icon: const Icon(
-                          Icons.qr_code_scanner_rounded,
-                          color: Color(0xFF0C2340),
-                        ),
-                      ),
-                    ],
+                  const Text(
+                    'Mis metas',
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF102A43),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   const Text(
@@ -135,69 +122,6 @@ class _GoalsScreenState extends State<GoalsScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _importQr(BuildContext context) async {
-    final controller = TextEditingController();
-    final text = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Importar QR'),
-        content: TextField(
-          controller: controller,
-          maxLines: 4,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Pega aquí el texto del QR',
-            helperText:
-                'La cámara estará disponible en futuras versiones móviles.',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Validar'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (text == null || text.trim().isEmpty || !mounted) return;
-    try {
-      try {
-        final contribution = ContributionPayload.parse(text);
-        await _database.addContribution(contribution);
-        if (!context.mounted) {
-          return;
-        }
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Aporte importado correctamente')),
-          );
-        }
-      } on FormatException {
-        final payload = SharedGoalPayload.parse(text);
-        await _database.importSharedGoal(payload);
-        if (!context.mounted) {
-          return;
-        }
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Meta compartida importada')),
-          );
-        }
-      }
-      if (mounted) setState(_loadGoals);
-    } catch (error) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('QR inválido: $error')));
-      }
-    }
   }
 }
 
@@ -268,22 +192,15 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
       if (!mounted) return;
       setState(_load);
       widget.onChanged();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            withdraw
-                ? 'Ahorro retirado correctamente'
-                : 'Ahorro agregado correctamente',
-          ),
-        ),
+      showMovaSuccess(
+        context,
+        withdraw
+            ? 'Ahorro retirado correctamente.'
+            : 'Ahorro agregado correctamente.',
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.toString().replaceFirst('Bad state: ', '')),
-        ),
-      );
+      showMovaError(context, error.toString().replaceFirst('Bad state: ', ''));
     }
   }
 
@@ -319,7 +236,7 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(.8),
+                      color: Colors.white.withValues(alpha: .8),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Icon(
@@ -663,6 +580,8 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                   children: icons.entries.map((entry) {
                     final selected = entry.key == _icon;
                     return InkWell(
+                      onTap: () => setState(() => _icon = entry.key),
+                      borderRadius: BorderRadius.circular(13),
                       child: Tooltip(
                         message: entry.key == 'none' ? 'Sin icono' : entry.key,
                         child: AnimatedContainer(
@@ -690,8 +609,6 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                           ),
                         ),
                       ),
-                      onTap: () => setState(() => _icon = entry.key),
-                      borderRadius: BorderRadius.circular(13),
                     );
                   }).toList(),
                 ),
@@ -919,7 +836,7 @@ class _SummaryCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(11),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.12),
+                  color: Colors.white.withValues(alpha: .12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -950,7 +867,7 @@ class _SummaryCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: Colors.white.withOpacity(.18),
+              backgroundColor: Colors.white.withValues(alpha: .18),
               color: const Color(0xFFB9D7F0),
             ),
           ),
@@ -1227,7 +1144,7 @@ class _GoalHistoryDialog extends StatelessWidget {
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: movements.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
+                separatorBuilder: (_, _) => const Divider(height: 1),
                 itemBuilder: (context, index) {
                   final movement = movements[index];
                   final withdrawal = movement['type'] == 'withdrawal';
@@ -1285,6 +1202,7 @@ class _GoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final narrow = MediaQuery.sizeOf(context).width < 390;
     final target = (goal['target_amount'] as num).toDouble();
     final saved = (goal['saved_amount'] as num).toDouble();
     final progress = (saved / target).clamp(0.0, 1.0);
@@ -1308,13 +1226,13 @@ class _GoalCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(15),
             child: SizedBox(
-              width: 72,
-              height: 72,
+              width: narrow ? 62 : 72,
+              height: narrow ? 62 : 72,
               child: image != null && image.isNotEmpty
                   ? Image.memory(
                       image,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _goalIconFallback(icon),
+                      errorBuilder: (_, _, _) => _goalIconFallback(icon),
                     )
                   : goal['icon'] == 'none'
                   ? Container(color: const Color(0xFFF8FAFC))
@@ -1323,7 +1241,7 @@ class _GoalCard extends StatelessWidget {
                       child: Icon(
                         icon,
                         color: const Color(0xFF0C2340),
-                        size: 31,
+                        size: narrow ? 27 : 31,
                       ),
                     ),
             ),
@@ -1338,6 +1256,8 @@ class _GoalCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         goal['name'] as String,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -1347,6 +1267,11 @@ class _GoalCard extends StatelessWidget {
                     ),
                     IconButton(
                       tooltip: 'Modificar ahorro',
+                      visualDensity: VisualDensity.compact,
+                      constraints: const BoxConstraints(
+                        minWidth: 28,
+                        minHeight: 28,
+                      ),
                       onPressed: () async {
                         final updated = await showDialog<bool>(
                           context: context,
@@ -1354,11 +1279,16 @@ class _GoalCard extends StatelessWidget {
                         );
                         if (updated == true) onChanged();
                       },
-                      icon: const Icon(Icons.edit_outlined, size: 19),
+                      icon: const Icon(Icons.edit_outlined, size: 18),
                       color: const Color(0xFF64748B),
                     ),
                     IconButton(
                       tooltip: 'Eliminar meta',
+                      visualDensity: VisualDensity.compact,
+                      constraints: const BoxConstraints(
+                        minWidth: 28,
+                        minHeight: 28,
+                      ),
                       onPressed: () async {
                         final confirmed = await showDialog<bool>(
                           context: context,
@@ -1368,136 +1298,184 @@ class _GoalCard extends StatelessWidget {
                         await DatabaseHelper().deleteGoal(goal['id'] as int);
                         onChanged();
                       },
-                      icon: const Icon(Icons.delete_outline, size: 19),
+                      icon: const Icon(Icons.delete_outline, size: 18),
                       color: const Color(0xFFB42318),
                     ),
                   ],
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  '${appCurrencyController.format(saved)} de ${appCurrencyController.format(target)}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF64748B),
-                  ),
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 7,
-                          backgroundColor: const Color(0xFFE2E8F0),
-                          color: const Color(0xFF0C2340),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'PROGRESO DE LA META',
+                            style: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: .8,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${appCurrencyController.format(saved)} de ${appCurrencyController.format(target)}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAF2F8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${(progress * 100).round()}%',
+                        style: const TextStyle(
+                          color: Color(0xFF0C2340),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${(progress * 100).round()}%',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    TextButton.icon(
-                      onPressed: () async {
-                        final updated = await showDialog<bool>(
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 8,
+                    backgroundColor: const Color(0xFFE2E8F0),
+                    color: const Color(0xFF0C2340),
+                  ),
+                ),
+                const SizedBox(height: 13),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE8EEF4)),
+                  ),
+                  child: Wrap(
+                    alignment: WrapAlignment.start,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 5,
+                    runSpacing: 3,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () async {
+                          final updated = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => _WithdrawGoalDialog(goal: goal),
+                          );
+                          if (updated == true) onChanged();
+                        },
+                        icon: const Icon(
+                          Icons.arrow_downward_rounded,
+                          size: 17,
+                        ),
+                        label: const Text('Retirar'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFFB42318),
+                          padding: const EdgeInsets.symmetric(horizontal: 7),
+                          minimumSize: const Size(0, 34),
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => showDialog<void>(
                           context: context,
-                          builder: (_) => _WithdrawGoalDialog(goal: goal),
-                        );
-                        if (updated == true) onChanged();
-                      },
-                      icon: const Icon(Icons.arrow_downward_rounded, size: 17),
-                      label: const Text('Retirar'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFFB42318),
-                        padding: EdgeInsets.zero,
+                          builder: (_) =>
+                              _GoalHistoryDialog(goalId: goal['id'] as int),
+                        ),
+                        icon: const Icon(Icons.history_rounded, size: 17),
+                        label: const Text('Historial'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF0C2340),
+                          padding: const EdgeInsets.symmetric(horizontal: 7),
+                          minimumSize: const Size(0, 34),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    TextButton.icon(
-                      onPressed: () => showDialog<void>(
-                        context: context,
-                        builder: (_) =>
-                            _GoalHistoryDialog(goalId: goal['id'] as int),
+                      TextButton.icon(
+                        onPressed: () async {
+                          final id = await DatabaseHelper().ensureGoalShared(
+                            goal['id'] as int,
+                          );
+                          if (context.mounted && id != null) {
+                            await showDialog<void>(
+                              context: context,
+                              builder: (_) => _QrDialog(
+                                title: 'Compartir meta',
+                                data: SharedGoalPayload(
+                                  id: id,
+                                  name: goal['name'] as String,
+                                  targetAmount: target,
+                                  icon: goal['icon'] as String? ?? 'flag',
+                                ).encode(),
+                              ),
+                            );
+                            onChanged();
+                          }
+                        },
+                        icon: const Icon(Icons.qr_code_2_rounded, size: 17),
+                        label: const Text('Compartir'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF0C2340),
+                          padding: const EdgeInsets.symmetric(horizontal: 7),
+                          minimumSize: const Size(0, 34),
+                        ),
                       ),
-                      icon: const Icon(Icons.history_rounded, size: 17),
-                      label: const Text('Historial'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF0C2340),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      tooltip: 'Compartir meta',
-                      onPressed: () async {
-                        final id = await DatabaseHelper().ensureGoalShared(
-                          goal['id'] as int,
-                        );
-                        if (context.mounted && id != null) {
+                      TextButton.icon(
+                        onPressed: () async {
+                          final amount = await showDialog<double>(
+                            context: context,
+                            builder: (_) => const _ContributionAmountDialog(),
+                          );
+                          if (amount == null || !context.mounted) return;
+                          final id = await DatabaseHelper().ensureGoalShared(
+                            goal['id'] as int,
+                          );
+                          if (!context.mounted || id == null) return;
                           await showDialog<void>(
                             context: context,
                             builder: (_) => _QrDialog(
-                              title: 'Compartir meta',
-                              data: SharedGoalPayload(
-                                id: id,
-                                name: goal['name'] as String,
-                                targetAmount: target,
-                                icon: goal['icon'] as String? ?? 'flag',
+                              title: 'QR de aporte',
+                              data: ContributionPayload(
+                                contributionId: newSharedId(),
+                                goalId: id,
+                                contributor: 'Invitado',
+                                amount: amount,
                               ).encode(),
                             ),
                           );
-                          onChanged();
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.qr_code_2_rounded,
-                        size: 20,
-                        color: Color(0xFF0C2340),
+                        },
+                        icon: const Icon(
+                          Icons.volunteer_activism_outlined,
+                          size: 17,
+                        ),
+                        label: const Text('Aporte'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF0C2340),
+                          padding: const EdgeInsets.symmetric(horizontal: 7),
+                          minimumSize: const Size(0, 34),
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      tooltip: 'Crear QR de aporte',
-                      onPressed: () async {
-                        final amount = await showDialog<double>(
-                          context: context,
-                          builder: (_) => const _ContributionAmountDialog(),
-                        );
-                        if (amount == null || !context.mounted) return;
-                        final id = await DatabaseHelper().ensureGoalShared(
-                          goal['id'] as int,
-                        );
-                        if (!context.mounted || id == null) return;
-                        await showDialog<void>(
-                          context: context,
-                          builder: (_) => _QrDialog(
-                            title: 'QR de aporte',
-                            data: ContributionPayload(
-                              contributionId: newSharedId(),
-                              goalId: id,
-                              contributor: 'Invitado',
-                              amount: amount,
-                            ).encode(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.volunteer_activism_outlined,
-                        size: 20,
-                        color: Color(0xFF0C2340),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
