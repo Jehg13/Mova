@@ -8,11 +8,158 @@ import 'package:mova/services/biometric_auth.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
 import 'package:mova/services/notification_service.dart';
 import 'package:mova/services/currency_controller.dart';
+import 'package:mova/services/language_controller.dart';
 import 'package:mova/widgets/user_avatar.dart';
+import 'package:mova/widgets/mova_notifications_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'login_screen.dart';
 import 'shopping_screen.dart';
+
+const _termsTitle = 'Términos y condiciones';
+const _privacyTitle = 'Aviso de privacidad';
+
+const _termsSections = <({String title, String body})>[
+  (
+    title: '1. Aceptación del servicio',
+    body: 'Al crear una cuenta y utilizar MOVA confirmas que leíste, comprendiste y aceptas estos términos.',
+  ),
+  (
+    title: '2. Uso de MOVA',
+    body: 'MOVA es una herramienta de organización financiera personal para registrar ingresos, gastos, metas, presupuestos y listas.',
+  ),
+  (
+    title: '3. Tu cuenta',
+    body: 'Eres responsable de mantener la confidencialidad de tu correo y contraseña, así como de la actividad realizada desde tu dispositivo.',
+  ),
+  (
+    title: '4. Información financiera',
+    body: 'Los cálculos y análisis son orientativos y dependen de los datos que registres. MOVA no sustituye asesoría financiera profesional.',
+  ),
+  (
+    title: '5. Uso responsable',
+    body: 'No debes acceder a cuentas ajenas, alterar la aplicación ni utilizar MOVA para actividades ilegales.',
+  ),
+];
+
+const _privacySections = <({String title, String body})>[
+  (
+    title: '1. Información que guardamos',
+    body: 'MOVA puede guardar tu nombre, correo, contraseña, foto de perfil, movimientos, metas, presupuestos, categorías y listas.',
+  ),
+  (
+    title: '2. Para qué la utilizamos',
+    body: 'Utilizamos esta información para proteger tu cuenta, mostrar tus finanzas, generar resúmenes y conservar tus preferencias.',
+  ),
+  (
+    title: '3. Almacenamiento local',
+    body: 'La información financiera se almacena localmente en tu dispositivo. Si desinstalas la aplicación o borras sus datos, podrías perder información no respaldada.',
+  ),
+  (
+    title: '4. Protección de tus datos',
+    body: 'Aplicamos medidas razonables para proteger tu información. Te recomendamos usar bloqueo de pantalla y no compartir tus credenciales.',
+  ),
+  (
+    title: '5. Tus decisiones',
+    body: 'Puedes editar o eliminar la información desde las funciones disponibles de MOVA, incluida la eliminación de tu cuenta.',
+  ),
+];
+
+Future<void> _showLegalDocument(
+  BuildContext context,
+  String title,
+  List<({String title, String body})> sections,
+  IconData icon,
+) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(sheetContext).height * .86,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 22, 16, 12),
+              child: Row(
+                children: [
+                  Icon(icon, color: const Color(0xFF0C2340), size: 25),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        color: Color(0xFF102A43),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
+              child: Text(
+                title == _termsTitle
+                    ? 'Lee estas condiciones para conocer el uso responsable de MOVA.'
+                    : 'Consulta qué información se guarda y cómo puedes administrar tus datos.',
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+                itemCount: sections.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 18),
+                itemBuilder: (_, index) {
+                  final section = sections[index];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        section.title,
+                        style: const TextStyle(
+                          color: Color(0xFF102A43),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        section.body,
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 
 class _ProfileDialog extends StatefulWidget {
   const _ProfileDialog();
@@ -260,7 +407,7 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text('Guardar cambios'),
+                                : const Text('Guardar'),
                           ),
                         ),
                       ],
@@ -424,7 +571,7 @@ class _MoreScreenState extends State<MoreScreen> {
                       subtitle: "Gestiona tus recordatorios",
                       onTap: () => showDialog<void>(
                         context: context,
-                        builder: (_) => const _NotificationsDialog(),
+                        builder: (_) => const MovaNotificationsDialog(),
                       ),
                     ),
                     _buildDivider(),
@@ -436,6 +583,20 @@ class _MoreScreenState extends State<MoreScreen> {
                       onTap: () => showDialog<void>(
                         context: context,
                         builder: (_) => const _SecurityDialog(),
+                      ),
+                    ),
+                    _buildDivider(),
+                    AnimatedBuilder(
+                      animation: appLanguageController,
+                      builder: (context, _) => _buildOptionTile(
+                        context: context,
+                        icon: Icons.language_outlined,
+                        title: 'Idioma',
+                        subtitle: appLanguageController.language.nativeLabel,
+                        onTap: () => showDialog<void>(
+                          context: context,
+                          builder: (_) => const _LanguageDialog(),
+                        ),
                       ),
                     ),
                   ],
@@ -473,12 +634,42 @@ class _MoreScreenState extends State<MoreScreen> {
               _buildSectionTitle("INFORMACIÓN"),
               _buildCardContainer(
                 context: context,
-                child: _buildOptionTile(
-                  context: context,
-                  icon: Icons.info_outline,
-                  title: "Acerca de MOVA",
-                  subtitle: "Versión 1.0.0",
-                  onTap: () => _showAbout(context),
+                child: Column(
+                  children: [
+                    _buildOptionTile(
+                      context: context,
+                      icon: Icons.info_outline,
+                      title: "Acerca de MOVA",
+                      subtitle: "Versión 1.0.0",
+                      onTap: () => _showAbout(context),
+                    ),
+                    _buildDivider(),
+                    _buildOptionTile(
+                      context: context,
+                      icon: Icons.gavel_outlined,
+                      title: "Términos y condiciones",
+                      subtitle: "Consulta las condiciones de uso",
+                      onTap: () => _showLegalDocument(
+                        context,
+                        _termsTitle,
+                        _termsSections,
+                        Icons.gavel_outlined,
+                      ),
+                    ),
+                    _buildDivider(),
+                    _buildOptionTile(
+                      context: context,
+                      icon: Icons.privacy_tip_outlined,
+                      title: "Aviso de privacidad",
+                      subtitle: "Consulta cómo se tratan tus datos",
+                      onTap: () => _showLegalDocument(
+                        context,
+                        _privacyTitle,
+                        _privacySections,
+                        Icons.privacy_tip_outlined,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -487,49 +678,24 @@ class _MoreScreenState extends State<MoreScreen> {
               _buildSectionTitle("CUENTA"),
               _buildCardContainer(
                 context: context,
-                child: Material(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(16),
-                  child: InkWell(
-                    onTap: () async {
-                      await DatabaseHelper().logout();
-                      // Redirige al Login y borra las rutas anteriores de navegación
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(16),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 14.0,
-                      ),
-                      child: Row(
-                        children: const [
-                          Icon(
-                            Icons.logout_rounded,
-                            color: Color(0xFFEF4444),
-                            size: 22,
-                          ),
-                          SizedBox(width: 14),
-                          Expanded(
-                            child: Text(
-                              "Cerrar sesión",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFFEF4444),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                child: Column(
+                  children: [
+                    _buildOptionTile(
+                      context: context,
+                      icon: Icons.logout_rounded,
+                      title: "Cerrar sesión",
+                      subtitle: "Sal de tu cuenta en este dispositivo",
+                      onTap: () => _logout(context),
                     ),
-                  ),
+                    _buildDivider(),
+                    _buildOptionTile(
+                      context: context,
+                      icon: Icons.delete_forever_outlined,
+                      title: "Eliminar cuenta",
+                      subtitle: "Borra tu cuenta y todos sus datos",
+                      onTap: () => _deleteAccount(context),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
@@ -538,6 +704,98 @@ class _MoreScreenState extends State<MoreScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await DatabaseHelper().logout();
+    if (!context.mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 18, 8),
+        contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDECEC),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Icons.delete_forever_outlined,
+                color: Color(0xFFB42318),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Eliminar cuenta',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Esta acción es permanente.',
+              style: TextStyle(
+                color: Color(0xFFB42318),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Se eliminarán tu cuenta, movimientos, metas, listas y configuraciones. No podrás recuperar estos datos.',
+              style: TextStyle(color: Color(0xFF64748B), height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFB42318),
+            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Eliminar cuenta'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await DatabaseHelper().deleteAccount();
+      if (!context.mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      showMovaError(
+        context,
+        'No se pudo eliminar la cuenta. Intenta nuevamente.',
+        title: 'No se pudo completar',
+      );
+    }
   }
 
   Widget _buildSectionTitle(String title) {
@@ -1216,6 +1474,55 @@ class _BudgetDialog extends StatefulWidget {
   State<_BudgetDialog> createState() => _BudgetDialogState();
 }
 
+class _LanguageDialog extends StatelessWidget {
+  const _LanguageDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      title: const Row(
+        children: [
+          Icon(Icons.language_outlined, color: Color(0xFF0C2340)),
+          SizedBox(width: 10),
+          Text('Idioma'),
+        ],
+      ),
+      content: AnimatedBuilder(
+        animation: appLanguageController,
+        builder: (context, _) => DropdownButtonFormField<String>(
+          initialValue: appLanguageController.code,
+          isExpanded: true,
+          decoration: const InputDecoration(
+            labelText: 'Selecciona un idioma',
+            prefixIcon: Icon(Icons.translate_rounded),
+            border: OutlineInputBorder(),
+          ),
+          items: movaLanguages
+              .map(
+                (language) => DropdownMenuItem(
+                  value: language.code,
+                  child: Text('${language.nativeLabel} · ${language.label}'),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value != null) {
+              appLanguageController.setLanguage(value);
+            }
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Listo'),
+        ),
+      ],
+    );
+  }
+}
+
 class _NotificationsDialog extends StatefulWidget {
   const _NotificationsDialog();
 
@@ -1258,7 +1565,46 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Notificaciones'),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+      scrollable: true,
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8EEF5),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.notifications_active_outlined,
+              color: Color(0xFF1E3A5F),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Notificaciones',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+                SizedBox(height: 3),
+                Text(
+                  'Elige qué recordatorios quieres recibir',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
       content: _loading
           ? const SizedBox(
               height: 70,
@@ -1269,6 +1615,7 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
               children: [
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
+                  activeThumbColor: const Color(0xFF0C2340),
                   title: const Text('Activar notificaciones'),
                   subtitle: const Text('Permite recibir recordatorios de Mova'),
                   value: _enabled,
@@ -1514,8 +1861,43 @@ class _SecurityDialogState extends State<_SecurityDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
       scrollable: true,
-      title: const Text('Seguridad'),
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8EEF5),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.shield_outlined, color: Color(0xFF263F61)),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Seguridad',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+                SizedBox(height: 3),
+                Text(
+                  'Elige una sola forma de proteger tu sesión',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
       content: _loading
           ? const SizedBox(
               height: 60,
@@ -1524,9 +1906,22 @@ class _SecurityDialogState extends State<_SecurityDialog> {
           : Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Elige cómo proteger tu sesión.'),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: const Text(
+                    'Solo una opción puede estar activa. Al elegir otra, la protección anterior se reemplaza.',
+                    style: TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 12,
+                      height: 1.35,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 RadioGroup<String>(
@@ -1536,17 +1931,25 @@ class _SecurityDialogState extends State<_SecurityDialog> {
                   },
                   child: Column(
                     children: [
-                      const RadioListTile<String>(
+                      RadioListTile<String>(
                         value: 'biometric',
                         title: Text('Huella o biometría'),
                         subtitle: Text('Usa el sensor del dispositivo'),
-                        secondary: Icon(Icons.fingerprint),
+                        secondary: const Icon(Icons.fingerprint),
+                        activeColor: const Color(0xFF0C2340),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                      const RadioListTile<String>(
+                      RadioListTile<String>(
                         value: 'pin',
                         title: Text('Números (PIN)'),
                         subtitle: Text('Crea un código de 4 a 8 dígitos'),
-                        secondary: Icon(Icons.pin_outlined),
+                        secondary: const Icon(Icons.pin_outlined),
+                        activeColor: const Color(0xFF0C2340),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
                     ],
                   ),
@@ -1620,6 +2023,7 @@ class _BudgetDialogState extends State<_BudgetDialog> {
   final _controller = TextEditingController();
   late Future<List<Map<String, dynamic>>> _transactions;
   String _currency = 'MXN';
+  String _budgetPeriod = 'monthly';
   bool _saving = false;
 
   @override
@@ -1635,6 +2039,9 @@ class _BudgetDialogState extends State<_BudgetDialog> {
       if (mounted && value != null) {
         _controller.text = value.toStringAsFixed(2);
       }
+    });
+    _database.getBudgetPeriod().then((value) {
+      if (mounted) setState(() => _budgetPeriod = value);
     });
   }
 
@@ -1657,6 +2064,7 @@ class _BudgetDialogState extends State<_BudgetDialog> {
     }
     setState(() => _saving = true);
     await _database.setMonthlyBudget(amount);
+    await _database.setBudgetPeriod(_budgetPeriod);
     await appCurrencyController.setCurrency(_currency);
     if (amount != null &&
         await _database.getNotificationsEnabled() &&
@@ -1664,7 +2072,8 @@ class _BudgetDialogState extends State<_BudgetDialog> {
       await NotificationService.show(
         id: 100,
         title: 'Presupuesto actualizado',
-        body: 'Tu límite mensual quedó en ${_formatMoney(amount)}.',
+        body:
+            'Tu límite ${_budgetPeriod == 'weekly' ? 'semanal' : 'mensual'} quedó en ${_formatMoney(amount)}.',
       );
     }
     if (mounted) Navigator.pop(context);
@@ -1701,7 +2110,7 @@ class _BudgetDialogState extends State<_BudgetDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Presupuesto mensual', style: TextStyle(fontSize: 19)),
+                Text('Presupuesto', style: TextStyle(fontSize: 19)),
                 SizedBox(height: 3),
                 Text(
                   'Controla tus gastos sin perder de vista tu límite',
@@ -1716,13 +2125,20 @@ class _BudgetDialogState extends State<_BudgetDialog> {
         future: _transactions,
         builder: (context, snapshot) {
           final now = DateTime.now();
+          final start = _budgetPeriod == 'weekly'
+              ? now.subtract(Duration(days: now.weekday - 1))
+              : DateTime(now.year, now.month, 1);
+          final end = _budgetPeriod == 'weekly'
+              ? start.add(const Duration(days: 7))
+              : DateTime(now.year, now.month + 1, 1);
           final spent = (snapshot.data ?? [])
               .where((row) {
                 final date = DateTime.tryParse(row['date'] as String? ?? '');
                 return row['is_income'] == 0 &&
+                    !DatabaseHelper.isSavingsDeposit(row) &&
                     date != null &&
-                    date.year == now.year &&
-                    date.month == now.month;
+                    !date.isBefore(start) &&
+                    date.isBefore(end);
               })
               .fold<double>(
                 0,
@@ -1760,7 +2176,11 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                exceeded ? 'Presupuesto excedido' : 'Este mes',
+                                exceeded
+                                    ? 'Presupuesto excedido'
+                                    : _budgetPeriod == 'weekly'
+                                    ? 'Esta semana'
+                                    : 'Este mes',
                                 style: TextStyle(
                                   color: exceeded
                                       ? Colors.red.shade800
@@ -1806,6 +2226,35 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(
+                        value: 'weekly',
+                        label: Text('Semanal'),
+                        icon: Icon(Icons.view_week_outlined),
+                      ),
+                      ButtonSegment(
+                        value: 'monthly',
+                        label: Text('Mensual'),
+                        icon: Icon(Icons.calendar_month_outlined),
+                      ),
+                    ],
+                    selected: {_budgetPeriod},
+                    onSelectionChanged: (selection) {
+                      setState(() => _budgetPeriod = selection.first);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _budgetPeriod == 'weekly'
+                        ? 'Se reinicia cada lunes y considera tus gastos de esta semana.'
+                        : 'Se reinicia el primer día de cada mes.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: _controller,
                     keyboardType: const TextInputType.numberWithOptions(
@@ -1910,7 +2359,7 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Configuración independiente: cambiar la moneda no modifica el límite mensual.',
+                    'Cambiar la moneda no modifica el límite configurado.',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 12,

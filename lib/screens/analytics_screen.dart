@@ -30,12 +30,39 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     setState(_load);
   }
 
-  DateTime _startDate() {
+  ({DateTime start, DateTime end}) _rangeFor(String period) {
     final now = DateTime.now();
-    if (_period == 'Mes anterior') {
-      return DateTime(now.year, now.month - 1, 1);
+    switch (period) {
+      case 'Hoy':
+        final start = DateTime(now.year, now.month, now.day);
+        return (start: start, end: start.add(const Duration(days: 1)));
+      case 'Esta semana':
+        final start = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(Duration(days: now.weekday - 1));
+        return (start: start, end: start.add(const Duration(days: 7)));
+      case 'Semana anterior':
+        final end = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(Duration(days: now.weekday - 1));
+        return (start: end.subtract(const Duration(days: 7)), end: end);
+      case 'Mes anterior':
+        final start = DateTime(now.year, now.month - 1, 1);
+        return (start: start, end: DateTime(now.year, now.month, 1));
+      case 'Este año':
+        final start = DateTime(now.year);
+        return (start: start, end: DateTime(now.year + 1));
+      case 'Año anterior':
+        final start = DateTime(now.year - 1);
+        return (start: start, end: DateTime(now.year));
+      default:
+        final start = DateTime(now.year, now.month, 1);
+        return (start: start, end: DateTime(now.year, now.month + 1, 1));
     }
-    return DateTime(now.year, now.month, 1);
   }
 
   String _money(num value) => appCurrencyController.format(value);
@@ -56,16 +83,35 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: Text('No se pudo cargar el análisis: ${snapshot.error}'),
               );
             }
-            final start = _startDate();
-            final end = _period == 'Mes anterior'
-                ? DateTime(start.year, start.month + 1, 1)
-                : DateTime(start.year, start.month + 1, 1);
-            final transactions = (snapshot.data ?? []).where((row) {
+            final range = _rangeFor(_period);
+            var transactions = (snapshot.data ?? []).where((row) {
               final date = DateTime.tryParse(row['date'] as String? ?? '');
               return date != null &&
-                  !date.isBefore(start) &&
-                  date.isBefore(end);
+                  !date.isBefore(range.start) &&
+                  date.isBefore(range.end);
             }).toList();
+            var displayedPeriod = _period;
+            if (transactions.isEmpty &&
+                {
+                  'Semana anterior',
+                  'Mes anterior',
+                  'Año anterior',
+                }.contains(_period)) {
+              final currentRange = _rangeFor(
+                _period == 'Semana anterior'
+                    ? 'Esta semana'
+                    : _period == 'Año anterior'
+                    ? 'Este año'
+                    : 'Este mes',
+              );
+              transactions = (snapshot.data ?? []).where((row) {
+                final date = DateTime.tryParse(row['date'] as String? ?? '');
+                return date != null &&
+                    !date.isBefore(currentRange.start) &&
+                    date.isBefore(currentRange.end);
+              }).toList();
+              displayedPeriod = '$_period · mostrando el periodo actual';
+            }
             return RefreshIndicator(
               onRefresh: () async {
                 _refresh();
@@ -82,7 +128,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  _PeriodBanner(period: _period),
+                  _PeriodBanner(period: displayedPeriod),
                   const SizedBox(height: 14),
                   _SummaryCard(transactions: transactions, money: _money),
                   const SizedBox(height: 16),
@@ -146,10 +192,27 @@ class _Header extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
               selectedItemBuilder: (context) => const [
+                _PeriodOptionLabel(label: 'Hoy', selected: true),
+                _PeriodOptionLabel(label: 'Esta semana', selected: true),
+                _PeriodOptionLabel(label: 'Semana anterior', selected: true),
                 _PeriodOptionLabel(label: 'Este mes', selected: true),
                 _PeriodOptionLabel(label: 'Mes anterior', selected: true),
+                _PeriodOptionLabel(label: 'Este año', selected: true),
+                _PeriodOptionLabel(label: 'Año anterior', selected: true),
               ],
               items: const [
+                DropdownMenuItem(
+                  value: 'Hoy',
+                  child: _PeriodOptionLabel(label: 'Hoy'),
+                ),
+                DropdownMenuItem(
+                  value: 'Esta semana',
+                  child: _PeriodOptionLabel(label: 'Esta semana'),
+                ),
+                DropdownMenuItem(
+                  value: 'Semana anterior',
+                  child: _PeriodOptionLabel(label: 'Semana anterior'),
+                ),
                 DropdownMenuItem(
                   value: 'Este mes',
                   child: _PeriodOptionLabel(label: 'Este mes'),
@@ -157,6 +220,14 @@ class _Header extends StatelessWidget {
                 DropdownMenuItem(
                   value: 'Mes anterior',
                   child: _PeriodOptionLabel(label: 'Mes anterior'),
+                ),
+                DropdownMenuItem(
+                  value: 'Este año',
+                  child: _PeriodOptionLabel(label: 'Este año'),
+                ),
+                DropdownMenuItem(
+                  value: 'Año anterior',
+                  child: _PeriodOptionLabel(label: 'Año anterior'),
                 ),
               ],
               onChanged: onChanged,
@@ -415,8 +486,10 @@ class _DailyChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final today = DateTime.now();
+    final todayOnly = DateTime(today.year, today.month, today.day);
     final days = List.generate(7, (index) {
-      final day = DateTime.now().subtract(Duration(days: 6 - index));
+      final day = todayOnly.subtract(Duration(days: 6 - index));
       var income = 0.0;
       var expense = 0.0;
       for (final transaction in transactions) {
@@ -438,6 +511,7 @@ class _DailyChartCard extends StatelessWidget {
       }
       return _DayData(day, income, expense);
     });
+    final hasActivity = days.any((day) => day.income > 0 || day.expense > 0);
     final maxValue = days.fold<double>(
       1,
       (maxValue, day) => math.max(maxValue, math.max(day.income, day.expense)),
@@ -477,19 +551,18 @@ class _DailyChartCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Text('L', style: _ChartLabel.style),
-              Text('M', style: _ChartLabel.style),
-              Text('M', style: _ChartLabel.style),
-              Text('J', style: _ChartLabel.style),
-              Text('V', style: _ChartLabel.style),
-              Text('S', style: _ChartLabel.style),
-              Text('D', style: _ChartLabel.style),
-            ],
+            children: days
+                .map(
+                  (day) => Text(
+                    _weekdayLabel(day.day.weekday),
+                    style: _ChartLabel.style,
+                  ),
+                )
+                .toList(),
           ),
-          if (transactions.isEmpty)
+          if (!hasActivity)
             const Padding(
               padding: EdgeInsets.only(top: 14),
               child: Center(
@@ -502,6 +575,11 @@ class _DailyChartCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static String _weekdayLabel(int weekday) {
+    const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+    return labels[weekday - 1];
   }
 }
 
@@ -542,9 +620,12 @@ class _Bar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (value <= 0) {
+      return const SizedBox(width: 8);
+    }
     return Container(
       width: 8,
-      height: math.max(4, 112 * value / max),
+      height: 112 * value / max,
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(6),

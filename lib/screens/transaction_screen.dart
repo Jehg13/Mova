@@ -120,7 +120,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
       );
 
       if (!mounted) return;
-      _showMessage(
+      _showSuccess(
         isIncome
             ? 'Ingreso guardado correctamente'
             : 'Gasto guardado correctamente',
@@ -141,6 +141,10 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
 
   void _showMessage(String message) {
     showMovaError(context, message);
+  }
+
+  void _showSuccess(String message) {
+    showMovaSuccess(context, message);
   }
 
   String _formatDate(DateTime date) {

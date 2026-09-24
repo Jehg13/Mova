@@ -1023,7 +1023,12 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                           ),
                   ),
                   Container(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      16,
+                      20,
+                      24 + MediaQuery.viewPaddingOf(context).bottom,
+                    ),
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),

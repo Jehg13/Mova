@@ -1,7 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-
-import 'dart:typed_data';
 
 import 'package:mova/models/shared_goal.dart';
 
@@ -70,6 +70,25 @@ class DatabaseHelper {
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  Future<String> getBudgetPeriod() async {
+    final rows = await (await database).query(
+      'app_settings',
+      columns: ['value'],
+      where: 'key = ?',
+      whereArgs: ['budget_period'],
+      limit: 1,
+    );
+    final value = rows.isEmpty ? null : rows.first['value'] as String?;
+    return value == 'weekly' ? 'weekly' : 'monthly';
+  }
+
+  Future<void> setBudgetPeriod(String period) async {
+    await (await database).insert('app_settings', {
+      'key': 'budget_period',
+      'value': period == 'weekly' ? 'weekly' : 'monthly',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
   Future<String> getCurrency() async {
     final rows = await (await database).query(
       'app_settings',
@@ -85,6 +104,24 @@ class DatabaseHelper {
     await (await database).insert('app_settings', {
       'key': 'currency',
       'value': currency,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<String> getLanguage() async {
+    final rows = await (await database).query(
+      'app_settings',
+      columns: ['value'],
+      where: 'key = ?',
+      whereArgs: ['language'],
+      limit: 1,
+    );
+    return rows.isEmpty ? 'es' : (rows.first['value'] as String? ?? 'es');
+  }
+
+  Future<void> setLanguage(String language) async {
+    await (await database).insert('app_settings', {
+      'key': 'language',
+      'value': language,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -355,20 +392,35 @@ class DatabaseHelper {
     );
 
     if (result.isNotEmpty) {
+      final userId = result.first['id'] as int;
       await db.insert('app_settings', {
         'key': 'current_user_id',
-        'value': result.first['id'].toString(),
+        'value': userId.toString(),
       }, conflictAlgorithm: ConflictAlgorithm.replace);
       await db.insert('app_settings', {
         'key': 'remembered_session',
         'value': rememberMe ? '1' : '0',
       }, conflictAlgorithm: ConflictAlgorithm.replace);
+      final preferences = await _getPreferences();
+      if (preferences != null) {
+        await preferences.setInt('mova_current_user_id', userId);
+        await preferences.setBool('mova_remembered_session', rememberMe);
+      }
       return result.first;
     }
     return null;
   }
 
   Future<bool> hasRememberedSession() async {
+    final preferences = await _getPreferences();
+    if (preferences != null) {
+      final remembered = preferences.getBool('mova_remembered_session');
+      final rememberedUserId = preferences.getInt('mova_current_user_id');
+      if (remembered == true && rememberedUserId != null) {
+        return true;
+      }
+    }
+
     final db = await database;
     final rows = await db.query(
       'app_settings',
@@ -377,7 +429,27 @@ class DatabaseHelper {
       whereArgs: ['remembered_session'],
       limit: 1,
     );
-    return rows.isNotEmpty && rows.first['value'] == '1';
+    final dbRemembered = rows.isNotEmpty && rows.first['value'] == '1';
+    if (dbRemembered) {
+      final setting = await db.query(
+        'app_settings',
+        columns: ['value'],
+        where: 'key = ?',
+        whereArgs: ['current_user_id'],
+        limit: 1,
+      );
+      final userId = setting.isEmpty
+          ? null
+          : int.tryParse(setting.first['value'] as String);
+      if (userId != null) {
+        if (preferences != null) {
+          await preferences.setInt('mova_current_user_id', userId);
+          await preferences.setBool('mova_remembered_session', true);
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<void> logout() async {
@@ -387,6 +459,41 @@ class DatabaseHelper {
       where: 'key IN (?, ?)',
       whereArgs: ['current_user_id', 'remembered_session'],
     );
+    final preferences = await _getPreferences();
+    if (preferences != null) {
+      await preferences.remove('mova_current_user_id');
+      await preferences.remove('mova_remembered_session');
+    }
+  }
+
+  Future<SharedPreferences?> _getPreferences() async {
+    try {
+      return await SharedPreferences.getInstance();
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete('goal_contributions');
+      await txn.delete('goal_participants');
+      await txn.delete('goal_movements');
+      await txn.delete('shopping_products');
+      await txn.delete('shopping_lists');
+      await txn.delete('transactions');
+      await txn.delete('goals');
+      await txn.delete('custom_categories');
+      await txn.delete('app_settings');
+      await txn.delete('users');
+    });
+
+    final preferences = await _getPreferences();
+    if (preferences != null) {
+      await preferences.remove('mova_current_user_id');
+      await preferences.remove('mova_remembered_session');
+    }
   }
 
   Future<Map<String, dynamic>?> getCurrentUser() async {

@@ -4,9 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/widgets/user_avatar.dart';
+import 'package:mova/widgets/mova_notifications_dialog.dart';
+
+import 'login_screen.dart';
+import 'movements_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.onOpenSettings});
+
+  final VoidCallback? onOpenSettings;
 
   static const Color primaryTeal = Color(0xFF0C2340);
   static const Color darkNavy = Color(0xFF0C2340);
@@ -79,7 +85,7 @@ class HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const HeaderSection(),
+                    HeaderSection(onOpenSettings: widget.onOpenSettings),
                     const SizedBox(height: 18),
                     BalanceCard(balance: data.balance),
                     const SizedBox(height: 14),
@@ -123,7 +129,9 @@ class _HomeData {
 
 // --- 1. ENCABEZADO ---
 class HeaderSection extends StatelessWidget {
-  const HeaderSection({super.key});
+  const HeaderSection({super.key, this.onOpenSettings});
+
+  final VoidCallback? onOpenSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -164,12 +172,15 @@ class HeaderSection extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const UserAvatar(radius: 18),
+                    GestureDetector(
+                      onTap: () => _showProfileMenu(context),
+                      child: const UserAvatar(radius: 18),
+                    ),
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () => showDialog<void>(
                         context: context,
-                        builder: (_) => const _HomeNotificationsDialog(),
+                        builder: (_) => const MovaNotificationsDialog(),
                       ),
                       child: Stack(
                         children: [
@@ -208,6 +219,60 @@ class HeaderSection extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  Future<void> _showProfileMenu(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: Colors.white,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Opciones de cuenta',
+                style: TextStyle(
+                  color: Color(0xFF102A43),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: const Text('Configuración'),
+                subtitle: const Text('Preferencias y opciones de MOVA'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  onOpenSettings?.call();
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.logout_rounded,
+                  color: Color(0xFFB42318),
+                ),
+                title: const Text('Cerrar sesión'),
+                subtitle: const Text('Salir de tu cuenta en este dispositivo'),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await DatabaseHelper().logout();
+                  if (!context.mounted) return;
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -574,7 +639,10 @@ class RecentTransactionsSection extends StatelessWidget {
               ],
             ),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MovementsScreen()),
+              ),
               icon: const Icon(Icons.arrow_forward_rounded, size: 15),
               label: const Text("Ver todos"),
               style: TextButton.styleFrom(
@@ -587,11 +655,15 @@ class RecentTransactionsSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
           decoration: BoxDecoration(
-            color: Colors.white,
+            gradient: const LinearGradient(
+              colors: [Colors.white, Color(0xFFF8FBFD)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: const [
@@ -603,6 +675,7 @@ class RecentTransactionsSection extends StatelessWidget {
             ],
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: transactions.isEmpty
                 ? const [
                     Padding(
@@ -626,13 +699,31 @@ class RecentTransactionsSection extends StatelessWidget {
                       ),
                     ),
                   ]
-                : transactions.take(5).toList().asMap().entries.map((entry) {
-                    final transaction = entry.value;
-                    final isExpense = transaction['is_income'] == 0;
-                    final amount = (transaction['amount'] as num).toDouble();
-                    return Column(
-                      children: [
-                        TransactionItem(
+                : [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 5),
+                      child: Text(
+                        '${transactions.length} movimiento${transactions.length == 1 ? '' : 's'} registrados',
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    ...transactions.take(5).toList().asMap().entries.map((
+                      entry,
+                    ) {
+                      final transaction = entry.value;
+                      final isSavingsDeposit = DatabaseHelper.isSavingsDeposit(
+                        transaction,
+                      );
+                      final isExpense =
+                          transaction['is_income'] == 0 && !isSavingsDeposit;
+                      final amount = (transaction['amount'] as num).toDouble();
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: TransactionItem(
                           title: transaction['description'] as String,
                           amount:
                               '${isExpense ? '-' : '+'}${appCurrencyController.format(amount)}',
@@ -644,11 +735,9 @@ class RecentTransactionsSection extends StatelessWidget {
                               : const Color(0xFF10B981),
                           isExpense: isExpense,
                         ),
-                        if (entry.key < transactions.take(5).length - 1)
-                          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                      ],
-                    );
-                  }).toList(),
+                      );
+                    }),
+                  ],
           ),
         ),
       ],

@@ -28,12 +28,20 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
       GlobalKey<AddTransactionScreenState>();
 
   late final List<Widget> _screens = [
-    HomeScreen(key: _homeKey), // Índice 0: Inicio
+    HomeScreen(
+      key: _homeKey,
+      onOpenSettings: _openSettings,
+    ), // Índice 0: Inicio
     const AnalyticsScreen(), // Índice 1
     AddTransactionScreen(key: _transactionKey), // Índice 2: Agregar
     const GoalsScreen(), // Índice 3
     const MoreScreen(), // Índice 4
   ];
+
+  void _openSettings() {
+    if (!mounted) return;
+    setState(() => _selectedIndex = 4);
+  }
 
   @override
   void initState() {
