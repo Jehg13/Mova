@@ -300,64 +300,133 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                       ],
                     ),
                     SizedBox(height: 22),
-                    Center(
-                      child: Stack(
-                        alignment: Alignment.bottomRight,
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFF1F6FB), Color(0xFFE7F5F3)],
+                        ),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: Color(0xFFD8E5EC)),
+                      ),
+                      child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 48,
-                            backgroundColor: Color(0xFFE8EEF5),
-                            backgroundImage: _image == null
-                                ? null
-                                : MemoryImage(_image!),
-                            child: _image == null
-                                ? Icon(
-                                    Icons.person_rounded,
-                                    color: Color(0xFF0C2340),
-                                    size: 48,
-                                  )
-                                : null,
-                          ),
-                          Material(
-                            color: Color(0xFF0C2340),
-                            shape: CircleBorder(),
-                            child: InkWell(
-                              onTap: _pickImage,
-                              customBorder: CircleBorder(),
-                              child: Padding(
-                                padding: EdgeInsets.all(9),
-                                child: Icon(
-                                  Icons.camera_alt_rounded,
-                                  color: Colors.white,
-                                  size: 17,
+                          Stack(
+                            alignment: Alignment.bottomRight,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Color(0xFF0C2340),
+                                      Color(0xFF00A6A6),
+                                    ],
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  radius: 50,
+                                  backgroundColor: Color(0xFFE8EEF5),
+                                  backgroundImage: _image == null
+                                      ? null
+                                      : MemoryImage(_image!),
+                                  child: _image == null
+                                      ? Icon(
+                                          Icons.person_rounded,
+                                          color: Color(0xFF0C2340),
+                                          size: 50,
+                                        )
+                                      : null,
                                 ),
                               ),
+                              Material(
+                                color: Color(0xFF0C2340),
+                                elevation: 4,
+                                shadowColor: Color(0x550C2340),
+                                shape: CircleBorder(
+                                  side: BorderSide(
+                                    color: Colors.white,
+                                    width: 3,
+                                  ),
+                                ),
+                                child: InkWell(
+                                  onTap: _pickImage,
+                                  customBorder: CircleBorder(),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(9),
+                                    child: Icon(
+                                      Icons.camera_alt_rounded,
+                                      color: Colors.white,
+                                      size: 17,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            movaText(
+                              _image == null
+                                  ? 'Agrega una foto para personalizar tu cuenta'
+                                  : 'Tu foto de perfil',
                             ),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Color(0xFF334E68),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: _pickImage,
+                                icon: Icon(
+                                  Icons.photo_library_outlined,
+                                  size: 17,
+                                ),
+                                label: Text(
+                                  movaText(
+                                    _image == null
+                                        ? 'Agregar foto de perfil'
+                                        : 'Cambiar foto de perfil',
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Color(0xFF0C2340),
+                                  side: BorderSide(color: Color(0xFF9CB7C7)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(13),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 13,
+                                    vertical: 11,
+                                  ),
+                                ),
+                              ),
+                              if (_image != null)
+                                TextButton.icon(
+                                  onPressed: _removeImage,
+                                  icon: Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 17,
+                                  ),
+                                  label: Text(movaText('Quitar foto')),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Color(0xFFB42318),
+                                  ),
+                                ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Center(
-                      child: TextButton(
-                        onPressed: _pickImage,
-                        child: Text(
-                          _image == null
-                              ? 'Agregar foto de perfil'
-                              : 'Cambiar foto de perfil',
-                        ),
-                      ),
-                    ),
-                    if (_image != null)
-                      Center(
-                        child: TextButton(
-                          onPressed: _removeImage,
-                          style: TextButton.styleFrom(
-                            foregroundColor: Color(0xFFB42318),
-                          ),
-                          child: Text(movaText('Quitar foto')),
-                        ),
-                      ),
                     SizedBox(height: 12),
                     _ProfileField(
                       label: 'Nombre',
@@ -389,6 +458,14 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                             onPressed: _saving
                                 ? null
                                 : () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Color(0xFF334E68),
+                              side: BorderSide(color: Color(0xFFD0DCE5)),
+                              padding: EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
                             child: Text(movaText('Cancelar')),
                           ),
                         ),
@@ -398,6 +475,10 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                             onPressed: _saving ? null : _save,
                             style: FilledButton.styleFrom(
                               backgroundColor: Color(0xFF0C2340),
+                              padding: EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                             ),
                             child: _saving
                                 ? SizedBox(
@@ -408,7 +489,14 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : Text(movaText('Guardar')),
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.check_rounded, size: 18),
+                                      SizedBox(width: 6),
+                                      Text(movaText('Guardar')),
+                                    ],
+                                  ),
                           ),
                         ),
                       ],
@@ -2777,9 +2865,13 @@ class _CategoriesScreenState extends State<_CategoriesScreen> {
                     category['emoji'] as String,
                     style: TextStyle(fontSize: 24),
                   ),
-                  title: Text(category['name'] as String),
+                  title: Text(
+                    context.l10n.translate(category['name'] as String),
+                  ),
                   subtitle: Text(
-                    category['type'] == 'income' ? 'Ingreso' : 'Gasto',
+                    category['type'] == 'income'
+                        ? context.l10n.text('income_singular')
+                        : context.l10n.text('expense'),
                   ),
                   trailing: IconButton(
                     icon: Icon(Icons.delete_outline, color: Color(0xFFB42318)),

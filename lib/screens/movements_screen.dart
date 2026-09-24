@@ -218,6 +218,7 @@ class _MovementTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final savingsDeposit = DatabaseHelper.isSavingsDeposit(transaction);
     final savingsWithdrawal = DatabaseHelper.isSavingsWithdrawal(transaction);
     final isExpense = transaction['is_income'] == 0 && !savingsDeposit;
@@ -225,10 +226,11 @@ class _MovementTile extends StatelessWidget {
     final color = isExpense ? const Color(0xFFB42318) : const Color(0xFF0C2340);
     final prefix = isExpense || savingsWithdrawal ? '-' : '+';
     final label = savingsDeposit || savingsWithdrawal
-        ? 'Ahorro'
+        ? l10n.text('savings')
         : isExpense
-        ? 'Gasto'
-        : 'Ingreso';
+        ? l10n.text('expense')
+        : l10n.text('income_singular');
+    final category = l10n.translate(transaction['category'] as String? ?? '');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -269,7 +271,7 @@ class _MovementTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${transaction['category']} · $date',
+                  '$category · $date',
                   style: const TextStyle(
                     color: Color(0xFF64748B),
                     fontSize: 12,

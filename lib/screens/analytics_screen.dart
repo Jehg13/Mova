@@ -600,7 +600,7 @@ class _DailyChartCard extends StatelessWidget {
             children: days
                 .map(
                   (day) => Text(
-                    _weekdayLabel(day.day.weekday),
+                    _weekdayLabel(context, day.day.weekday),
                     style: _ChartLabel.style,
                   ),
                 )
@@ -621,9 +621,17 @@ class _DailyChartCard extends StatelessWidget {
     );
   }
 
-  static String _weekdayLabel(int weekday) {
-    const labels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-    return labels[weekday - 1];
+  static String _weekdayLabel(BuildContext context, int weekday) {
+    const keys = [
+      'day_mon',
+      'day_tue',
+      'day_wed',
+      'day_thu',
+      'day_fri',
+      'day_sat',
+      'day_sun',
+    ];
+    return context.l10n.text(keys[weekday - 1]);
   }
 }
 
@@ -753,7 +761,7 @@ class _CategorySection extends StatelessWidget {
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: 13),
                     child: _CategoryRow(
-                      name: item.key,
+                      name: context.l10n.translate(item.key),
                       amount: money(item.value),
                       percentage: total == 0 ? 0 : item.value / total,
                     ),
