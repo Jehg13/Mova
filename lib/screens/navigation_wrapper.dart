@@ -4,12 +4,10 @@ import 'package:mova/services/biometric_auth.dart';
 import 'package:mova/screens/analytics_screen.dart';
 import 'package:mova/screens/goals_screen.dart';
 import 'package:mova/screens/more_screen.dart';
-
 import 'home_screen.dart';
 import 'transaction_screen.dart';
 import '../widgets/mova_loading_overlay.dart';
 import '../widgets/mova_feedback_dialog.dart';
-import '../services/mova_localizations.dart';
 
 class NavigationWrapper extends StatefulWidget {
   const NavigationWrapper({super.key});
@@ -29,20 +27,12 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
       GlobalKey<AddTransactionScreenState>();
 
   late final List<Widget> _screens = [
-    HomeScreen(
-      key: _homeKey,
-      onOpenSettings: _openSettings,
-    ), // Índice 0: Inicio
-    AnalyticsScreen(), // Índice 1
+    HomeScreen(key: _homeKey), // Índice 0: Inicio
+    const AnalyticsScreen(), // Índice 1
     AddTransactionScreen(key: _transactionKey), // Índice 2: Agregar
-    GoalsScreen(), // Índice 3
-    MoreScreen(), // Índice 4
+    const GoalsScreen(), // Índice 3
+    const MoreScreen(), // Índice 4
   ];
-
-  void _openSettings() {
-    if (!mounted) return;
-    setState(() => _selectedIndex = 4);
-  }
 
   @override
   void initState() {
@@ -82,8 +72,8 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
     } else {
       await showMovaError(
         context,
-        context.l10n.text('incorrect_pin_message'),
-        title: context.l10n.text('incorrect_pin'),
+        'El PIN ingresado no es correcto.',
+        title: 'PIN incorrecto',
       );
       await _unlock(mode);
     }
@@ -92,7 +82,7 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   @override
   Widget build(BuildContext context) {
     if (_checkingLock) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
       // --- CAMBIO CLAVE AQUÍ: IndexedStack permite cambiar al instante al presionar ---
@@ -100,19 +90,19 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
         children: [
           IndexedStack(index: _selectedIndex, children: _screens),
           if (_locked)
-            ModalBarrier(dismissible: false, color: Color(0xDDFFFFFF)),
+            const ModalBarrier(dismissible: false, color: Color(0xDDFFFFFF)),
           if (_isSwitchingSection)
-            MovaLoadingOverlay(message: context.l10n.text('loading_section')),
+            const MovaLoadingOverlay(message: 'Cargando tu sección'),
         ],
       ),
       bottomNavigationBar: SafeArea(
         top: false,
-        minimum: EdgeInsets.only(bottom: 4),
+        minimum: const EdgeInsets.only(bottom: 4),
         child: IgnorePointer(
           ignoring: _isSwitchingSection || _locked,
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
-            selectedItemColor: Color(0xFF1E3A5F),
+            selectedItemColor: const Color(0xFF1E3A5F),
             unselectedItemColor: Colors.grey,
             currentIndex: _selectedIndex,
             onTap: (index) async {
@@ -128,30 +118,24 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
               if (index == 2) {
                 _transactionKey.currentState?.refreshCategories();
               }
-              await Future<void>.delayed(Duration(milliseconds: 360));
+              await Future<void>.delayed(const Duration(milliseconds: 360));
               if (mounted) setState(() => _isSwitchingSection = false);
             },
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: context.l10n.text('home'),
-              ),
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
               BottomNavigationBarItem(
                 icon: Icon(Icons.bar_chart),
-                label: context.l10n.text('analysis'),
+                label: "Análisis",
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.add_circle, size: 40),
-                label: context.l10n.text('add'),
+                label: "Agregar",
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.track_changes),
-                label: context.l10n.text('goals'),
+                label: "Metas",
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
-                label: context.l10n.text('more'),
-              ),
+              BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Más"),
             ],
           ),
         ),
@@ -161,6 +145,8 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
 }
 
 class _UnlockPinDialog extends StatefulWidget {
+  const _UnlockPinDialog();
+
   @override
   State<_UnlockPinDialog> createState() => _UnlockPinDialogState();
 }
@@ -177,20 +163,20 @@ class _UnlockPinDialogState extends State<_UnlockPinDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(context.l10n.text('unlock_mova')),
+      title: const Text('Desbloquear MOVA'),
       content: TextField(
         controller: _controller,
         autofocus: true,
         obscureText: true,
         keyboardType: TextInputType.number,
         maxLength: 8,
-        decoration: InputDecoration(labelText: context.l10n.text('enter_pin')),
+        decoration: const InputDecoration(labelText: 'Ingresa tu PIN'),
         onSubmitted: (_) => Navigator.pop(context, _controller.text),
       ),
       actions: [
         FilledButton(
           onPressed: () => Navigator.pop(context, _controller.text),
-          child: Text(movaText('Desbloquear')),
+          child: const Text('Desbloquear'),
         ),
       ],
     );
@@ -206,7 +192,7 @@ class PlaceholderWidget extends StatelessWidget {
     return Center(
       child: Text(
         title,
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
   }
