@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
+import 'package:mova/services/mova_localizations.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -13,7 +14,7 @@ class AnalyticsScreen extends StatefulWidget {
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   final _database = DatabaseHelper();
-  String _period = 'Este mes';
+  String _period = 'this_month';
   late Future<List<Map<String, dynamic>>> _transactions;
 
   @override
@@ -33,30 +34,30 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   ({DateTime start, DateTime end}) _rangeFor(String period) {
     final now = DateTime.now();
     switch (period) {
-      case 'Hoy':
+      case 'today':
         final start = DateTime(now.year, now.month, now.day);
         return (start: start, end: start.add(const Duration(days: 1)));
-      case 'Esta semana':
+      case 'this_week':
         final start = DateTime(
           now.year,
           now.month,
           now.day,
         ).subtract(Duration(days: now.weekday - 1));
         return (start: start, end: start.add(const Duration(days: 7)));
-      case 'Semana anterior':
+      case 'previous_week':
         final end = DateTime(
           now.year,
           now.month,
           now.day,
         ).subtract(Duration(days: now.weekday - 1));
         return (start: end.subtract(const Duration(days: 7)), end: end);
-      case 'Mes anterior':
+      case 'previous_month':
         final start = DateTime(now.year, now.month - 1, 1);
         return (start: start, end: DateTime(now.year, now.month, 1));
-      case 'Este año':
+      case 'this_year':
         final start = DateTime(now.year);
         return (start: start, end: DateTime(now.year + 1));
-      case 'Año anterior':
+      case 'previous_year':
         final start = DateTime(now.year - 1);
         return (start: start, end: DateTime(now.year));
       default:
@@ -80,7 +81,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             }
             if (snapshot.hasError) {
               return Center(
-                child: Text('No se pudo cargar el análisis: ${snapshot.error}'),
+                child: Text(
+                  movaText('No se pudo cargar el análisis: ${snapshot.error}'),
+                ),
               );
             }
             final range = _rangeFor(_period);
@@ -93,16 +96,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             var displayedPeriod = _period;
             if (transactions.isEmpty &&
                 {
-                  'Semana anterior',
-                  'Mes anterior',
-                  'Año anterior',
+                  'previous_week',
+                  'previous_month',
+                  'previous_year',
                 }.contains(_period)) {
               final currentRange = _rangeFor(
-                _period == 'Semana anterior'
-                    ? 'Esta semana'
-                    : _period == 'Año anterior'
-                    ? 'Este año'
-                    : 'Este mes',
+                _period == 'previous_week'
+                    ? 'this_week'
+                    : _period == 'previous_year'
+                    ? 'this_year'
+                    : 'this_month',
               );
               transactions = (snapshot.data ?? []).where((row) {
                 final date = DateTime.tryParse(row['date'] as String? ?? '');
@@ -110,7 +113,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     !date.isBefore(currentRange.start) &&
                     date.isBefore(currentRange.end);
               }).toList();
-              displayedPeriod = '$_period · mostrando el periodo actual';
+              displayedPeriod =
+                  '${context.l10n.text(_period)} · ${context.l10n.text('showing_current_period')}';
             }
             return RefreshIndicator(
               onRefresh: () async {
@@ -155,6 +159,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return LayoutBuilder(
       builder: (context, constraints) {
         final narrow = constraints.maxWidth < 390;
@@ -191,55 +196,73 @@ class _Header extends StatelessWidget {
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),
-              selectedItemBuilder: (context) => const [
-                _PeriodOptionLabel(label: 'Hoy', selected: true),
-                _PeriodOptionLabel(label: 'Esta semana', selected: true),
-                _PeriodOptionLabel(label: 'Semana anterior', selected: true),
-                _PeriodOptionLabel(label: 'Este mes', selected: true),
-                _PeriodOptionLabel(label: 'Mes anterior', selected: true),
-                _PeriodOptionLabel(label: 'Este año', selected: true),
-                _PeriodOptionLabel(label: 'Año anterior', selected: true),
+              selectedItemBuilder: (context) => [
+                _PeriodOptionLabel(label: l10n.text('today'), selected: true),
+                _PeriodOptionLabel(
+                  label: l10n.text('this_week'),
+                  selected: true,
+                ),
+                _PeriodOptionLabel(
+                  label: l10n.text('previous_week'),
+                  selected: true,
+                ),
+                _PeriodOptionLabel(
+                  label: l10n.text('this_month'),
+                  selected: true,
+                ),
+                _PeriodOptionLabel(
+                  label: l10n.text('previous_month'),
+                  selected: true,
+                ),
+                _PeriodOptionLabel(
+                  label: l10n.text('this_year'),
+                  selected: true,
+                ),
+                _PeriodOptionLabel(
+                  label: l10n.text('previous_year'),
+                  selected: true,
+                ),
               ],
-              items: const [
+              items: [
                 DropdownMenuItem(
-                  value: 'Hoy',
-                  child: _PeriodOptionLabel(label: 'Hoy'),
+                  value: 'today',
+                  child: _PeriodOptionLabel(label: l10n.text('today')),
                 ),
                 DropdownMenuItem(
-                  value: 'Esta semana',
-                  child: _PeriodOptionLabel(label: 'Esta semana'),
+                  value: 'this_week',
+                  child: _PeriodOptionLabel(label: l10n.text('this_week')),
                 ),
                 DropdownMenuItem(
-                  value: 'Semana anterior',
-                  child: _PeriodOptionLabel(label: 'Semana anterior'),
+                  value: 'previous_week',
+                  child: _PeriodOptionLabel(label: l10n.text('previous_week')),
                 ),
                 DropdownMenuItem(
-                  value: 'Este mes',
-                  child: _PeriodOptionLabel(label: 'Este mes'),
+                  value: 'this_month',
+                  child: _PeriodOptionLabel(label: l10n.text('this_month')),
                 ),
                 DropdownMenuItem(
-                  value: 'Mes anterior',
-                  child: _PeriodOptionLabel(label: 'Mes anterior'),
+                  value: 'previous_month',
+                  child: _PeriodOptionLabel(label: l10n.text('previous_month')),
                 ),
                 DropdownMenuItem(
-                  value: 'Este año',
-                  child: _PeriodOptionLabel(label: 'Este año'),
+                  value: 'this_year',
+                  child: _PeriodOptionLabel(label: l10n.text('this_year')),
                 ),
                 DropdownMenuItem(
-                  value: 'Año anterior',
-                  child: _PeriodOptionLabel(label: 'Año anterior'),
+                  value: 'previous_year',
+                  child: _PeriodOptionLabel(label: l10n.text('previous_year')),
                 ),
               ],
               onChanged: onChanged,
             ),
           ),
         );
-        final title = const Expanded(
+        final title = Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Análisis',
+                l10n.text('analysis'),
                 style: TextStyle(
                   color: Color(0xFF102A43),
                   fontSize: 25,
@@ -248,7 +271,7 @@ class _Header extends StatelessWidget {
               ),
               SizedBox(height: 2),
               Text(
-                'Conoce el comportamiento de tus finanzas',
+                l10n.text('analysis_subtitle'),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
@@ -351,6 +374,7 @@ class _PeriodBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final periodLabel = context.l10n.text(period);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
@@ -366,7 +390,7 @@ class _PeriodBanner extends StatelessWidget {
           ),
           const SizedBox(width: 9),
           Text(
-            'Mostrando resultados de $period',
+            '${context.l10n.text('period_summary')}: $periodLabel',
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
@@ -387,6 +411,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     var income = 0.0;
     var expenses = 0.0;
     for (final transaction in transactions) {
@@ -412,8 +437,8 @@ class _SummaryCard extends StatelessWidget {
                 color: Color(0xFF0C2340),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Resumen del periodo',
+              Text(
+                l10n.text('period_summary'),
                 style: TextStyle(
                   color: Color(0xFF102A43),
                   fontWeight: FontWeight.w800,
@@ -424,9 +449,21 @@ class _SummaryCard extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              _Stat('Ingresos', money(income), const Color(0xFF0C2340)),
-              _Stat('Gastos', money(expenses), const Color(0xFF2563EB)),
-              _Stat('Balance', money(balance), const Color(0xFFD97706)),
+              _Stat(
+                l10n.text('income'),
+                money(income),
+                const Color(0xFF0C2340),
+              ),
+              _Stat(
+                l10n.text('expenses'),
+                money(expenses),
+                const Color(0xFF2563EB),
+              ),
+              _Stat(
+                l10n.text('balance'),
+                money(balance),
+                const Color(0xFFD97706),
+              ),
             ],
           ),
         ],
@@ -486,6 +523,7 @@ class _DailyChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final today = DateTime.now();
     final todayOnly = DateTime(today.year, today.month, today.day);
     final days = List.generate(7, (index) {
@@ -522,18 +560,24 @@ class _DailyChartCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Actividad diaria',
+                  l10n.text('daily_activity'),
                   style: TextStyle(
                     color: Color(0xFF102A43),
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              const _Legend(color: Color(0xFF0C2340), label: 'Ingresos'),
+              _Legend(
+                color: const Color(0xFF0C2340),
+                label: l10n.text('income'),
+              ),
               const SizedBox(width: 10),
-              const _Legend(color: Color(0xFF2563EB), label: 'Gastos'),
+              _Legend(
+                color: const Color(0xFF2563EB),
+                label: l10n.text('expenses'),
+              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -563,11 +607,11 @@ class _DailyChartCard extends StatelessWidget {
                 .toList(),
           ),
           if (!hasActivity)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 14),
               child: Center(
                 child: Text(
-                  'No hay movimientos en este periodo.',
+                  l10n.text('no_period_movements'),
                   style: TextStyle(color: Color(0xFF64748B)),
                 ),
               ),
@@ -689,8 +733,8 @@ class _CategorySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Gastos por categoría',
+          Text(
+            context.l10n.text('expenses_by_category'),
             style: TextStyle(
               color: Color(0xFF102A43),
               fontWeight: FontWeight.w800,
@@ -698,8 +742,8 @@ class _CategorySection extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           if (categories.isEmpty)
-            const Text(
-              'Aún no hay gastos registrados en este periodo.',
+            Text(
+              context.l10n.text('no_period_expenses'),
               style: TextStyle(color: Color(0xFF64748B)),
             )
           else
@@ -795,12 +839,14 @@ class _InsightCard extends StatelessWidget {
         )
         .fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble());
     final message = transactions.isEmpty
-        ? 'Registra movimientos para obtener recomendaciones.'
+        ? context.l10n.text('record_movements_recommendations')
         : income == 0
-        ? 'Aún no hay ingresos registrados en este periodo.'
+        ? movaText('Aún no hay ingresos registrados en este periodo.')
         : expenses > income
-        ? 'Tus gastos superan tus ingresos en ${money(expenses - income)}.'
-        : 'Tu balance positivo es de ${money(income - expenses)}.';
+        ? movaText(
+            'Tus gastos superan tus ingresos en ${money(expenses - income)}.',
+          )
+        : movaText('Tu balance positivo es de ${money(income - expenses)}.');
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

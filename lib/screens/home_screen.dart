@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
+import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/widgets/user_avatar.dart';
 import 'package:mova/widgets/mova_notifications_dialog.dart';
 
@@ -63,11 +64,13 @@ class HomeScreenState extends State<HomeScreen> {
           future: _homeData,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
               return Center(
-                child: Text('No se pudo cargar el resumen: ${snapshot.error}'),
+                child: Text(
+                  movaText('No se pudo cargar el resumen: ${snapshot.error}'),
+                ),
               );
             }
             final data = snapshot.data!;
@@ -142,6 +145,7 @@ class HeaderSection extends StatelessWidget {
           future: DatabaseHelper().getCurrentUser(),
           builder: (context, snapshot) {
             final name = (snapshot.data?['name'] as String?) ?? 'Hola';
+            final l10n = context.l10n;
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -150,7 +154,7 @@ class HeaderSection extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Hola, $name 👋',
+                        '${l10n.text('hello')}, $name 👋',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -158,8 +162,8 @@ class HeaderSection extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      const Text(
-                        'Este es tu resumen financiero',
+                      Text(
+                        l10n.text('home_summary'),
                         style: TextStyle(
                           fontSize: 13,
                           color: HomeScreen.subtitleGrey,
@@ -174,13 +178,13 @@ class HeaderSection extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () => _showProfileMenu(context),
-                      child: const UserAvatar(radius: 18),
+                      child: UserAvatar(radius: 18),
                     ),
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () => showDialog<void>(
                         context: context,
-                        builder: (_) => const MovaNotificationsDialog(),
+                        builder: (_) => MovaNotificationsDialog(),
                       ),
                       child: Stack(
                         children: [
@@ -223,6 +227,7 @@ class HeaderSection extends StatelessWidget {
   }
 
   Future<void> _showProfileMenu(BuildContext context) async {
+    final l10n = context.l10n;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -233,8 +238,8 @@ class HeaderSection extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Opciones de cuenta',
+              Text(
+                l10n.text('account_options'),
                 style: TextStyle(
                   color: Color(0xFF102A43),
                   fontSize: 18,
@@ -244,8 +249,8 @@ class HeaderSection extends StatelessWidget {
               const SizedBox(height: 10),
               ListTile(
                 leading: const Icon(Icons.settings_outlined),
-                title: const Text('Configuración'),
-                subtitle: const Text('Preferencias y opciones de MOVA'),
+                title: Text(l10n.text('settings')),
+                subtitle: Text(l10n.text('preferences')),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   onOpenSettings?.call();
@@ -256,15 +261,15 @@ class HeaderSection extends StatelessWidget {
                   Icons.logout_rounded,
                   color: Color(0xFFB42318),
                 ),
-                title: const Text('Cerrar sesión'),
-                subtitle: const Text('Salir de tu cuenta en este dispositivo'),
+                title: Text(l10n.text('logout')),
+                subtitle: Text(l10n.text('exit_device')),
                 onTap: () async {
                   Navigator.pop(sheetContext);
                   await DatabaseHelper().logout();
                   if (!context.mounted) return;
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    MaterialPageRoute(builder: (_) => LoginScreen()),
                     (route) => false,
                   );
                 },
@@ -334,13 +339,14 @@ class _HomeNotificationsDialogState extends State<_HomeNotificationsDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: const Row(
+      title: Row(
         children: [
           Icon(Icons.notifications_active_outlined, color: HomeScreen.darkNavy),
           SizedBox(width: 10),
-          Text('Notificaciones'),
+          Text(l10n.text('notifications')),
         ],
       ),
       content: _loading
@@ -352,21 +358,21 @@ class _HomeNotificationsDialogState extends State<_HomeNotificationsDialog> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Elige qué avisos quieres recibir en MOVA.',
+                  Text(
+                    l10n.text('choose_notifications'),
                     style: TextStyle(color: HomeScreen.subtitleGrey),
                   ),
                   const SizedBox(height: 12),
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Notificaciones activas'),
+                    title: Text(l10n.text('notifications_active')),
                     value: _enabled,
                     onChanged: (value) => _set('notifications_enabled', value),
                   ),
                   const Divider(),
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Presupuesto'),
+                    title: Text(l10n.text('personal_budget')),
                     value: _budget,
                     onChanged: !_enabled
                         ? null
@@ -374,7 +380,7 @@ class _HomeNotificationsDialogState extends State<_HomeNotificationsDialog> {
                   ),
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Metas de ahorro'),
+                    title: Text(l10n.text('savings_goals')),
                     value: _goals,
                     onChanged: !_enabled
                         ? null
@@ -382,7 +388,7 @@ class _HomeNotificationsDialogState extends State<_HomeNotificationsDialog> {
                   ),
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Listas de compras'),
+                    title: Text(l10n.text('shopping_lists')),
                     value: _shopping,
                     onChanged: !_enabled
                         ? null
@@ -394,7 +400,7 @@ class _HomeNotificationsDialogState extends State<_HomeNotificationsDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
+          child: Text(l10n.text('close')),
         ),
       ],
     );
@@ -445,8 +451,8 @@ class BalanceCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                "Dinero disponible",
+              Text(
+                movaText("Dinero disponible"),
                 style: TextStyle(
                   color: Color(0xFFB9C9DB),
                   fontSize: 13,
@@ -508,7 +514,7 @@ class QuickSummarySection extends StatelessWidget {
       children: [
         Expanded(
           child: SummaryItem(
-            title: "Ingresos",
+            title: movaText("Ingresos"),
             amount: appCurrencyController.format(income),
             icon: Icons.arrow_outward_rounded,
             color: Color(0xFF0C2340),
@@ -517,7 +523,7 @@ class QuickSummarySection extends StatelessWidget {
         SizedBox(width: 8),
         Expanded(
           child: SummaryItem(
-            title: "Gastos",
+            title: movaText("Gastos"),
             amount: '-${appCurrencyController.format(expenses)}',
             icon: Icons.south_west_rounded,
             color: Color(0xFFEF4444),
@@ -526,7 +532,7 @@ class QuickSummarySection extends StatelessWidget {
         SizedBox(width: 8),
         Expanded(
           child: SummaryItem(
-            title: "Ahorro",
+            title: movaText("Ahorro"),
             amount: appCurrencyController.format(savings),
             icon: Icons.savings_outlined,
             color: HomeScreen.primaryTeal,
@@ -628,8 +634,8 @@ class RecentTransactionsSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 9),
-                const Text(
-                  "Movimientos recientes",
+                Text(
+                  movaText("Movimientos recientes"),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -644,7 +650,7 @@ class RecentTransactionsSection extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const MovementsScreen()),
               ),
               icon: const Icon(Icons.arrow_forward_rounded, size: 15),
-              label: const Text("Ver todos"),
+              label: Text(movaText("Ver todos")),
               style: TextButton.styleFrom(
                 foregroundColor: HomeScreen.primaryTeal,
                 textStyle: const TextStyle(
@@ -677,7 +683,7 @@ class RecentTransactionsSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: transactions.isEmpty
-                ? const [
+                ? [
                     Padding(
                       padding: EdgeInsets.symmetric(vertical: 22),
                       child: Column(
@@ -689,7 +695,7 @@ class RecentTransactionsSection extends StatelessWidget {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            'Aún no tienes movimientos registrados',
+                            movaText('Aún no tienes movimientos registrados'),
                             style: TextStyle(
                               fontSize: 13,
                               color: HomeScreen.subtitleGrey,
@@ -863,8 +869,8 @@ class GoalSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 9),
-              const Text(
-                "Meta actual",
+              Text(
+                movaText("Meta actual"),
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
@@ -883,7 +889,7 @@ class GoalSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFE2E8F0)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(
                     Icons.flag_outlined,
@@ -893,7 +899,7 @@ class GoalSection extends StatelessWidget {
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      "Aún no tienes metas. Crea una para empezar a ahorrar con un objetivo.",
+                      context.l10n.text('no_goals_home'),
                       style: TextStyle(
                         fontSize: 13,
                         color: HomeScreen.subtitleGrey,

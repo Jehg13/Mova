@@ -9,6 +9,7 @@ import 'package:mova/widgets/mova_feedback_dialog.dart';
 import 'package:mova/services/notification_service.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/services/language_controller.dart';
+import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/widgets/user_avatar.dart';
 import 'package:mova/widgets/mova_notifications_dialog.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,7 +20,7 @@ import 'shopping_screen.dart';
 const _termsTitle = 'Términos y condiciones';
 const _privacyTitle = 'Aviso de privacidad';
 
-const _termsSections = <({String title, String body})>[
+final _termsSections = <({String title, String body})>[
   (
     title: '1. Aceptación del servicio',
     body: 'Al crear una cuenta y utilizar MOVA confirmas que leíste, comprendiste y aceptas estos términos.',
@@ -42,7 +43,7 @@ const _termsSections = <({String title, String body})>[
   ),
 ];
 
-const _privacySections = <({String title, String body})>[
+final _privacySections = <({String title, String body})>[
   (
     title: '1. Información que guardamos',
     body: 'MOVA puede guardar tu nombre, correo, contraseña, foto de perfil, movimientos, metas, presupuestos, categorías y listas.',
@@ -79,7 +80,7 @@ Future<void> _showLegalDocument(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(sheetContext).height * .86,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -88,15 +89,15 @@ Future<void> _showLegalDocument(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 22, 16, 12),
+              padding: EdgeInsets.fromLTRB(24, 22, 16, 12),
               child: Row(
                 children: [
-                  Icon(icon, color: const Color(0xFF0C2340), size: 25),
-                  const SizedBox(width: 12),
+                  Icon(icon, color: Color(0xFF0C2340), size: 25),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      title,
-                      style: const TextStyle(
+                      movaText(title),
+                      style: TextStyle(
                         color: Color(0xFF102A43),
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
@@ -105,46 +106,48 @@ Future<void> _showLegalDocument(
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(sheetContext),
-                    icon: const Icon(Icons.close_rounded),
+                    icon: Icon(Icons.close_rounded),
                   ),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
+              padding: EdgeInsets.fromLTRB(24, 0, 24, 14),
               child: Text(
-                title == _termsTitle
-                    ? 'Lee estas condiciones para conocer el uso responsable de MOVA.'
-                    : 'Consulta qué información se guarda y cómo puedes administrar tus datos.',
-                style: const TextStyle(
+                movaText(
+                  title == _termsTitle
+                      ? 'Lee estas condiciones para conocer el uso responsable de MOVA.'
+                      : 'Consulta qué información se guarda y cómo puedes administrar tus datos.',
+                ),
+                style: TextStyle(
                   color: Color(0xFF64748B),
                   fontSize: 13,
                   height: 1.4,
                 ),
               ),
             ),
-            const Divider(height: 1),
+            Divider(height: 1),
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+                padding: EdgeInsets.fromLTRB(24, 16, 24, 28),
                 itemCount: sections.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 18),
+                separatorBuilder: (_, _) => SizedBox(height: 18),
                 itemBuilder: (_, index) {
                   final section = sections[index];
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        section.title,
-                        style: const TextStyle(
+                        movaText(section.title),
+                        style: TextStyle(
                           color: Color(0xFF102A43),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       Text(
-                        section.body,
-                        style: const TextStyle(
+                        movaText(section.body),
+                        style: TextStyle(
                           color: Color(0xFF64748B),
                           height: 1.45,
                         ),
@@ -238,14 +241,14 @@ class _ProfileDialogState extends State<_ProfileDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
+        constraints: BoxConstraints(maxWidth: 440),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+          padding: EdgeInsets.fromLTRB(24, 24, 24, 20),
           child: _loading
-              ? const SizedBox(
+              ? SizedBox(
                   height: 260,
                   child: Center(child: CircularProgressIndicator()),
                 )
@@ -255,23 +258,23 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE8EEF5),
+                            color: Color(0xFFE8EEF5),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.manage_accounts_rounded,
                             color: Color(0xFF0C2340),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        const Expanded(
+                        SizedBox(width: 12),
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Mi cuenta',
+                                movaText('Mi cuenta'),
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
@@ -279,7 +282,7 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                               ),
                               SizedBox(height: 3),
                               Text(
-                                'Administra tu información personal',
+                                movaText('Administra tu información personal'),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFF64748B),
@@ -292,23 +295,23 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                           onPressed: _saving
                               ? null
                               : () => Navigator.pop(context),
-                          icon: const Icon(Icons.close_rounded),
+                          icon: Icon(Icons.close_rounded),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 22),
+                    SizedBox(height: 22),
                     Center(
                       child: Stack(
                         alignment: Alignment.bottomRight,
                         children: [
                           CircleAvatar(
                             radius: 48,
-                            backgroundColor: const Color(0xFFE8EEF5),
+                            backgroundColor: Color(0xFFE8EEF5),
                             backgroundImage: _image == null
                                 ? null
                                 : MemoryImage(_image!),
                             child: _image == null
-                                ? const Icon(
+                                ? Icon(
                                     Icons.person_rounded,
                                     color: Color(0xFF0C2340),
                                     size: 48,
@@ -316,12 +319,12 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                                 : null,
                           ),
                           Material(
-                            color: const Color(0xFF0C2340),
-                            shape: const CircleBorder(),
+                            color: Color(0xFF0C2340),
+                            shape: CircleBorder(),
                             child: InkWell(
                               onTap: _pickImage,
-                              customBorder: const CircleBorder(),
-                              child: const Padding(
+                              customBorder: CircleBorder(),
+                              child: Padding(
                                 padding: EdgeInsets.all(9),
                                 child: Icon(
                                   Icons.camera_alt_rounded,
@@ -334,7 +337,7 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     Center(
                       child: TextButton(
                         onPressed: _pickImage,
@@ -350,37 +353,35 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                         child: TextButton(
                           onPressed: _removeImage,
                           style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFFB42318),
+                            foregroundColor: Color(0xFFB42318),
                           ),
-                          child: const Text('Quitar foto'),
+                          child: Text(movaText('Quitar foto')),
                         ),
                       ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _ProfileField(
                       label: 'Nombre',
                       icon: Icons.person_outline_rounded,
                       child: TextField(
                         controller: _name,
                         textCapitalization: TextCapitalization.words,
-                        decoration: const InputDecoration(
-                          hintText: 'Escribe tu nombre',
+                        decoration: InputDecoration(
+                          hintText: movaText('Escribe tu nombre'),
                           border: InputBorder.none,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _ProfileField(
                       label: 'Correo electrónico',
                       icon: Icons.email_outlined,
                       child: TextField(
                         enabled: false,
                         controller: _email,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                        ),
+                        decoration: InputDecoration(border: InputBorder.none),
                       ),
                     ),
-                    const SizedBox(height: 22),
+                    SizedBox(height: 22),
                     Row(
                       children: [
                         Expanded(
@@ -388,18 +389,18 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                             onPressed: _saving
                                 ? null
                                 : () => Navigator.pop(context),
-                            child: const Text('Cancelar'),
+                            child: Text(movaText('Cancelar')),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: FilledButton(
                             onPressed: _saving ? null : _save,
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF0C2340),
+                              backgroundColor: Color(0xFF0C2340),
                             ),
                             child: _saving
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 18,
                                     height: 18,
                                     child: CircularProgressIndicator(
@@ -407,7 +408,7 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text('Guardar'),
+                                : Text(movaText('Guardar')),
                           ),
                         ),
                       ],
@@ -434,27 +435,27 @@ class _ProfileField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 2),
+      padding: EdgeInsets.fromLTRB(14, 8, 14, 2),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Color(0xFFE2E8F0)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Icon(icon, color: const Color(0xFF0C2340), size: 21),
+            padding: EdgeInsets.only(top: 12),
+            child: Icon(icon, color: Color(0xFF0C2340), size: 21),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  label,
-                  style: const TextStyle(
+                  movaText(label),
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF64748B),
@@ -473,10 +474,10 @@ class _ProfileField extends StatelessWidget {
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});
 
-  static const Color backgroundColor = Color(0xFFF1F5F9);
-  static const Color darkNavy = Color(0xFF0F172A);
-  static const Color subtitleGrey = Color(0xFF64748B);
-  static const Color sectionHeaderColor = Color(0xFF475569);
+  static Color backgroundColor = Color(0xFFF1F5F9);
+  static Color darkNavy = Color(0xFF0F172A);
+  static Color subtitleGrey = Color(0xFF64748B);
+  static Color sectionHeaderColor = Color(0xFF475569);
 
   @override
   State<MoreScreen> createState() => _MoreScreenState();
@@ -486,28 +487,31 @@ class _MoreScreenState extends State<MoreScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildMoreHeader(context),
-              const SizedBox(height: 22),
+              SizedBox(height: 22),
 
               FutureBuilder<Map<String, dynamic>?>(
                 future: DatabaseHelper().getCurrentUser(),
                 builder: (context, snapshot) {
                   final name =
-                      (snapshot.data?['name'] as String?) ?? 'Mi perfil';
+                      (snapshot.data?['name'] as String?) ??
+                      l10n.text('my_profile');
                   final email =
-                      (snapshot.data?['email'] as String?) ?? 'Mi cuenta';
+                      (snapshot.data?['email'] as String?) ??
+                      l10n.text('my_account');
                   return _buildProfileCard(context, name, email);
                 },
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
               // --- SECCIÓN: FINANZAS ---
               _buildSectionTitle("FINANZAS"),
@@ -518,45 +522,43 @@ class _MoreScreenState extends State<MoreScreen> {
                     _buildOptionTile(
                       context: context,
                       icon: Icons.monetization_on_outlined,
-                      title: "Presupuesto",
-                      subtitle: "Define cuánto quieres gastar",
+                      title: l10n.text('personal_budget'),
+                      subtitle: movaText("Define cuánto quieres gastar"),
                       onTap: () => showDialog<void>(
                         context: context,
-                        builder: (_) => const _BudgetDialog(),
+                        builder: (_) => _BudgetDialog(),
                       ),
                     ),
                     _buildDivider(),
                     _buildOptionTile(
                       context: context,
                       icon: Icons.label_outline,
-                      title: "Categorías",
-                      subtitle:
-                          "Administra tus categorías de ingresos y gastos",
+                      title: l10n.text('categories'),
+                      subtitle: movaText(
+                        "Administra tus categorías de ingresos y gastos",
+                      ),
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const _CategoriesScreen(),
-                        ),
+                        MaterialPageRoute(builder: (_) => _CategoriesScreen()),
                       ),
                     ),
                     _buildDivider(),
                     _buildOptionTile(
                       context: context,
                       icon: Icons.shopping_cart_outlined,
-                      title: "Listas de compras",
-                      subtitle:
-                          "Organiza productos, calcula y registra tus compras",
+                      title: l10n.text('shopping_lists'),
+                      subtitle: movaText(
+                        "Organiza productos, calcula y registra tus compras",
+                      ),
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const ShoppingScreen(),
-                        ),
+                        MaterialPageRoute(builder: (_) => ShoppingScreen()),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // --- SECCIÓN: APLICACIÓN ---
               _buildSectionTitle("APLICACIÓN"),
@@ -567,22 +569,22 @@ class _MoreScreenState extends State<MoreScreen> {
                     _buildOptionTile(
                       context: context,
                       icon: Icons.notifications_none_outlined,
-                      title: "Notificaciones",
-                      subtitle: "Gestiona tus recordatorios",
+                      title: l10n.text('notifications'),
+                      subtitle: movaText("Gestiona tus recordatorios"),
                       onTap: () => showDialog<void>(
                         context: context,
-                        builder: (_) => const MovaNotificationsDialog(),
+                        builder: (_) => MovaNotificationsDialog(),
                       ),
                     ),
                     _buildDivider(),
                     _buildOptionTile(
                       context: context,
                       icon: Icons.lock_outline,
-                      title: "Seguridad",
-                      subtitle: "Protege tu información",
+                      title: l10n.text('security'),
+                      subtitle: movaText("Protege tu información"),
                       onTap: () => showDialog<void>(
                         context: context,
-                        builder: (_) => const _SecurityDialog(),
+                        builder: (_) => _SecurityDialog(),
                       ),
                     ),
                     _buildDivider(),
@@ -591,18 +593,18 @@ class _MoreScreenState extends State<MoreScreen> {
                       builder: (context, _) => _buildOptionTile(
                         context: context,
                         icon: Icons.language_outlined,
-                        title: 'Idioma',
+                        title: l10n.text('language'),
                         subtitle: appLanguageController.language.nativeLabel,
                         onTap: () => showDialog<void>(
                           context: context,
-                          builder: (_) => const _LanguageDialog(),
+                          builder: (_) => _LanguageDialog(),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // --- SECCIÓN: DATOS ---
               _buildSectionTitle("DATOS"),
@@ -613,22 +615,22 @@ class _MoreScreenState extends State<MoreScreen> {
                     _buildOptionTile(
                       context: context,
                       icon: Icons.upload_outlined,
-                      title: "Exportar datos",
-                      subtitle: "Descarga tus movimientos",
+                      title: movaText("Exportar datos"),
+                      subtitle: movaText("Descarga tus movimientos"),
                       onTap: () => _exportData(context),
                     ),
                     _buildDivider(),
                     _buildOptionTile(
                       context: context,
                       icon: Icons.download_outlined,
-                      title: "Importar datos",
-                      subtitle: "Importa información existente",
+                      title: movaText("Importar datos"),
+                      subtitle: movaText("Importa información existente"),
                       onTap: () => _importData(context),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // --- SECCIÓN: INFORMACIÓN ---
               _buildSectionTitle("INFORMACIÓN"),
@@ -639,19 +641,19 @@ class _MoreScreenState extends State<MoreScreen> {
                     _buildOptionTile(
                       context: context,
                       icon: Icons.info_outline,
-                      title: "Acerca de MOVA",
-                      subtitle: "Versión 1.0.0",
+                      title: movaText("Acerca de MOVA"),
+                      subtitle: movaText("Versión 1.0.0"),
                       onTap: () => _showAbout(context),
                     ),
                     _buildDivider(),
                     _buildOptionTile(
                       context: context,
                       icon: Icons.gavel_outlined,
-                      title: "Términos y condiciones",
-                      subtitle: "Consulta las condiciones de uso",
+                      title: l10n.text('terms'),
+                      subtitle: movaText("Consulta las condiciones de uso"),
                       onTap: () => _showLegalDocument(
                         context,
-                        _termsTitle,
+                        movaText(_termsTitle),
                         _termsSections,
                         Icons.gavel_outlined,
                       ),
@@ -660,11 +662,11 @@ class _MoreScreenState extends State<MoreScreen> {
                     _buildOptionTile(
                       context: context,
                       icon: Icons.privacy_tip_outlined,
-                      title: "Aviso de privacidad",
-                      subtitle: "Consulta cómo se tratan tus datos",
+                      title: l10n.text('privacy'),
+                      subtitle: movaText("Consulta cómo se tratan tus datos"),
                       onTap: () => _showLegalDocument(
                         context,
-                        _privacyTitle,
+                        movaText(_privacyTitle),
                         _privacySections,
                         Icons.privacy_tip_outlined,
                       ),
@@ -672,7 +674,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // --- SECCIÓN: CUENTA (CERRAR SESIÓN) ---
               _buildSectionTitle("CUENTA"),
@@ -683,22 +685,24 @@ class _MoreScreenState extends State<MoreScreen> {
                     _buildOptionTile(
                       context: context,
                       icon: Icons.logout_rounded,
-                      title: "Cerrar sesión",
-                      subtitle: "Sal de tu cuenta en este dispositivo",
+                      title: movaText("Cerrar sesión"),
+                      subtitle: movaText(
+                        "Sal de tu cuenta en este dispositivo",
+                      ),
                       onTap: () => _logout(context),
                     ),
                     _buildDivider(),
                     _buildOptionTile(
                       context: context,
                       icon: Icons.delete_forever_outlined,
-                      title: "Eliminar cuenta",
-                      subtitle: "Borra tu cuenta y todos sus datos",
+                      title: movaText("Eliminar cuenta"),
+                      subtitle: movaText("Borra tu cuenta y todos sus datos"),
                       onTap: () => _deleteAccount(context),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
             ],
           ),
         ),
@@ -711,7 +715,7 @@ class _MoreScreenState extends State<MoreScreen> {
     if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => LoginScreen()),
       (route) => false,
     );
   }
@@ -721,36 +725,36 @@ class _MoreScreenState extends State<MoreScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-        titlePadding: const EdgeInsets.fromLTRB(24, 24, 18, 8),
-        contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+        titlePadding: EdgeInsets.fromLTRB(24, 24, 18, 8),
+        contentPadding: EdgeInsets.fromLTRB(24, 8, 24, 8),
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFDECEC),
+                color: Color(0xFFFDECEC),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.delete_forever_outlined,
                 color: Color(0xFFB42318),
               ),
             ),
-            const SizedBox(width: 12),
-            const Expanded(
+            SizedBox(width: 12),
+            Expanded(
               child: Text(
-                'Eliminar cuenta',
+                movaText('Eliminar cuenta'),
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
               ),
             ),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Esta acción es permanente.',
+              movaText('Esta acción es permanente.'),
               style: TextStyle(
                 color: Color(0xFFB42318),
                 fontWeight: FontWeight.w800,
@@ -758,7 +762,9 @@ class _MoreScreenState extends State<MoreScreen> {
             ),
             SizedBox(height: 8),
             Text(
-              'Se eliminarán tu cuenta, movimientos, metas, listas y configuraciones. No podrás recuperar estos datos.',
+              movaText(
+                'Se eliminarán tu cuenta, movimientos, metas, listas y configuraciones. No podrás recuperar estos datos.',
+              ),
               style: TextStyle(color: Color(0xFF64748B), height: 1.4),
             ),
           ],
@@ -766,14 +772,12 @@ class _MoreScreenState extends State<MoreScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancelar'),
+            child: Text(movaText('Cancelar')),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFB42318),
-            ),
+            style: FilledButton.styleFrom(backgroundColor: Color(0xFFB42318)),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Eliminar cuenta'),
+            child: Text(movaText('Eliminar cuenta')),
           ),
         ],
       ),
@@ -785,7 +789,7 @@ class _MoreScreenState extends State<MoreScreen> {
       if (!context.mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(builder: (_) => LoginScreen()),
         (route) => false,
       );
     } catch (_) {
@@ -793,28 +797,28 @@ class _MoreScreenState extends State<MoreScreen> {
       showMovaError(
         context,
         'No se pudo eliminar la cuenta. Intenta nuevamente.',
-        title: 'No se pudo completar',
+        title: movaText('No se pudo completar'),
       );
     }
   }
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 3.0, bottom: 8.0),
+      padding: EdgeInsets.only(left: 3.0, bottom: 8.0),
       child: Row(
         children: [
           Container(
             width: 4,
             height: 15,
             decoration: BoxDecoration(
-              color: const Color(0xFF0C2340),
+              color: Color(0xFF0C2340),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(
-            title,
-            style: const TextStyle(
+            movaText(title),
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
               color: MoreScreen.sectionHeaderColor,
@@ -829,12 +833,12 @@ class _MoreScreenState extends State<MoreScreen> {
   Widget _buildMoreHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(18, 17, 18, 16),
+      padding: EdgeInsets.fromLTRB(18, 17, 18, 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: const [
+        border: Border.all(color: Color(0xFFE2E8F0)),
+        boxShadow: [
           BoxShadow(
             color: Color(0x080C2340),
             blurRadius: 14,
@@ -848,24 +852,20 @@ class _MoreScreenState extends State<MoreScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [Color(0xFF0C2340), Color(0xFF36577D)],
               ),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const Icon(
-              Icons.tune_rounded,
-              color: Colors.white,
-              size: 25,
-            ),
+            child: Icon(Icons.tune_rounded, color: Colors.white, size: 25),
           ),
-          const SizedBox(width: 14),
-          const Expanded(
+          SizedBox(width: 14),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Más',
+                  movaText('Más'),
                   style: TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.w800,
@@ -874,7 +874,7 @@ class _MoreScreenState extends State<MoreScreen> {
                 ),
                 SizedBox(height: 3),
                 Text(
-                  'Todo lo que necesitas para controlar MOVA',
+                  movaText('Todo lo que necesitas para controlar MOVA'),
                   style: TextStyle(
                     fontSize: 12,
                     color: MoreScreen.subtitleGrey,
@@ -884,12 +884,12 @@ class _MoreScreenState extends State<MoreScreen> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8EEF5),
+              color: Color(0xFFE8EEF5),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.settings_outlined,
               color: MoreScreen.darkNavy,
               size: 19,
@@ -908,14 +908,14 @@ class _MoreScreenState extends State<MoreScreen> {
         onTap: () async {
           await showDialog<bool>(
             context: context,
-            builder: (_) => const _ProfileDialog(),
+            builder: (_) => _ProfileDialog(),
           );
           if (mounted) setState(() {});
         },
         borderRadius: BorderRadius.circular(22),
         child: Ink(
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               colors: [Color(0xFF0C2340), Color(0xFF1E3A5F)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -923,20 +923,20 @@ class _MoreScreenState extends State<MoreScreen> {
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0C2340).withValues(alpha: .18),
+                color: Color(0xFF0C2340).withValues(alpha: .18),
                 blurRadius: 18,
-                offset: const Offset(0, 8),
+                offset: Offset(0, 8),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 18, 14, 16),
+            padding: EdgeInsets.fromLTRB(18, 18, 14, 16),
             child: Column(
               children: [
                 Row(
                   children: [
-                    const UserAvatar(radius: 29),
-                    const SizedBox(width: 14),
+                    UserAvatar(radius: 29),
+                    SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -945,18 +945,18 @@ class _MoreScreenState extends State<MoreScreen> {
                             name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             email,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Color(0xFFCBD5E1),
                               fontSize: 12,
                             ),
@@ -964,19 +964,16 @@ class _MoreScreenState extends State<MoreScreen> {
                         ],
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.arrow_forward_ios_rounded,
                       color: Color(0xFFCBD5E1),
                       size: 17,
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: .1),
                     borderRadius: BorderRadius.circular(12),
@@ -984,12 +981,12 @@ class _MoreScreenState extends State<MoreScreen> {
                       color: Colors.white.withValues(alpha: .12),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(Icons.edit_outlined, color: Colors.white, size: 16),
                       SizedBox(width: 8),
                       Text(
-                        'Editar información de tu cuenta',
+                        movaText('Editar información de tu cuenta'),
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -1020,9 +1017,9 @@ class _MoreScreenState extends State<MoreScreen> {
       builder: (_) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 460),
+          constraints: BoxConstraints(maxWidth: 460),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 26, 24, 18),
+            padding: EdgeInsets.fromLTRB(24, 26, 24, 18),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1030,42 +1027,46 @@ class _MoreScreenState extends State<MoreScreen> {
                 _dialogHeader(
                   context,
                   icon: Icons.cloud_done_rounded,
-                  title: 'Copia lista',
-                  subtitle: 'Tu información está preparada para guardarse',
-                  color: const Color(0xFF0C2340),
+                  title: movaText('Copia lista'),
+                  subtitle: movaText(
+                    'Tu información está preparada para guardarse',
+                  ),
+                  color: Color(0xFF0C2340),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18),
                 _infoPanel(
                   context,
                   icon: Icons.verified_user_outlined,
-                  title: 'Respaldo local',
-                  text: 'El archivo se copió al portapapeles. Pégalo en un lugar seguro para conservarlo.',
-                  color: const Color(0xFFE8F5F0),
+                  title: movaText('Respaldo local'),
+                  text: movaText(
+                    'El archivo se copió al portapapeles. Pégalo en un lugar seguro para conservarlo.',
+                  ),
+                  color: Color(0xFFE8F5F0),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14),
                 Row(
                   children: [
                     _dataStat(
                       context,
                       Icons.receipt_long_outlined,
                       '$transactionCount',
-                      'movimientos',
+                      movaText('movimientos'),
                     ),
                     _dataStat(
                       context,
                       Icons.flag_outlined,
                       '$goalCount',
-                      'metas',
+                      movaText('metas'),
                     ),
                     _dataStat(
                       context,
                       Icons.shopping_bag_outlined,
                       '$shoppingCount',
-                      'listas',
+                      movaText('listas'),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 Wrap(
                   alignment: WrapAlignment.end,
                   crossAxisAlignment: WrapCrossAlignment.center,
@@ -1077,12 +1078,12 @@ class _MoreScreenState extends State<MoreScreen> {
                         await Clipboard.setData(ClipboardData(text: encoded));
                         if (context.mounted) Navigator.pop(context);
                       },
-                      icon: const Icon(Icons.copy_rounded, size: 18),
-                      label: const Text('Copiar de nuevo'),
+                      icon: Icon(Icons.copy_rounded, size: 18),
+                      label: Text(movaText('Copiar de nuevo')),
                     ),
                     FilledButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Entendido'),
+                      child: Text(movaText('Entendido')),
                     ),
                   ],
                 ),
@@ -1101,49 +1102,53 @@ class _MoreScreenState extends State<MoreScreen> {
       builder: (_) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 650),
+          constraints: BoxConstraints(maxWidth: 500, maxHeight: 650),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 26, 24, 18),
+            padding: EdgeInsets.fromLTRB(24, 26, 24, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _dialogHeader(
                   context,
                   icon: Icons.file_download_outlined,
-                  title: 'Importar respaldo',
-                  subtitle: 'Agrega información de otra copia de MOVA',
-                  color: const Color(0xFF007C91),
+                  title: movaText('Importar respaldo'),
+                  subtitle: movaText(
+                    'Agrega información de otra copia de MOVA',
+                  ),
+                  color: Color(0xFF007C91),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18),
                 _infoPanel(
                   context,
                   icon: Icons.info_outline_rounded,
-                  title: 'Antes de continuar',
-                  text: 'Pega aquí el JSON exportado desde MOVA. Tus datos actuales no se eliminarán.',
-                  color: const Color(0xFFEAF6FA),
+                  title: movaText('Antes de continuar'),
+                  text: movaText(
+                    'Pega aquí el JSON exportado desde MOVA. Tus datos actuales no se eliminarán.',
+                  ),
+                  color: Color(0xFFEAF6FA),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFD7E3E8)),
+                    border: Border.all(color: Color(0xFFD7E3E8)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(15, 12, 15, 0),
+                        padding: EdgeInsets.fromLTRB(15, 12, 15, 0),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.data_object_rounded,
                               size: 19,
                               color: Color(0xFF007C91),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Text(
-                              'Contenido de la copia',
+                              movaText('Contenido de la copia'),
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontSize: 13,
@@ -1159,7 +1164,7 @@ class _MoreScreenState extends State<MoreScreen> {
                         maxLines: null,
                         textAlignVertical: TextAlignVertical.top,
                         keyboardType: TextInputType.multiline,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: '{ "version": 1, "transactions": [...] }',
                           hintStyle: TextStyle(
                             color: Color(0xFF94A3B8),
@@ -1172,27 +1177,29 @@ class _MoreScreenState extends State<MoreScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
-                  'Solo se importan movimientos válidos. La información existente se conserva.',
+                  movaText(
+                    'Solo se importan movimientos válidos. La información existente se conserva.',
+                  ),
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancelar'),
+                      child: Text(movaText('Cancelar')),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     FilledButton.icon(
                       onPressed: () => Navigator.pop(context, controller.text),
-                      icon: const Icon(Icons.file_upload_outlined, size: 18),
-                      label: const Text('Importar'),
+                      icon: Icon(Icons.file_upload_outlined, size: 18),
+                      label: Text(movaText('Importar')),
                     ),
                   ],
                 ),
@@ -1211,13 +1218,15 @@ class _MoreScreenState extends State<MoreScreen> {
           ? await DatabaseHelper().importTransactions(transactions)
           : 0;
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('$count movimientos importados')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(movaText('$count movimientos importados'))),
+      );
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('El archivo no tiene un formato válido')),
+        SnackBar(
+          content: Text(movaText('El archivo no tiene un formato válido')),
+        ),
       );
     }
   }
@@ -1241,19 +1250,16 @@ class _MoreScreenState extends State<MoreScreen> {
           ),
           child: Icon(icon, color: color, size: 26),
         ),
-        const SizedBox(width: 13),
+        SizedBox(width: 13),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 subtitle,
                 style: TextStyle(
@@ -1276,7 +1282,7 @@ class _MoreScreenState extends State<MoreScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(13),
+      padding: EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(15),
@@ -1285,17 +1291,14 @@ class _MoreScreenState extends State<MoreScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 3),
-                Text(text, style: const TextStyle(fontSize: 12, height: 1.35)),
+                Text(title, style: TextStyle(fontWeight: FontWeight.w800)),
+                SizedBox(height: 3),
+                Text(text, style: TextStyle(fontSize: 12, height: 1.35)),
               ],
             ),
           ),
@@ -1314,17 +1317,14 @@ class _MoreScreenState extends State<MoreScreen> {
       child: Column(
         children: [
           Icon(icon, size: 19, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
           ),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 11,
-              color: MoreScreen.subtitleGrey,
-            ),
+            style: TextStyle(fontSize: 11, color: MoreScreen.subtitleGrey),
           ),
         ],
       ),
@@ -1340,8 +1340,8 @@ class _MoreScreenState extends State<MoreScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
-        boxShadow: const [
+        border: Border.all(color: Color(0xFFE2E8F0), width: 1),
+        boxShadow: [
           BoxShadow(
             color: Color(0x0A0C2340),
             blurRadius: 12,
@@ -1368,7 +1368,7 @@ class _MoreScreenState extends State<MoreScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
               Container(
@@ -1379,7 +1379,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Container(
                 width: 42,
                 height: 42,
@@ -1394,25 +1394,25 @@ class _MoreScreenState extends State<MoreScreen> {
                 ),
                 child: Icon(icon, color: accent, size: 21),
               ),
-              const SizedBox(width: 13),
+              SizedBox(width: 13),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: MoreScreen.darkNavy,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3),
                     Text(
                       subtitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         height: 1.2,
                         color: MoreScreen.subtitleGrey,
@@ -1421,7 +1421,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Icon(
                 Icons.chevron_right_rounded,
                 color: accent.withValues(alpha: .7),
@@ -1437,28 +1437,28 @@ class _MoreScreenState extends State<MoreScreen> {
   Color _optionAccent(String title) {
     switch (title) {
       case 'Presupuesto':
-        return const Color(0xFF0C2340);
+        return Color(0xFF0C2340);
       case 'Categorías':
-        return const Color(0xFF36577D);
+        return Color(0xFF36577D);
       case 'Listas de compras':
-        return const Color(0xFF526D8D);
+        return Color(0xFF526D8D);
       case 'Notificaciones':
-        return const Color(0xFF1E3A5F);
+        return Color(0xFF1E3A5F);
       case 'Seguridad':
-        return const Color(0xFF263F61);
+        return Color(0xFF263F61);
       case 'Exportar datos':
-        return const Color(0xFF315A80);
+        return Color(0xFF315A80);
       case 'Importar datos':
-        return const Color(0xFF3E6C91);
+        return Color(0xFF3E6C91);
       case 'Acerca de MOVA':
-        return const Color(0xFF587A9B);
+        return Color(0xFF587A9B);
       default:
-        return const Color(0xFF0C2340);
+        return Color(0xFF0C2340);
     }
   }
 
   Widget _buildDivider() {
-    return const Divider(
+    return Divider(
       height: 1,
       thickness: 1,
       color: Color(0xFFF1F5F9),
@@ -1479,46 +1479,219 @@ class _LanguageDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-      title: const Row(
-        children: [
-          Icon(Icons.language_outlined, color: Color(0xFF0C2340)),
-          SizedBox(width: 10),
-          Text('Idioma'),
-        ],
-      ),
-      content: AnimatedBuilder(
-        animation: appLanguageController,
-        builder: (context, _) => DropdownButtonFormField<String>(
-          initialValue: appLanguageController.code,
-          isExpanded: true,
-          decoration: const InputDecoration(
-            labelText: 'Selecciona un idioma',
-            prefixIcon: Icon(Icons.translate_rounded),
-            border: OutlineInputBorder(),
-          ),
-          items: movaLanguages
-              .map(
-                (language) => DropdownMenuItem(
-                  value: language.code,
-                  child: Text('${language.nativeLabel} · ${language.label}'),
-                ),
-              )
-              .toList(),
-          onChanged: (value) {
-            if (value != null) {
-              appLanguageController.setLanguage(value);
-            }
+    final l10n = context.l10n;
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 430),
+        child: AnimatedBuilder(
+          animation: appLanguageController,
+          builder: (context, _) {
+            final selected = appLanguageController.code;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      _DialogIcon(
+                        icon: Icons.translate_rounded,
+                        color: const Color(0xFF0C2340),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.text('language'),
+                              style: const TextStyle(
+                                color: Color(0xFF102A43),
+                                fontSize: 21,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              l10n.text('select_language'),
+                              style: const TextStyle(
+                                color: Color(0xFF64748B),
+                                fontSize: 12.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded),
+                        color: const Color(0xFF64748B),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  ...movaLanguages.map(
+                    (language) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _LanguageOption(
+                        language: language,
+                        selected: selected == language.code,
+                        onTap: () =>
+                            appLanguageController.setLanguage(language.code),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF0C2340),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(l10n.text('done')),
+                  ),
+                ],
+              ),
+            );
           },
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Listo'),
+    );
+  }
+}
+
+class _DialogIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+
+  const _DialogIcon({required this.icon, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color, color.withValues(alpha: .72)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-      ],
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: .2),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Icon(icon, color: Colors.white, size: 25),
+    );
+  }
+}
+
+class _LanguageOption extends StatelessWidget {
+  final MovaLanguage language;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _LanguageOption({
+    required this.language,
+    required this.selected,
+    required this.onTap,
+  });
+
+  String _label(BuildContext context) {
+    switch (language.code) {
+      case 'en':
+        return context.l10n.text('english');
+      case 'pt':
+        return context.l10n.text('portuguese');
+      default:
+        return context.l10n.text('spanish');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = const Color(0xFF0C2340);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFEAF2F9) : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected ? color : const Color(0xFFE2E8F0),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              language.code == 'es'
+                  ? 'ES'
+                  : language.code == 'en'
+                  ? 'EN'
+                  : 'PT',
+              style: TextStyle(
+                color: selected ? color : const Color(0xFF64748B),
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    language.nativeLabel,
+                    style: const TextStyle(
+                      color: Color(0xFF102A43),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _label(context),
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: selected
+                  ? Icon(
+                      Icons.check_circle_rounded,
+                      key: const ValueKey(true),
+                      color: color,
+                    )
+                  : const Icon(
+                      Icons.radio_button_unchecked_rounded,
+                      key: ValueKey(false),
+                      color: Color(0xFFCBD5E1),
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1566,34 +1739,34 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+      titlePadding: EdgeInsets.fromLTRB(24, 24, 24, 8),
+      contentPadding: EdgeInsets.fromLTRB(24, 8, 24, 8),
       scrollable: true,
       title: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8EEF5),
+              color: Color(0xFFE8EEF5),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.notifications_active_outlined,
               color: Color(0xFF1E3A5F),
             ),
           ),
-          const SizedBox(width: 12),
-          const Expanded(
+          SizedBox(width: 12),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Notificaciones',
+                  movaText('Notificaciones'),
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
                 ),
                 SizedBox(height: 3),
                 Text(
-                  'Elige qué recordatorios quieres recibir',
+                  movaText('Elige qué recordatorios quieres recibir'),
                   style: TextStyle(
                     fontSize: 12,
                     color: Color(0xFF64748B),
@@ -1606,7 +1779,7 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
         ],
       ),
       content: _loading
-          ? const SizedBox(
+          ? SizedBox(
               height: 70,
               child: Center(child: CircularProgressIndicator()),
             )
@@ -1615,21 +1788,23 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
               children: [
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  activeThumbColor: const Color(0xFF0C2340),
-                  title: const Text('Activar notificaciones'),
-                  subtitle: const Text('Permite recibir recordatorios de Mova'),
+                  activeThumbColor: Color(0xFF0C2340),
+                  title: Text(movaText('Activar notificaciones')),
+                  subtitle: Text(
+                    movaText('Permite recibir recordatorios de Mova'),
+                  ),
                   value: _enabled,
                   onChanged: (value) async {
                     setState(() => _enabled = value);
                     await _set('notifications_enabled', value);
                   },
                 ),
-                const Divider(),
+                Divider(),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Presupuesto'),
-                  subtitle: const Text(
-                    'Avisos relacionados con tu límite mensual',
+                  title: Text(movaText('Presupuesto')),
+                  subtitle: Text(
+                    movaText('Avisos relacionados con tu límite mensual'),
                   ),
                   value: _budget,
                   onChanged: !_enabled
@@ -1641,9 +1816,9 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Metas'),
-                  subtitle: const Text(
-                    'Recordatorios para avanzar en tus metas',
+                  title: Text(movaText('Metas')),
+                  subtitle: Text(
+                    movaText('Recordatorios para avanzar en tus metas'),
                   ),
                   value: _goals,
                   onChanged: !_enabled
@@ -1655,8 +1830,10 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Lista de compras'),
-                  subtitle: const Text('Recordatorios de listas pendientes'),
+                  title: Text(movaText('Lista de compras')),
+                  subtitle: Text(
+                    movaText('Recordatorios de listas pendientes'),
+                  ),
                   value: _shopping,
                   onChanged: !_enabled
                       ? null
@@ -1670,7 +1847,7 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
+          child: Text(movaText('Cerrar')),
         ),
       ],
     );
@@ -1683,9 +1860,9 @@ Future<void> _showAbout(BuildContext context) async {
     builder: (_) => Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
+        constraints: BoxConstraints(maxWidth: 440),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 28, 24, 18),
+          padding: EdgeInsets.fromLTRB(24, 28, 24, 18),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1700,37 +1877,37 @@ Future<void> _showAbout(BuildContext context) async {
                       color: Theme.of(context).colorScheme.primary
                           .withValues(alpha: .25),
                       blurRadius: 18,
-                      offset: const Offset(0, 7),
+                      offset: Offset(0, 7),
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.account_balance_wallet_rounded,
                   color: Colors.white,
                   size: 36,
                 ),
               ),
-              const SizedBox(height: 15),
-              const Text(
-                'MOVA',
+              SizedBox(height: 15),
+              Text(
+                movaText('MOVA'),
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
               ),
-              const SizedBox(height: 3),
+              SizedBox(height: 3),
               Text(
-                'Versión 1.0.0  ·  Finanzas personales',
+                movaText('Versión 1.0.0  ·  Finanzas personales'),
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Container(
-                padding: const EdgeInsets.all(15),
+                padding: EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEAF6FA),
+                  color: Color(0xFFEAF6FA),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Row(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
@@ -1741,20 +1918,24 @@ Future<void> _showAbout(BuildContext context) async {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'MOVA está diseñada con un enfoque offline-first. Tus datos principales se mantienen en tu dispositivo.',
+                        movaText(
+                          'MOVA está diseñada con un enfoque offline-first. Tus datos principales se mantienen en tu dispositivo.',
+                        ),
                         style: TextStyle(fontSize: 12, height: 1.4),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 15),
-              const Text(
-                'Organiza ingresos, gastos, metas y compras en un solo espacio, de forma clara y sencilla.',
+              SizedBox(height: 15),
+              Text(
+                movaText(
+                  'Organiza ingresos, gastos, metas y compras en un solo espacio, de forma clara y sencilla.',
+                ),
                 textAlign: TextAlign.center,
                 style: TextStyle(height: 1.4),
               ),
-              const SizedBox(height: 22),
+              SizedBox(height: 22),
               Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 10,
@@ -1769,12 +1950,12 @@ Future<void> _showAbout(BuildContext context) async {
                         applicationVersion: '1.0.0',
                       );
                     },
-                    icon: const Icon(Icons.article_outlined, size: 18),
-                    label: const Text('Licencias'),
+                    icon: Icon(Icons.article_outlined, size: 18),
+                    label: Text(movaText('Licencias')),
                   ),
                   FilledButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cerrar'),
+                    child: Text(movaText('Cerrar')),
                   ),
                 ],
               ),
@@ -1826,7 +2007,7 @@ class _SecurityDialogState extends State<_SecurityDialog> {
           showMovaError(
             context,
             'La biometría no está disponible o no está configurada en este dispositivo.',
-            title: 'Biometría no disponible',
+            title: movaText('Biometría no disponible'),
           );
         }
         return;
@@ -1840,7 +2021,7 @@ class _SecurityDialogState extends State<_SecurityDialog> {
                 : biometricLastError == null
                 ? 'No se pudo verificar tu identidad. Confirma que tienes una huella o rostro registrado en los ajustes del teléfono.'
                 : 'El sistema biométrico devolvió un error. Verifica la biometría configurada en tu teléfono e inténtalo nuevamente.',
-            title: 'Verificación no completada',
+            title: movaText('Verificación no completada'),
           );
         }
         return;
@@ -1859,117 +2040,221 @@ class _SecurityDialogState extends State<_SecurityDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-      scrollable: true,
-      title: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8EEF5),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(Icons.shield_outlined, color: Color(0xFF263F61)),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Seguridad',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                ),
-                SizedBox(height: 3),
-                Text(
-                  'Elige una sola forma de proteger tu sesión',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF64748B),
-                    fontWeight: FontWeight.normal,
+    final l10n = context.l10n;
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const _DialogIcon(
+                    icon: Icons.shield_rounded,
+                    color: Color(0xFF0C2340),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      content: _loading
-          ? const SizedBox(
-              height: 60,
-              child: Center(child: CircularProgressIndicator()),
-            )
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: const Text(
-                    'Solo una opción puede estar activa. Al elegir otra, la protección anterior se reemplaza.',
-                    style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 12,
-                      height: 1.35,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.text('security'),
+                          style: const TextStyle(
+                            color: Color(0xFF102A43),
+                            fontSize: 21,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          l10n.text('security_intro'),
+                          style: const TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                RadioGroup<String>(
-                  groupValue: _mode,
-                  onChanged: (value) {
-                    if (value != null) _choose(value);
-                  },
-                  child: Column(
-                    children: [
-                      RadioListTile<String>(
-                        value: 'biometric',
-                        title: Text('Huella o biometría'),
-                        subtitle: Text('Usa el sensor del dispositivo'),
-                        secondary: const Icon(Icons.fingerprint),
-                        activeColor: const Color(0xFF0C2340),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      RadioListTile<String>(
-                        value: 'pin',
-                        title: Text('Números (PIN)'),
-                        subtitle: Text('Crea un código de 4 a 8 dígitos'),
-                        secondary: const Icon(Icons.pin_outlined),
-                        activeColor: const Color(0xFF0C2340),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ],
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                    color: const Color(0xFF64748B),
                   ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEAF6FA),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFFD4EEF3)),
                 ),
-                if (_mode != null)
-                  TextButton(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      color: Color(0xFF007C91),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        l10n.text('security_exclusive_note'),
+                        style: const TextStyle(
+                          color: Color(0xFF28645D),
+                          fontSize: 12,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              if (_loading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 38),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else ...[
+                _SecurityOption(
+                  icon: Icons.fingerprint_rounded,
+                  title: movaText('Huella o biometría'),
+                  subtitle: movaText('Usa el sensor del dispositivo'),
+                  selected: _mode == 'biometric',
+                  onTap: () => _choose('biometric'),
+                ),
+                const SizedBox(height: 10),
+                _SecurityOption(
+                  icon: Icons.pin_rounded,
+                  title: movaText('Números (PIN)'),
+                  subtitle: movaText('Crea un código de 4 a 8 dígitos'),
+                  selected: _mode == 'pin',
+                  onTap: () => _choose('pin'),
+                ),
+                if (_mode != null && _mode != 'none') ...[
+                  const SizedBox(height: 8),
+                  TextButton.icon(
                     onPressed: () async {
                       await _database.setSecurity(mode: 'none');
                       if (mounted) setState(() => _mode = 'none');
                     },
-                    child: const Text('Desactivar protección'),
+                    icon: const Icon(Icons.lock_open_rounded, size: 18),
+                    label: Text(movaText('Desactivar protección')),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFB42318),
+                    ),
                   ),
+                ],
               ],
-            ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
+              const SizedBox(height: 6),
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF0C2340),
+                  minimumSize: const Size.fromHeight(50),
+                  side: const BorderSide(color: Color(0xFFD7E0EA)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(l10n.text('Cerrar')),
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _SecurityOption extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SecurityOption({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const navy = Color(0xFF0C2340);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFEAF2F9) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? navy : const Color(0xFFE2E8F0),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: selected ? navy : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                icon,
+                color: selected ? Colors.white : const Color(0xFF526D8D),
+              ),
+            ),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Color(0xFF102A43),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              selected
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              color: selected ? navy : const Color(0xFFCBD5E1),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1991,19 +2276,21 @@ class _PinDialogState extends State<_PinDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Crear PIN'),
+      title: Text(movaText('Crear PIN')),
       content: TextField(
         controller: _controller,
         autofocus: true,
         obscureText: true,
         maxLength: 8,
         keyboardType: TextInputType.number,
-        decoration: const InputDecoration(labelText: 'PIN de 4 a 8 dígitos'),
+        decoration: InputDecoration(
+          labelText: movaText('PIN de 4 a 8 dígitos'),
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(movaText('Cancelar')),
         ),
         FilledButton(
           onPressed: () {
@@ -2011,7 +2298,7 @@ class _PinDialogState extends State<_PinDialog> {
             if (!RegExp(r'^\d{4,8}$').hasMatch(value)) return;
             Navigator.pop(context, value);
           },
-          child: const Text('Guardar'),
+          child: Text(movaText('Guardar')),
         ),
       ],
     );
@@ -2058,7 +2345,7 @@ class _BudgetDialogState extends State<_BudgetDialog> {
         : double.tryParse(rawAmount.replaceAll(',', '.'));
     if (rawAmount.isNotEmpty && (amount == null || amount <= 0)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa un presupuesto válido')),
+        SnackBar(content: Text(movaText('Ingresa un presupuesto válido'))),
       );
       return;
     }
@@ -2069,11 +2356,13 @@ class _BudgetDialogState extends State<_BudgetDialog> {
     if (amount != null &&
         await _database.getNotificationsEnabled() &&
         await _database.getNotificationOption('notification_budget')) {
+      final notificationPrefix = _budgetPeriod == 'weekly'
+          ? movaText('Tu límite semanal quedó en')
+          : movaText('Tu límite mensual quedó en');
       await NotificationService.show(
         id: 100,
-        title: 'Presupuesto actualizado',
-        body:
-            'Tu límite ${_budgetPeriod == 'weekly' ? 'semanal' : 'mensual'} quedó en ${_formatMoney(amount)}.',
+        title: movaText('Presupuesto actualizado'),
+        body: '$notificationPrefix ${_formatMoney(amount)}.',
       );
     }
     if (mounted) Navigator.pop(context);
@@ -2088,13 +2377,13 @@ class _BudgetDialogState extends State<_BudgetDialog> {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
       clipBehavior: Clip.antiAlias,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-      contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+      insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      titlePadding: EdgeInsets.fromLTRB(24, 24, 24, 8),
+      contentPadding: EdgeInsets.fromLTRB(24, 0, 24, 8),
       title: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary
                   .withValues(alpha: .12),
@@ -2105,15 +2394,15 @@ class _BudgetDialogState extends State<_BudgetDialog> {
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          const SizedBox(width: 12),
-          const Expanded(
+          SizedBox(width: 12),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Presupuesto', style: TextStyle(fontSize: 19)),
+                Text(movaText('Presupuesto'), style: TextStyle(fontSize: 19)),
                 SizedBox(height: 3),
                 Text(
-                  'Controla tus gastos sin perder de vista tu límite',
+                  movaText('Controla tus gastos sin perder de vista tu límite'),
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
                 ),
               ],
@@ -2129,7 +2418,7 @@ class _BudgetDialogState extends State<_BudgetDialog> {
               ? now.subtract(Duration(days: now.weekday - 1))
               : DateTime(now.year, now.month, 1);
           final end = _budgetPeriod == 'weekly'
-              ? start.add(const Duration(days: 7))
+              ? start.add(Duration(days: 7))
               : DateTime(now.year, now.month + 1, 1);
           final spent = (snapshot.data ?? [])
               .where((row) {
@@ -2150,14 +2439,14 @@ class _BudgetDialogState extends State<_BudgetDialog> {
           final progress = budget > 0 ? (spent / budget).clamp(0.0, 1.0) : 0.0;
           final exceeded = budget > 0 && spent > budget;
           return ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520, maxHeight: 520),
+            constraints: BoxConstraints(maxWidth: 520, maxHeight: 520),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: exceeded
@@ -2177,10 +2466,10 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                             children: [
                               Text(
                                 exceeded
-                                    ? 'Presupuesto excedido'
+                                    ? movaText('Presupuesto excedido')
                                     : _budgetPeriod == 'weekly'
-                                    ? 'Esta semana'
-                                    : 'Este mes',
+                                    ? movaText('Esta semana')
+                                    : movaText('Este mes'),
                                 style: TextStyle(
                                   color: exceeded
                                       ? Colors.red.shade800
@@ -2188,16 +2477,16 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6),
                               Text(
                                 '${_formatMoney(spent)} $_currency',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
                               Text(
-                                'gastado hasta hoy',
+                                movaText('gastado hasta hoy'),
                                 style: TextStyle(
                                   color: Theme.of(context)
                                       .colorScheme
@@ -2217,25 +2506,23 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                             backgroundColor: Colors.white.withValues(
                               alpha: .75,
                             ),
-                            color: exceeded
-                                ? Colors.red
-                                : const Color(0xFF0C2340),
+                            color: exceeded ? Colors.red : Color(0xFF0C2340),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   SegmentedButton<String>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: 'weekly',
-                        label: Text('Semanal'),
+                        label: Text(movaText('Semanal')),
                         icon: Icon(Icons.view_week_outlined),
                       ),
                       ButtonSegment(
                         value: 'monthly',
-                        label: Text('Mensual'),
+                        label: Text(movaText('Mensual')),
                         icon: Icon(Icons.calendar_month_outlined),
                       ),
                     ],
@@ -2244,20 +2531,22 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                       setState(() => _budgetPeriod = selection.first);
                     },
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Text(
                     _budgetPeriod == 'weekly'
-                        ? 'Se reinicia cada lunes y considera tus gastos de esta semana.'
-                        : 'Se reinicia el primer día de cada mes.',
+                        ? movaText(
+                            'Se reinicia cada lunes y considera tus gastos de esta semana.',
+                          )
+                        : movaText('Se reinicia el primer día de cada mes.'),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 12,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   TextField(
                     controller: _controller,
-                    keyboardType: const TextInputType.numberWithOptions(
+                    keyboardType: TextInputType.numberWithOptions(
                       decimal: true,
                     ),
                     inputFormatters: [
@@ -2265,25 +2554,25 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                     ],
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
-                      labelText: 'Límite mensual (${currency.code})',
-                      hintText: 'Ej. 8,000.00',
-                      prefixIcon: const Icon(Icons.savings_outlined),
+                      labelText: movaText('Límite mensual (${currency.code})'),
+                      hintText: movaText('Ej. 8,000.00'),
+                      prefixIcon: Icon(Icons.savings_outlined),
                       suffixIcon: _controller.text.isEmpty
                           ? null
                           : IconButton(
-                              tooltip: 'Quitar límite',
-                              icon: const Icon(Icons.clear),
+                              tooltip: movaText('Quitar límite'),
+                              icon: Icon(Icons.clear),
                               onPressed: () {
                                 _controller.clear();
                                 setState(() {});
                               },
                             ),
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.secondaryContainer
                           .withValues(alpha: .45),
@@ -2303,10 +2592,10 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                               size: 20,
                               color: Theme.of(context).colorScheme.secondary,
                             ),
-                            const SizedBox(width: 8),
-                            const Expanded(
+                            SizedBox(width: 8),
+                            Expanded(
                               child: Text(
-                                'Moneda general de MOVA',
+                                movaText('Moneda general de MOVA'),
                                 style: TextStyle(fontWeight: FontWeight.w700),
                               ),
                             ),
@@ -2319,9 +2608,13 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 5),
+                        SizedBox(height: 5),
                         Text(
-                          'Se aplicará a ingresos, gastos, metas, compras y presupuesto. No convierte cantidades existentes.',
+                          movaText(
+                            movaText(
+                              'Se aplicará a ingresos, gastos, metas, compras y presupuesto. No convierte cantidades existentes.',
+                            ),
+                          ),
                           style: TextStyle(
                             fontSize: 12,
                             color: Theme.of(context)
@@ -2329,12 +2622,12 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                                 .onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10),
                         DropdownButtonFormField<String>(
                           initialValue: _currency,
                           isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Moneda de la aplicación',
+                          decoration: InputDecoration(
+                            labelText: movaText('Moneda de la aplicación'),
                             prefixIcon: Icon(Icons.currency_exchange),
                             border: OutlineInputBorder(),
                           ),
@@ -2343,7 +2636,9 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                                 (item) => DropdownMenuItem(
                                   value: item.code,
                                   child: Text(
-                                    '${item.code} · ${item.name} (${item.symbol})',
+                                    movaText(
+                                      '${item.code} · ${item.name} (${item.symbol})',
+                                    ),
                                   ),
                                 ),
                               )
@@ -2357,9 +2652,11 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Text(
-                    'Cambiar la moneda no modifica el límite configurado.',
+                    movaText(
+                      'Cambiar la moneda no modifica el límite configurado.',
+                    ),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 12,
@@ -2374,17 +2671,17 @@ class _BudgetDialogState extends State<_BudgetDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(movaText('Cancelar')),
         ),
         FilledButton(
           onPressed: _saving ? null : _save,
           child: _saving
-              ? const SizedBox(
+              ? SizedBox(
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Guardar'),
+              : Text(movaText('Guardar')),
         ),
       ],
     );
@@ -2423,7 +2720,7 @@ class _CategoriesScreenState extends State<_CategoriesScreen> {
   Future<void> _add() async {
     final result = await showDialog<_CategoryInput>(
       context: context,
-      builder: (_) => const _CategoryDialog(),
+      builder: (_) => _CategoryDialog(),
     );
     if (result == null) return;
     try {
@@ -2436,7 +2733,9 @@ class _CategoriesScreenState extends State<_CategoriesScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Esa categoría ya existe para ese tipo')),
+        SnackBar(
+          content: Text(movaText('Esa categoría ya existe para ese tipo')),
+        ),
       );
     }
   }
@@ -2446,29 +2745,29 @@ class _CategoriesScreenState extends State<_CategoriesScreen> {
     return Scaffold(
       backgroundColor: MoreScreen.backgroundColor,
       appBar: AppBar(
-        title: const Text('Categorías'),
+        title: Text(movaText('Categorías')),
         backgroundColor: MoreScreen.backgroundColor,
         foregroundColor: MoreScreen.darkNavy,
         elevation: 0,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _add,
-        backgroundColor: const Color(0xFF0C2340),
+        backgroundColor: Color(0xFF0C2340),
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Nueva categoría'),
+        icon: Icon(Icons.add),
+        label: Text(movaText('Nueva categoría')),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _categories,
         builder: (context, snapshot) {
           final categories = snapshot.data ?? [];
           if (categories.isEmpty) {
-            return const Center(
-              child: Text('Aún no tienes categorías personalizadas'),
+            return Center(
+              child: Text(movaText('Aún no tienes categorías personalizadas')),
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20),
             itemCount: categories.length,
             itemBuilder: (context, index) {
               final category = categories[index];
@@ -2476,17 +2775,14 @@ class _CategoriesScreenState extends State<_CategoriesScreen> {
                 child: ListTile(
                   leading: Text(
                     category['emoji'] as String,
-                    style: const TextStyle(fontSize: 24),
+                    style: TextStyle(fontSize: 24),
                   ),
                   title: Text(category['name'] as String),
                   subtitle: Text(
                     category['type'] == 'income' ? 'Ingreso' : 'Gasto',
                   ),
                   trailing: IconButton(
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      color: Color(0xFFB42318),
-                    ),
+                    icon: Icon(Icons.delete_outline, color: Color(0xFFB42318)),
                     onPressed: () async {
                       await _database.deleteCustomCategory(
                         category['id'] as int,
@@ -2509,7 +2805,7 @@ class _CategoryInput {
   final String type;
   final String emoji;
 
-  const _CategoryInput(this.name, this.type, this.emoji);
+  _CategoryInput(this.name, this.type, this.emoji);
 }
 
 class _CategoryDialog extends StatefulWidget {
@@ -2533,12 +2829,12 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   Widget build(BuildContext context) {
     final isIncome = _type == 'income';
-    final accent = isIncome ? const Color(0xFF0C2340) : const Color(0xFF36577D);
+    final accent = isIncome ? Color(0xFF0C2340) : Color(0xFF36577D);
     return MediaQuery.removeViewInsets(
       context: context,
       removeBottom: true,
       child: Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -2547,30 +2843,30 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           ),
           child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+            padding: EdgeInsets.fromLTRB(22, 22, 22, 18),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _categoryHeader(accent),
-                const SizedBox(height: 18),
+                SizedBox(height: 18),
                 _inputLabel(
                   'Nombre de la categoría',
                   Icons.label_outline_rounded,
                 ),
-                const SizedBox(height: 7),
+                SizedBox(height: 7),
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF7F9FC),
+                    color: Color(0xFFF7F9FC),
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: const Color(0xFFD8E1EB)),
+                    border: Border.all(color: Color(0xFFD8E1EB)),
                   ),
                   child: TextField(
                     controller: _name,
                     autofocus: true,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      hintText: 'Ej. Comida, transporte o freelance',
+                    decoration: InputDecoration(
+                      hintText: movaText('Ej. Comida, transporte o freelance'),
                       hintStyle: TextStyle(color: Color(0xFF94A3B8)),
                       prefixIcon: Icon(Icons.edit_rounded, size: 20),
                       border: InputBorder.none,
@@ -2581,16 +2877,16 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 17),
+                SizedBox(height: 17),
                 Text(
-                  '¿Qué tipo de movimiento será?',
+                  movaText('¿Qué tipo de movimiento será?'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
@@ -2598,32 +2894,29 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                         'expense',
                         'Gasto',
                         Icons.arrow_downward_rounded,
-                        const Color(0xFF36577D),
+                        Color(0xFF36577D),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: _typeOption(
                         'income',
                         'Ingreso',
                         Icons.arrow_upward_rounded,
-                        const Color(0xFF0C2340),
+                        Color(0xFF0C2340),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 17),
+                SizedBox(height: 17),
                 _inputLabel('Icono o emoji', Icons.emoji_emotions_outlined),
-                const SizedBox(height: 7),
+                SizedBox(height: 7),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 5,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF7F9FC),
+                    color: Color(0xFFF7F9FC),
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: const Color(0xFFD8E1EB)),
+                    border: Border.all(color: Color(0xFFD8E1EB)),
                   ),
                   child: Row(
                     children: [
@@ -2635,12 +2928,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                           color: accent.withValues(alpha: .1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
-                          _emoji,
-                          style: const TextStyle(fontSize: 24),
-                        ),
+                        child: Text(_emoji, style: TextStyle(fontSize: 24)),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
                       Expanded(
                         child: TextField(
                           maxLength: 2,
@@ -2650,14 +2940,14 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                               setState(() => _emoji = trimmed);
                             }
                           },
-                          decoration: const InputDecoration(
-                            hintText: 'Elige un emoji',
+                          decoration: InputDecoration(
+                            hintText: movaText('Elige un emoji'),
                             counterText: '',
                             border: InputBorder.none,
                           ),
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.keyboard_rounded,
                         color: Color(0xFF94A3B8),
                         size: 19,
@@ -2665,15 +2955,17 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 7),
+                SizedBox(height: 7),
                 Text(
-                  'Puedes usar un emoji para identificarla más rápido.',
+                  movaText(
+                    'Puedes usar un emoji para identificarla más rápido.',
+                  ),
                   style: TextStyle(
                     fontSize: 11,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 22),
+                SizedBox(height: 22),
                 Wrap(
                   alignment: WrapAlignment.end,
                   crossAxisAlignment: WrapCrossAlignment.center,
@@ -2682,9 +2974,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancelar'),
+                      child: Text(movaText('Cancelar')),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     FilledButton.icon(
                       onPressed: () {
                         if (_name.text.trim().isEmpty) return;
@@ -2694,8 +2986,8 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                         );
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF0C2340),
-                        padding: const EdgeInsets.symmetric(
+                        backgroundColor: Color(0xFF0C2340),
+                        padding: EdgeInsets.symmetric(
                           horizontal: 17,
                           vertical: 13,
                         ),
@@ -2703,8 +2995,8 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                           borderRadius: BorderRadius.circular(13),
                         ),
                       ),
-                      icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('Crear categoría'),
+                      icon: Icon(Icons.add_rounded, size: 18),
+                      label: Text(movaText('Crear categoría')),
                     ),
                   ],
                 ),
@@ -2719,11 +3011,11 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   Widget _inputLabel(String text, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 17, color: const Color(0xFF0C2340)),
-        const SizedBox(width: 7),
+        Icon(icon, size: 17, color: Color(0xFF0C2340)),
+        SizedBox(width: 7),
         Text(
-          text,
-          style: const TextStyle(
+          movaText(text),
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w800,
             color: Color(0xFF334E68),
@@ -2746,18 +3038,20 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           ),
           child: Icon(Icons.category_outlined, color: accent, size: 25),
         ),
-        const SizedBox(width: 13),
-        const Expanded(
+        SizedBox(width: 13),
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Nueva categoría',
+                movaText('Nueva categoría'),
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
               ),
               SizedBox(height: 4),
               Text(
-                'Personaliza tus movimientos para encontrarlos fácilmente',
+                movaText(
+                  'Personaliza tus movimientos para encontrarlos fácilmente',
+                ),
                 style: TextStyle(fontSize: 12),
               ),
             ],
@@ -2766,7 +3060,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
         IconButton(
           onPressed: () => Navigator.pop(context),
           visualDensity: VisualDensity.compact,
-          icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+          icon: Icon(Icons.close_rounded, color: Color(0xFF64748B)),
         ),
       ],
     );
@@ -2778,15 +3072,13 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       onTap: () => setState(() => _type = value),
       borderRadius: BorderRadius.circular(14),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        duration: Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: .12)
-              : const Color(0xFFF7F9FC),
+          color: selected ? color.withValues(alpha: .12) : Color(0xFFF7F9FC),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected ? color : const Color(0xFFD7E3E8),
+            color: selected ? color : Color(0xFFD7E3E8),
             width: selected ? 1.5 : 1,
           ),
           boxShadow: selected
@@ -2794,21 +3086,17 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   BoxShadow(
                     color: color.withValues(alpha: .14),
                     blurRadius: 9,
-                    offset: const Offset(0, 4),
+                    offset: Offset(0, 4),
                   ),
                 ]
               : null,
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: selected ? color : const Color(0xFF64748B),
-              size: 20,
-            ),
-            const SizedBox(height: 4),
+            Icon(icon, color: selected ? color : Color(0xFF64748B), size: 20),
+            SizedBox(height: 4),
             Text(
-              label,
+              movaText(label),
               style: TextStyle(
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
               ),

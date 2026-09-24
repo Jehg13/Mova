@@ -4,15 +4,16 @@ import 'package:flutter/gestures.dart';
 import '../database/database_helper.dart';
 import '../widgets/mova_feedback_dialog.dart';
 import 'login_screen.dart';
+import '../services/mova_localizations.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
-  static const Color primaryTeal = Color(0xFF0C2340);
-  static const Color darkNavy = Color(0xFF0C2340);
-  static const Color subtitleGrey = Color(0xFF64748B);
+  static Color primaryTeal = Color(0xFF0C2340);
+  static Color darkNavy = Color(0xFF0C2340);
+  static Color subtitleGrey = Color(0xFF64748B);
   static const Color inputBorderGrey = Color(0xFFE2E8F0);
-  static const Color backgroundColor = Color(0xFFF1F5F9);
+  static Color backgroundColor = Color(0xFFF1F5F9);
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -67,60 +68,60 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  static const _termsSections = <_LegalSection>[
+  static final _termsSections = <_LegalSection>[
     _LegalSection(
-      title: '1. Aceptación del servicio',
+      title: movaText('1. Aceptación del servicio'),
       body: 'Al crear una cuenta y utilizar MOVA confirmas que leíste, comprendiste y aceptas estos términos. Si no estás de acuerdo, no debes completar el registro ni utilizar la aplicación.',
     ),
     _LegalSection(
-      title: '2. Uso de MOVA',
+      title: movaText('2. Uso de MOVA'),
       body: 'MOVA es una herramienta de organización financiera personal. Puedes registrar ingresos, gastos, metas, presupuestos y listas para tu propio control. La información que ingreses debe ser verdadera y corresponder a tu actividad.',
     ),
     _LegalSection(
-      title: '3. Tu cuenta',
+      title: movaText('3. Tu cuenta'),
       body: 'Eres responsable de mantener la confidencialidad de tu correo y contraseña, así como de toda actividad realizada desde tu cuenta. Si detectas un acceso no autorizado, cambia tu contraseña y deja de utilizar el dispositivo comprometido.',
     ),
     _LegalSection(
-      title: '4. Información financiera',
+      title: movaText('4. Información financiera'),
       body: 'Los cálculos, resúmenes y análisis de MOVA son orientativos y dependen de los datos que registres. La aplicación no sustituye asesoría financiera, contable, fiscal o legal profesional.',
     ),
     _LegalSection(
-      title: '5. Uso responsable',
+      title: movaText('5. Uso responsable'),
       body: 'No debes intentar alterar la aplicación, acceder a cuentas ajenas, introducir información maliciosa ni utilizar MOVA para actividades ilegales. El uso indebido puede ocasionar la suspensión del acceso.',
     ),
     _LegalSection(
-      title: '6. Cambios y disponibilidad',
+      title: movaText('6. Cambios y disponibilidad'),
       body: 'Podemos mejorar, actualizar o modificar funciones de MOVA para mantener una experiencia segura y útil. Procuraremos conservar tus datos y avisarte cuando un cambio sea relevante para el servicio.',
     ),
   ];
 
-  static const _privacySections = <_LegalSection>[
+  static final _privacySections = <_LegalSection>[
     _LegalSection(
-      title: '1. Qué información guardamos',
+      title: movaText('1. Qué información guardamos'),
       body: 'MOVA puede guardar tu nombre, correo electrónico, contraseña, foto de perfil, movimientos, metas, presupuestos, categorías, listas de compras y preferencias necesarias para ofrecerte sus funciones.',
     ),
     _LegalSection(
-      title: '2. Para qué la utilizamos',
+      title: movaText('2. Para qué la utilizamos'),
       body: 'Utilizamos esta información para crear y proteger tu cuenta, mostrar tus finanzas, generar resúmenes y análisis, personalizar la aplicación y conservar tus configuraciones.',
     ),
     _LegalSection(
-      title: '3. Almacenamiento local',
+      title: movaText('3. Almacenamiento local'),
       body: 'La información financiera de MOVA se almacena localmente en el dispositivo para que puedas utilizar la aplicación. Si desinstalas la aplicación, cambias de dispositivo o borras sus datos, podrías perder la información que no hayas respaldado.',
     ),
     _LegalSection(
-      title: '4. Protección de tus datos',
+      title: movaText('4. Protección de tus datos'),
       body: 'Aplicamos medidas razonables para proteger la información dentro de la aplicación. Aun así, ninguna aplicación o dispositivo es completamente invulnerable; por eso te recomendamos usar un bloqueo de pantalla y no compartir tus credenciales.',
     ),
     _LegalSection(
-      title: '5. Tus decisiones',
+      title: movaText('5. Tus decisiones'),
       body: 'Puedes editar o eliminar la información disponible desde las funciones de MOVA. También puedes eliminar tu foto de perfil, actualizar tu contraseña y desactivar opciones de seguridad o notificaciones desde la sección Más.',
     ),
     _LegalSection(
-      title: '6. Compartir información',
+      title: movaText('6. Compartir información'),
       body: 'MOVA no vende tu información personal. No compartimos tus datos financieros con terceros salvo que sea necesario para cumplir una obligación legal o que tú decidas exportar o compartir información mediante una función de la aplicación.',
     ),
     _LegalSection(
-      title: '7. Actualizaciones',
+      title: movaText('7. Actualizaciones'),
       body: 'Podemos actualizar este aviso para reflejar cambios en MOVA o en la forma en que tratamos la información. La versión más reciente estará disponible desde el registro.',
     ),
   ];
@@ -130,7 +131,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: Duration(milliseconds: 900),
     )..forward();
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
@@ -164,12 +165,12 @@ class _RegisterScreenState extends State<RegisterScreen>
   }) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-      prefixIcon: Icon(prefixIcon, color: const Color(0xFF94A3B8), size: 20),
+      hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+      prefixIcon: Icon(prefixIcon, color: Color(0xFF94A3B8), size: 20),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      fillColor: Color(0xFFF8FAFC),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: _buildBorder(),
       enabledBorder: _buildBorder(),
       focusedBorder: _buildBorder(color: RegisterScreen.primaryTeal),
@@ -185,36 +186,38 @@ class _RegisterScreenState extends State<RegisterScreen>
     if (nombre.length < 2 || email.isEmpty || password.isEmpty) {
       showMovaError(
         context,
-        'Revisa tu nombre, correo y contraseña.',
-        title: 'Faltan datos',
+        movaText('Revisa tu nombre, correo y contraseña.'),
+        title: movaText('Faltan datos'),
       );
       return;
     }
 
     if (!_validEmail) {
-      showMovaError(context, 'Ingresa un correo electrónico válido.');
+      showMovaError(context, movaText('Ingresa un correo electrónico válido.'));
       return;
     }
 
     if (password.length < 8 || _passwordScore < 2) {
       showMovaError(
         context,
-        'Usa al menos 8 caracteres, una mayúscula, un número o un símbolo.',
-        title: 'Contraseña débil',
+        movaText(
+          'Usa al menos 8 caracteres, una mayúscula, un número o un símbolo.',
+        ),
+        title: movaText('Contraseña débil'),
       );
       return;
     }
 
     if (password != confirmPassword) {
-      showMovaError(context, 'Las contraseñas no coinciden.');
+      showMovaError(context, movaText('Las contraseñas no coinciden.'));
       return;
     }
 
     if (!_acceptTerms) {
       showMovaError(
         context,
-        'Debes aceptar los términos y condiciones.',
-        title: 'Aceptación requerida',
+        movaText('Debes aceptar los términos y condiciones.'),
+        title: movaText('Aceptación requerida'),
       );
       return;
     }
@@ -227,7 +230,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(builder: (context) => LoginScreen()),
       );
     } catch (e) {
       if (!mounted) return;
@@ -236,8 +239,8 @@ class _RegisterScreenState extends State<RegisterScreen>
 
       showMovaError(
         context,
-        'El correo electrónico ya está registrado.',
-        title: 'Cuenta existente',
+        movaText('El correo electrónico ya está registrado.'),
+        title: movaText('Cuenta existente'),
       );
     }
   }
@@ -247,7 +250,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     final String title;
     final String body;
 
-    const _LegalSection({required this.title, required this.body});
+    _LegalSection({required this.title, required this.body});
   }
 
   class _LegalDocumentSheet extends StatelessWidget {
@@ -256,7 +259,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     final IconData icon;
     final List<_LegalSection> sections;
 
-    const _LegalDocumentSheet({
+    _LegalDocumentSheet({
       required this.title,
       required this.subtitle,
       required this.icon,
@@ -265,26 +268,27 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     @override
     Widget build(BuildContext context) {
+      final l10n = context.l10n;
       return FractionallySizedBox(
         heightFactor: .9,
         child: Material(
-          color: const Color(0xFFF7FAFC),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          color: Color(0xFFF7FAFC),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           child: SafeArea(
             top: false,
             child: Column(
               children: [
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Container(
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFCBD5E1),
+                    color: Color(0xFFCBD5E1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 20, 16, 18),
+                  padding: EdgeInsets.fromLTRB(22, 20, 16, 18),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -292,29 +296,28 @@ class _RegisterScreenState extends State<RegisterScreen>
                         width: 52,
                         height: 52,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             colors: [Color(0xFF1D466F), Color(0xFF0C2340)],
                           ),
                           borderRadius: BorderRadius.circular(17),
                         ),
                         child: Icon(icon, color: Colors.white, size: 26),
                       ),
-                      const SizedBox(width: 14),
+                      SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: RegisterScreen.darkNavy,
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
-                            const SizedBox(height: 5),
-                            const Text(
-                              'Actualizado el 23 de septiembre de 2026',
+                            SizedBox(height: 5),
+                            Text(movaText('Actualizado el 23 de septiembre de 2026'),
                               style: TextStyle(
                                 color: RegisterScreen.subtitleGrey,
                                 fontSize: 10.5,
@@ -327,9 +330,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFFEAF0F5),
+                          backgroundColor: Color(0xFFEAF0F5),
                         ),
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close_rounded,
                           color: RegisterScreen.darkNavy,
                           size: 19,
@@ -339,25 +342,25 @@ class _RegisterScreenState extends State<RegisterScreen>
                   ),
                 ),
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 22),
-                  padding: const EdgeInsets.all(13),
+                  margin: EdgeInsets.symmetric(horizontal: 22),
+                  padding: EdgeInsets.all(13),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEAF2F8),
+                    color: Color(0xFFEAF2F8),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFD8E5F0)),
+                    border: Border.all(color: Color(0xFFD8E5F0)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.info_outline_rounded,
                         color: RegisterScreen.primaryTeal,
                         size: 19,
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           subtitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: RegisterScreen.darkNavy,
                             fontSize: 11.5,
                             height: 1.35,
@@ -367,36 +370,36 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Expanded(
                   child: ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(22, 8, 22, 22),
+                    padding: EdgeInsets.fromLTRB(22, 8, 22, 22),
                     itemCount: sections.length,
-                    separatorBuilder: (_, index) => const SizedBox(height: 8),
+                    separatorBuilder: (_, index) => SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final section = sections[index];
                       return Container(
-                        padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+                        padding: EdgeInsets.fromLTRB(16, 15, 16, 16),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFFE3EBF2)),
+                          border: Border.all(color: Color(0xFFE3EBF2)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               section.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: RegisterScreen.darkNavy,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
-                            const SizedBox(height: 7),
+                            SizedBox(height: 7),
                             Text(
-                              section.body,
-                              style: const TextStyle(
+                              movaText(section.body),
+                              style: TextStyle(
                                 color: RegisterScreen.subtitleGrey,
                                 fontSize: 12,
                                 height: 1.48,
@@ -409,7 +412,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 0, 22, 14),
+                  padding: EdgeInsets.fromLTRB(22, 0, 22, 14),
                   child: SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -423,8 +426,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
-                        'Entendido',
+                      child: Text(movaText('Entendido'),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
@@ -449,6 +451,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final l10n = context.l10n;
             final compact = constraints.maxHeight < 730;
             final bottomInset =
                 MediaQuery.viewPaddingOf(context).bottom +
@@ -458,7 +461,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               child: SingleChildScrollView(
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
-                physics: const AlwaysScrollableScrollPhysics(),
+                physics: AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   horizontal: compact ? 16 : 20,
                   vertical: compact ? 8 : 16,
@@ -483,7 +486,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 alpha: 0.08,
                               ),
                               blurRadius: 15,
-                              offset: const Offset(0, 6),
+                              offset: Offset(0, 6),
                             ),
                           ],
                         ),
@@ -506,16 +509,14 @@ class _RegisterScreenState extends State<RegisterScreen>
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF0F172A)
-                                  .withValues(alpha: 0.04),
+                              color: Color(0xFF0F172A).withValues(alpha: 0.04),
                               blurRadius: 20,
-                              offset: const Offset(0, 8),
+                              offset: Offset(0, 8),
                             ),
                             BoxShadow(
-                              color: const Color(0xFF0F172A)
-                                  .withValues(alpha: 0.02),
+                              color: Color(0xFF0F172A).withValues(alpha: 0.02),
                               blurRadius: 6,
-                              offset: const Offset(0, 2),
+                              offset: Offset(0, 2),
                             ),
                           ],
                         ),
@@ -532,9 +533,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 _stepBadge('3', true),
                               ],
                             ),
-                            const SizedBox(height: 12),
+                            SizedBox(height: 12),
                             Text(
-                              "Crea tu cuenta",
+                              l10n.text('create_your_account'),
                               style: TextStyle(
                                 fontSize: compact ? 20 : 22,
                                 fontWeight: FontWeight.bold,
@@ -542,9 +543,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 letterSpacing: -0.5,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              "Empieza a tomar el control de tus finanzas.",
+                            SizedBox(height: 4),
+                            Text(
+                              l10n.text('take_control'),
                               style: TextStyle(
                                 fontSize: 13.5,
                                 color: RegisterScreen.subtitleGrey,
@@ -552,18 +553,18 @@ class _RegisterScreenState extends State<RegisterScreen>
                               textAlign: TextAlign.center,
                             ),
                             SizedBox(height: compact ? 12 : 24),
-                            _buildLabel("Nombre"),
-                            const SizedBox(height: 6),
+                            _buildLabel(l10n.text('name')),
+                            SizedBox(height: 6),
                             TextField(
                               controller: _nameController,
                               decoration: _inputDecoration(
-                                hintText: "Ingresa tu nombre",
+                                hintText: l10n.text('enter_name'),
                                 prefixIcon: Icons.person_outline,
                               ),
                             ),
                             SizedBox(height: compact ? 9 : 16),
-                            _buildLabel("Correo electrónico"),
-                            const SizedBox(height: 6),
+                            _buildLabel(l10n.text('email')),
+                            SizedBox(height: 6),
                             TextField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
@@ -571,7 +572,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 _emailTouched = true;
                               }),
                               decoration: _inputDecoration(
-                                hintText: "Ingresa tu correo",
+                                hintText: l10n.text('enter_email'),
                                 prefixIcon: Icons.email_outlined,
                                 suffixIcon: _emailTouched
                                     ? Icon(
@@ -579,16 +580,16 @@ class _RegisterScreenState extends State<RegisterScreen>
                                             ? Icons.check_circle_rounded
                                             : Icons.error_outline_rounded,
                                         color: _validEmail
-                                            ? const Color(0xFF16A34A)
-                                            : const Color(0xFFDC2626),
+                                            ? Color(0xFF16A34A)
+                                            : Color(0xFFDC2626),
                                         size: 19,
                                       )
                                     : null,
                               ),
                             ),
                             SizedBox(height: compact ? 9 : 16),
-                            _buildLabel("Contraseña"),
-                            const SizedBox(height: 6),
+                            _buildLabel(l10n.text('password')),
+                            SizedBox(height: 6),
                             TextField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
@@ -596,14 +597,14 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 _passwordTouched = true;
                               }),
                               decoration: _inputDecoration(
-                                hintText: "Crea una contraseña",
+                                hintText: l10n.text('create_password'),
                                 prefixIcon: Icons.lock_outline,
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword
                                         ? Icons.visibility_off_outlined
                                         : Icons.visibility_outlined,
-                                    color: const Color(0xFF94A3B8),
+                                    color: Color(0xFF94A3B8),
                                     size: 20,
                                   ),
                                   onPressed: () {
@@ -614,7 +615,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 7),
+                            SizedBox(height: 7),
                             Row(
                               children: [
                                 Expanded(
@@ -625,16 +626,16 @@ class _RegisterScreenState extends State<RegisterScreen>
                                       value: _passwordTouched
                                           ? _passwordScore / 4
                                           : 0,
-                                      backgroundColor: const Color(0xFFE8EEF4),
+                                      backgroundColor: Color(0xFFE8EEF4),
                                       valueColor: AlwaysStoppedAnimation(
                                         _passwordScore >= 3
-                                            ? const Color(0xFF16A34A)
-                                            : const Color(0xFFF59E0B),
+                                            ? Color(0xFF16A34A)
+                                            : Color(0xFFF59E0B),
                                       ),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                                SizedBox(width: 10),
                                 Text(
                                   _passwordTouched
                                       ? (_passwordScore >= 3
@@ -645,27 +646,27 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
                                     color: _passwordScore >= 3
-                                        ? const Color(0xFF16A34A)
+                                        ? Color(0xFF16A34A)
                                         : RegisterScreen.subtitleGrey,
                                   ),
                                 ),
                               ],
                             ),
                             SizedBox(height: compact ? 9 : 16),
-                            _buildLabel("Confirmar contraseña"),
-                            const SizedBox(height: 6),
+                            _buildLabel(l10n.text('repeat_password')),
+                            SizedBox(height: 6),
                             TextField(
                               controller: _confirmPasswordController,
                               obscureText: _obscureConfirmPassword,
                               decoration: _inputDecoration(
-                                hintText: "Repite tu contraseña",
+                                hintText: l10n.text('repeat_password'),
                                 prefixIcon: Icons.lock_outline,
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscureConfirmPassword
                                         ? Icons.visibility_off_outlined
                                         : Icons.visibility_outlined,
-                                    color: const Color(0xFF94A3B8),
+                                    color: Color(0xFF94A3B8),
                                     size: 20,
                                   ),
                                   onPressed: () {
@@ -677,7 +678,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -690,7 +691,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5),
                                     ),
-                                    side: const BorderSide(
+                                    side: BorderSide(
                                       color: Color(0xFFCBD5E1),
                                       width: 1.5,
                                     ),
@@ -701,38 +702,42 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     },
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                                SizedBox(width: 10),
                                 Expanded(
                                   child: Text.rich(
                                     TextSpan(
-                                      text: "Acepto los ",
-                                      style: const TextStyle(
+                                      text: movaText("Acepto los "),
+                                      style: TextStyle(
                                         fontSize: 12,
                                         color: RegisterScreen.darkNavy,
                                       ),
                                       children: [
                                         TextSpan(
-                                          text: "términos y condiciones",
+                                          text: movaText(
+                                            "términos y condiciones",
+                                          ),
                                           style: TextStyle(
                                             color: RegisterScreen.primaryTeal,
                                             fontWeight: FontWeight.w600,
                                           ),
                                           recognizer: TapGestureRecognizer()
                                             ..onTap = () => _showTerms(
-                                              'Términos y condiciones',
+                                              movaText(
+                                                'Términos y condiciones',
+                                              ),
                                               'Usa MOVA de forma responsable y conserva tus datos de acceso en un lugar seguro.',
                                             ),
                                         ),
-                                        const TextSpan(text: " y el "),
+                                        TextSpan(text: movaText(" y el ")),
                                         TextSpan(
-                                          text: "aviso de privacidad",
+                                          text: movaText("aviso de privacidad"),
                                           style: TextStyle(
                                             color: RegisterScreen.primaryTeal,
                                             fontWeight: FontWeight.w600,
                                           ),
                                           recognizer: TapGestureRecognizer()
                                             ..onTap = () => _showTerms(
-                                              'Aviso de privacidad',
+                                              movaText('Aviso de privacidad'),
                                               'Tus datos se almacenan localmente en este dispositivo para que puedas administrar tu información.',
                                             ),
                                         ),
@@ -742,7 +747,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 24),
+                            SizedBox(height: 24),
                             Container(
                               width: double.infinity,
                               height: 52,
@@ -753,7 +758,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     color: RegisterScreen.primaryTeal
                                         .withValues(alpha: 0.3),
                                     blurRadius: 12,
-                                    offset: const Offset(0, 4),
+                                    offset: Offset(0, 4),
                                   ),
                                 ],
                               ),
@@ -770,7 +775,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   ),
                                 ),
                                 child: _isLoading
-                                    ? const SizedBox(
+                                    ? SizedBox(
                                         width: 21,
                                         height: 21,
                                         child: CircularProgressIndicator(
@@ -778,12 +783,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                                           strokeWidth: 2.5,
                                         ),
                                       )
-                                    : const Row(
+                                    : Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            "Crear cuenta",
+                                            movaText("Crear cuenta"),
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w700,
@@ -800,12 +805,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                       ),
                       Column(
                         children: [
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
-                                "¿Ya tienes una cuenta? ",
+                              Text(
+                                movaText("¿Ya tienes una cuenta? "),
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: RegisterScreen.subtitleGrey,
@@ -816,12 +821,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const LoginScreen(),
+                                      builder: (context) => LoginScreen(),
                                     ),
                                   );
                                 },
-                                child: const Text(
-                                  "Iniciar sesión",
+                                child: Text(
+                                  movaText("Iniciar sesión"),
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -831,7 +836,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                         ],
                       ),
                     ],
@@ -850,7 +855,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       alignment: Alignment.centerLeft,
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
           color: RegisterScreen.darkNavy,
@@ -865,7 +870,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       height: 25,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: active ? RegisterScreen.primaryTeal : const Color(0xFFE8EEF4),
+        color: active ? RegisterScreen.primaryTeal : Color(0xFFE8EEF4),
         shape: BoxShape.circle,
       ),
       child: Text(
@@ -883,8 +888,8 @@ class _RegisterScreenState extends State<RegisterScreen>
     return Container(
       width: 26,
       height: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 5),
-      color: const Color(0xFFD7E1EB),
+      margin: EdgeInsets.symmetric(horizontal: 5),
+      color: Color(0xFFD7E1EB),
     );
   }
 }
@@ -893,7 +898,7 @@ class _LegalSection {
   final String title;
   final String body;
 
-  const _LegalSection({required this.title, required this.body});
+  _LegalSection({required this.title, required this.body});
 }
 
 class _LegalDocumentSheet extends StatelessWidget {
@@ -914,23 +919,23 @@ class _LegalDocumentSheet extends StatelessWidget {
     return FractionallySizedBox(
       heightFactor: .9,
       child: Material(
-        color: const Color(0xFFF7FAFC),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        color: Color(0xFFF7FAFC),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         child: SafeArea(
           top: false,
           child: Column(
             children: [
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               Container(
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
+                  color: Color(0xFFCBD5E1),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 20, 16, 18),
+                padding: EdgeInsets.fromLTRB(22, 20, 16, 18),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -938,29 +943,29 @@ class _LegalDocumentSheet extends StatelessWidget {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [Color(0xFF1D466F), Color(0xFF0C2340)],
                         ),
                         borderRadius: BorderRadius.circular(17),
                       ),
                       child: Icon(icon, color: Colors.white, size: 26),
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: RegisterScreen.darkNavy,
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'Actualizado el 23 de septiembre de 2026',
+                          SizedBox(height: 5),
+                          Text(
+                            movaText('Actualizado el 23 de septiembre de 2026'),
                             style: TextStyle(
                               color: RegisterScreen.subtitleGrey,
                               fontSize: 10.5,
@@ -973,9 +978,9 @@ class _LegalDocumentSheet extends StatelessWidget {
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       style: IconButton.styleFrom(
-                        backgroundColor: const Color(0xFFEAF0F5),
+                        backgroundColor: Color(0xFFEAF0F5),
                       ),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.close_rounded,
                         color: RegisterScreen.darkNavy,
                         size: 19,
@@ -985,25 +990,25 @@ class _LegalDocumentSheet extends StatelessWidget {
                 ),
               ),
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 22),
-                padding: const EdgeInsets.all(13),
+                margin: EdgeInsets.symmetric(horizontal: 22),
+                padding: EdgeInsets.all(13),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEAF2F8),
+                  color: Color(0xFFEAF2F8),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFD8E5F0)),
+                  border: Border.all(color: Color(0xFFD8E5F0)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.info_outline_rounded,
                       color: RegisterScreen.primaryTeal,
                       size: 19,
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: RegisterScreen.darkNavy,
                           fontSize: 11.5,
                           height: 1.35,
@@ -1013,36 +1018,36 @@ class _LegalDocumentSheet extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Expanded(
                 child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(22, 8, 22, 22),
+                  padding: EdgeInsets.fromLTRB(22, 8, 22, 22),
                   itemCount: sections.length,
-                  separatorBuilder: (_, index) => const SizedBox(height: 8),
+                  separatorBuilder: (_, index) => SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final section = sections[index];
                     return Container(
-                      padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+                      padding: EdgeInsets.fromLTRB(16, 15, 16, 16),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFE3EBF2)),
+                        border: Border.all(color: Color(0xFFE3EBF2)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             section.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: RegisterScreen.darkNavy,
                               fontSize: 13,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const SizedBox(height: 7),
+                          SizedBox(height: 7),
                           Text(
-                            section.body,
-                            style: const TextStyle(
+                            movaText(section.body),
+                            style: TextStyle(
                               color: RegisterScreen.subtitleGrey,
                               fontSize: 12,
                               height: 1.48,
@@ -1055,7 +1060,7 @@ class _LegalDocumentSheet extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 0, 22, 14),
+                padding: EdgeInsets.fromLTRB(22, 0, 22, 14),
                 child: SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -1069,8 +1074,8 @@ class _LegalDocumentSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Entendido',
+                    child: Text(
+                      movaText('Entendido'),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,

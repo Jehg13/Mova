@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'login_screen.dart';
 import 'register_screen.dart';
+import '../services/mova_localizations.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
-  static const Color primaryTeal = Color(0xFF0C2340);
-  static const Color darkBlue = Color(0xFF0C2340);
-  static const Color subtitleGrey = Color(0xFF64748B);
-  static const Color lightBlueBg = Color(0xFFEBF3F6);
-  static const Color backgroundColor = Color(0xFFF7F9FA);
+  static Color primaryTeal = Color(0xFF0C2340);
+  static Color darkBlue = Color(0xFF0C2340);
+  static Color subtitleGrey = Color(0xFF64748B);
+  static Color lightBlueBg = Color(0xFFEBF3F6);
+  static Color backgroundColor = Color(0xFFF7F9FA);
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -28,24 +29,24 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1100),
+      duration: Duration(milliseconds: 1100),
     )..forward();
     _fade = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0, .8, curve: Curves.easeOut),
+      curve: Interval(0, .8, curve: Curves.easeOut),
     );
-    _contentSlide = Tween<Offset>(begin: const Offset(0, .12), end: Offset.zero)
+    _contentSlide = Tween<Offset>(begin: Offset(0, .12), end: Offset.zero)
         .animate(
           CurvedAnimation(
             parent: _controller,
-            curve: const Interval(.18, 1, curve: Curves.easeOutCubic),
+            curve: Interval(.18, 1, curve: Curves.easeOutCubic),
           ),
         );
-    _imageSlide = Tween<Offset>(begin: const Offset(0, -.08), end: Offset.zero)
+    _imageSlide = Tween<Offset>(begin: Offset(0, -.08), end: Offset.zero)
         .animate(
           CurvedAnimation(
             parent: _controller,
-            curve: const Interval(0, .75, curve: Curves.easeOutBack),
+            curve: Interval(0, .75, curve: Curves.easeOutBack),
           ),
         );
   }
@@ -58,6 +59,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: WelcomeScreen.backgroundColor,
       body: SafeArea(
@@ -67,7 +69,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             final titleSize = compact ? 23.0 : 27.0;
             return Stack(
               children: [
-                const _WelcomeDecorations(),
+                _WelcomeDecorations(),
                 Padding(
                   padding: EdgeInsets.fromLTRB(
                     24,
@@ -82,20 +84,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: WelcomeScreen.lightBlueBg,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.account_balance_wallet_rounded,
                                 color: WelcomeScreen.darkBlue,
                                 size: 20,
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            const Text(
-                              "MOVA",
+                            SizedBox(width: 10),
+                            Text(
+                              movaText("MOVA"),
                               style: TextStyle(
                                 fontSize: 23,
                                 fontWeight: FontWeight.w900,
@@ -103,9 +105,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                 letterSpacing: 2.2,
                               ),
                             ),
-                            const Spacer(),
+                            Spacer(),
                             Container(
-                              padding: const EdgeInsets.symmetric(
+                              padding: EdgeInsets.symmetric(
                                 horizontal: 10,
                                 vertical: 6,
                               ),
@@ -114,8 +116,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: Color(0xFFE2E8F0)),
                               ),
-                              child: const Text(
-                                'FINANZAS',
+                              child: Text(
+                                l10n.text('finance'),
                                 style: TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w800,
@@ -138,9 +140,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               ),
                               child: Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.all(12),
+                                padding: EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
+                                  gradient: LinearGradient(
                                     colors: [
                                       Color(0xFFEAF2F8),
                                       Color(0xFFF7FAFC),
@@ -167,7 +169,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           child: Column(
                             children: [
                               Text(
-                                'Tu dinero.\nTus metas.\nTu control.',
+                                l10n.text('your_money'),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: titleSize,
@@ -177,8 +179,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                 ),
                               ),
                               SizedBox(height: compact ? 8 : 12),
-                              const Text(
-                                "Organiza tus finanzas, controla tus gastos y alcanza tus objetivos con MOVA.",
+                              Text(
+                                l10n.text('welcome_subtitle'),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12,
@@ -194,15 +196,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   onPressed: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          const RegisterScreen(),
+                                      builder: (context) => RegisterScreen(),
                                     ),
                                   ),
-                                  icon: const Icon(
+                                  icon: Icon(
                                     Icons.rocket_launch_rounded,
                                     size: 19,
                                   ),
-                                  label: const Text('Crear cuenta'),
+                                  label: Text(l10n.text('create_account')),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: WelcomeScreen.primaryTeal,
                                     foregroundColor: Colors.white,
@@ -213,7 +214,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 9),
+                              SizedBox(height: 9),
                               SizedBox(
                                 width: double.infinity,
                                 height: compact ? 46 : 50,
@@ -221,19 +222,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                   onPressed: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const LoginScreen(),
+                                      builder: (context) => LoginScreen(),
                                     ),
                                   ),
-                                  icon: const Icon(
-                                    Icons.login_rounded,
-                                    size: 19,
-                                  ),
-                                  label: const Text('Ya tengo una cuenta'),
+                                  icon: Icon(Icons.login_rounded, size: 19),
+                                  label: Text(l10n.text('already_account')),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: WelcomeScreen.primaryTeal,
-                                    side: const BorderSide(
-                                      color: Color(0xFFB9C9DB),
-                                    ),
+                                    side: BorderSide(color: Color(0xFFB9C9DB)),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(17),
                                     ),
@@ -241,8 +237,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                 ),
                               ),
                               SizedBox(height: compact ? 8 : 12),
-                              const Text(
-                                'Administra tu dinero de forma sencilla.',
+                              Text(
+                                l10n.text('home_summary'),
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: WelcomeScreen.subtitleGrey,
@@ -279,7 +275,7 @@ class _WelcomeDecorations extends StatelessWidget {
               width: 170,
               height: 170,
               decoration: BoxDecoration(
-                color: const Color(0xFFE3EDF6).withValues(alpha: .7),
+                color: Color(0xFFE3EDF6).withValues(alpha: .7),
                 shape: BoxShape.circle,
               ),
             ),
@@ -291,7 +287,7 @@ class _WelcomeDecorations extends StatelessWidget {
               width: 145,
               height: 145,
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF2F8).withValues(alpha: .8),
+                color: Color(0xFFEAF2F8).withValues(alpha: .8),
                 shape: BoxShape.circle,
               ),
             ),
@@ -303,7 +299,7 @@ class _WelcomeDecorations extends StatelessWidget {
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-                color: const Color(0xFFDCE7F2).withValues(alpha: .65),
+                color: Color(0xFFDCE7F2).withValues(alpha: .65),
                 shape: BoxShape.circle,
               ),
             ),

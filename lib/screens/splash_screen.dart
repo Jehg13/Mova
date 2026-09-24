@@ -6,6 +6,8 @@ import 'package:mova/database/database_helper.dart';
 import 'welcome_screen.dart';
 import 'navigation_wrapper.dart';
 
+import 'package:mova/services/mova_localizations.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -26,29 +28,26 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1250),
+      duration: Duration(milliseconds: 1250),
     );
     _orbitController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 8),
+      duration: Duration(seconds: 8),
     )..repeat();
     _fade = CurvedAnimation(
       parent: _entranceController,
-      curve: const Interval(0, .7, curve: Curves.easeOut),
+      curve: Interval(0, .7, curve: Curves.easeOut),
     );
     _scale = Tween<double>(begin: .72, end: 1).animate(
       CurvedAnimation(
         parent: _entranceController,
-        curve: const Interval(0, .8, curve: Curves.easeOutBack),
+        curve: Interval(0, .8, curve: Curves.easeOutBack),
       ),
     );
-    _slide = Tween<Offset>(
-      begin: const Offset(0, .18),
-      end: Offset.zero,
-    ).animate(
+    _slide = Tween<Offset>(begin: Offset(0, .18), end: Offset.zero).animate(
       CurvedAnimation(
         parent: _entranceController,
-        curve: const Interval(.25, 1, curve: Curves.easeOutCubic),
+        curve: Interval(.25, 1, curve: Curves.easeOutCubic),
       ),
     );
     _entranceController.forward();
@@ -56,16 +55,15 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _goToWelcome() async {
-    await Future<void>.delayed(const Duration(milliseconds: 2800));
+    await Future<void>.delayed(Duration(milliseconds: 2800));
     if (!mounted) return;
     final remembered = await DatabaseHelper().hasRememberedSession();
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, animation, _) => remembered
-            ? const NavigationWrapper()
-            : const WelcomeScreen(),
-        transitionDuration: const Duration(milliseconds: 650),
+        pageBuilder: (_, animation, _) =>
+            remembered ? NavigationWrapper() : WelcomeScreen(),
+        transitionDuration: Duration(milliseconds: 650),
         transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);
         },
@@ -84,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -114,13 +112,13 @@ class _SplashScreenState extends State<SplashScreen>
                           child: Container(
                             width: 142,
                             height: 142,
-                            padding: const EdgeInsets.all(10),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(42),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF7DD3FC)
+                                  color: Color(0xFF7DD3FC)
                                       .withValues(alpha: .2),
                                   blurRadius: 45,
                                   spreadRadius: 8,
@@ -136,9 +134,9 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
                         ),
-                        const SizedBox(height: 28),
-                        const Text(
-                          'MOVA',
+                        SizedBox(height: 28),
+                        Text(
+                          movaText('MOVA'),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,
@@ -146,9 +144,9 @@ class _SplashScreenState extends State<SplashScreen>
                             letterSpacing: 8,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(
-                          'Tu dinero, en movimiento.',
+                          context.l10n.text('splash_tagline'),
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: .72),
                             fontSize: 14,
@@ -156,7 +154,7 @@ class _SplashScreenState extends State<SplashScreen>
                             letterSpacing: .6,
                           ),
                         ),
-                        const SizedBox(height: 42),
+                        SizedBox(height: 42),
                         SizedBox(
                           width: 42,
                           height: 42,
@@ -178,7 +176,7 @@ class _SplashScreenState extends State<SplashScreen>
               right: 0,
               bottom: 28,
               child: Text(
-                'CONTROL • CLARIDAD • TRANQUILIDAD',
+                context.l10n.text('splash_motto'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: .44),
@@ -217,7 +215,7 @@ class _SplashOrbitPainter extends CustomPainter {
     canvas.drawCircle(
       dot,
       3.5,
-      Paint()..color = const Color(0xFF7DD3FC).withValues(alpha: .8),
+      Paint()..color = Color(0xFF7DD3FC).withValues(alpha: .8),
     );
   }
 

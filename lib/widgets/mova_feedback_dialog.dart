@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mova/services/mova_localizations.dart';
 
 Future<void> showMovaFeedback(
   BuildContext context, {
@@ -6,6 +7,8 @@ Future<void> showMovaFeedback(
   required String message,
   bool success = false,
 }) {
+  final localizedTitle = context.l10n.translate(title);
+  final localizedMessage = context.l10n.translate(message);
   return showDialog<void>(
     context: context,
     useRootNavigator: true,
@@ -38,7 +41,7 @@ Future<void> showMovaFeedback(
             ),
             const SizedBox(height: 16),
             Text(
-              title,
+              localizedTitle,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF102A43),
@@ -48,7 +51,7 @@ Future<void> showMovaFeedback(
             ),
             const SizedBox(height: 8),
             Text(
-              message,
+              localizedMessage,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF64748B),
@@ -76,7 +79,7 @@ Future<void> showMovaFeedback(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text('Entendido'),
+                child: Text(dialogContext.l10n.text('understood')),
               ),
             ),
           ],
@@ -89,19 +92,23 @@ Future<void> showMovaFeedback(
 Future<void> showMovaError(
   BuildContext context,
   String message, {
-  String title = 'Algo salió mal',
+  String? title,
 }) {
-  return showMovaFeedback(context, title: title, message: message);
+  return showMovaFeedback(
+    context,
+    title: title ?? context.l10n.text('something_wrong'),
+    message: message,
+  );
 }
 
 Future<void> showMovaSuccess(
   BuildContext context,
   String message, {
-  String title = 'Listo',
+  String? title,
 }) {
   return showMovaFeedback(
     context,
-    title: title,
+    title: title ?? context.l10n.text('ready'),
     message: message,
     success: true,
   );

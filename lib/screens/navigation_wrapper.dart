@@ -9,6 +9,7 @@ import 'home_screen.dart';
 import 'transaction_screen.dart';
 import '../widgets/mova_loading_overlay.dart';
 import '../widgets/mova_feedback_dialog.dart';
+import '../services/mova_localizations.dart';
 
 class NavigationWrapper extends StatefulWidget {
   const NavigationWrapper({super.key});
@@ -32,10 +33,10 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
       key: _homeKey,
       onOpenSettings: _openSettings,
     ), // Índice 0: Inicio
-    const AnalyticsScreen(), // Índice 1
+    AnalyticsScreen(), // Índice 1
     AddTransactionScreen(key: _transactionKey), // Índice 2: Agregar
-    const GoalsScreen(), // Índice 3
-    const MoreScreen(), // Índice 4
+    GoalsScreen(), // Índice 3
+    MoreScreen(), // Índice 4
   ];
 
   void _openSettings() {
@@ -81,8 +82,8 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
     } else {
       await showMovaError(
         context,
-        'El PIN ingresado no es correcto.',
-        title: 'PIN incorrecto',
+        context.l10n.text('incorrect_pin_message'),
+        title: context.l10n.text('incorrect_pin'),
       );
       await _unlock(mode);
     }
@@ -91,7 +92,7 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   @override
   Widget build(BuildContext context) {
     if (_checkingLock) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
       // --- CAMBIO CLAVE AQUÍ: IndexedStack permite cambiar al instante al presionar ---
@@ -99,19 +100,19 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
         children: [
           IndexedStack(index: _selectedIndex, children: _screens),
           if (_locked)
-            const ModalBarrier(dismissible: false, color: Color(0xDDFFFFFF)),
+            ModalBarrier(dismissible: false, color: Color(0xDDFFFFFF)),
           if (_isSwitchingSection)
-            const MovaLoadingOverlay(message: 'Cargando tu sección'),
+            MovaLoadingOverlay(message: context.l10n.text('loading_section')),
         ],
       ),
       bottomNavigationBar: SafeArea(
         top: false,
-        minimum: const EdgeInsets.only(bottom: 4),
+        minimum: EdgeInsets.only(bottom: 4),
         child: IgnorePointer(
           ignoring: _isSwitchingSection || _locked,
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
-            selectedItemColor: const Color(0xFF1E3A5F),
+            selectedItemColor: Color(0xFF1E3A5F),
             unselectedItemColor: Colors.grey,
             currentIndex: _selectedIndex,
             onTap: (index) async {
@@ -127,24 +128,30 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
               if (index == 2) {
                 _transactionKey.currentState?.refreshCategories();
               }
-              await Future<void>.delayed(const Duration(milliseconds: 360));
+              await Future<void>.delayed(Duration(milliseconds: 360));
               if (mounted) setState(() => _isSwitchingSection = false);
             },
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: context.l10n.text('home'),
+              ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.bar_chart),
-                label: "Análisis",
+                label: context.l10n.text('analysis'),
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.add_circle, size: 40),
-                label: "Agregar",
+                label: context.l10n.text('add'),
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.track_changes),
-                label: "Metas",
+                label: context.l10n.text('goals'),
               ),
-              BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Más"),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: context.l10n.text('more'),
+              ),
             ],
           ),
         ),
@@ -170,20 +177,20 @@ class _UnlockPinDialogState extends State<_UnlockPinDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Desbloquear MOVA'),
+      title: Text(context.l10n.text('unlock_mova')),
       content: TextField(
         controller: _controller,
         autofocus: true,
         obscureText: true,
         keyboardType: TextInputType.number,
         maxLength: 8,
-        decoration: const InputDecoration(labelText: 'Ingresa tu PIN'),
+        decoration: InputDecoration(labelText: context.l10n.text('enter_pin')),
         onSubmitted: (_) => Navigator.pop(context, _controller.text),
       ),
       actions: [
         FilledButton(
           onPressed: () => Navigator.pop(context, _controller.text),
-          child: const Text('Desbloquear'),
+          child: Text(movaText('Desbloquear')),
         ),
       ],
     );
@@ -199,7 +206,7 @@ class PlaceholderWidget extends StatelessWidget {
     return Center(
       child: Text(
         title,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
   }

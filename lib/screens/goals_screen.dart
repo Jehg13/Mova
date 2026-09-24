@@ -7,6 +7,7 @@ import 'package:mova/services/goal_image_picker.dart';
 import 'package:mova/models/shared_goal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
+import 'package:mova/services/mova_localizations.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
@@ -39,6 +40,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
@@ -46,12 +48,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
           future: _goals,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
               return Center(
                 child: Text(
-                  'No se pudieron cargar las metas: ${snapshot.error}',
+                  movaText(
+                    'No se pudieron cargar las metas: ${snapshot.error}',
+                  ),
                 ),
               );
             }
@@ -72,8 +76,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 100),
                 children: [
-                  const Text(
-                    'Mis metas',
+                  Text(
+                    l10n.text('my_goals'),
                     style: TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.w800,
@@ -81,8 +85,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Convierte tus planes en objetivos',
+                  Text(
+                    l10n.text('goals_subtitle'),
                     style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
                   ),
                   const SizedBox(height: 20),
@@ -116,8 +120,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
         onPressed: _newGoal,
         backgroundColor: const Color(0xFF1E293B),
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Nueva meta',
+        label: Text(
+          l10n.text('new_goal'),
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
@@ -177,8 +181,8 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
       await showMovaSuccess(
         context,
         withdraw
-            ? 'Ahorro retirado correctamente.'
-            : 'Ahorro agregado correctamente.',
+            ? movaText('Ahorro retirado correctamente.')
+            : movaText('Ahorro agregado correctamente.'),
       );
     } catch (error) {
       if (!mounted) return;
@@ -186,7 +190,7 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
       await showMovaError(
         context,
         error.toString().replaceFirst('Bad state: ', ''),
-        title: 'No se pudo actualizar el ahorro',
+        title: movaText('No se pudo actualizar el ahorro'),
       );
     } finally {
       if (mounted && _saving) setState(() => _saving = false);
@@ -234,12 +238,12 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Ahorro libre',
+                          movaText('Ahorro libre'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -247,7 +251,7 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
                         ),
                         SizedBox(height: 3),
                         Text(
-                          'Ahorra sin tener una meta específica',
+                          movaText('Ahorra sin tener una meta específica'),
                           style: TextStyle(
                             fontSize: 12,
                             color: Color(0xFF526D8D),
@@ -282,7 +286,7 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
                               height: 18,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Agregar'),
+                          : Text(movaText('Agregar')),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -292,7 +296,7 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
                           ? () => _openAmountDialog(withdraw: true)
                           : null,
                       icon: const Icon(Icons.remove_rounded, size: 18),
-                      label: const Text('Retirar'),
+                      label: Text(movaText('Retirar')),
                     ),
                   ),
                 ],
@@ -338,7 +342,7 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
   void _submit() {
     final value = double.tryParse(_controller.text.trim().replaceAll(',', '.'));
     if (value == null || value <= 0) {
-      setState(() => _error = 'Escribe una cantidad mayor a cero.');
+      setState(() => _error = movaText('Escribe una cantidad mayor a cero.'));
       return;
     }
     Navigator.of(context).pop(value);
@@ -376,8 +380,8 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
                   Expanded(
                     child: Text(
                       widget.withdraw
-                          ? 'Retirar ahorro libre'
-                          : 'Agregar ahorro libre',
+                          ? movaText('Retirar ahorro libre')
+                          : movaText('Agregar ahorro libre'),
                       style: const TextStyle(
                         color: Color(0xFF102A43),
                         fontSize: 19,
@@ -394,8 +398,10 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
               const SizedBox(height: 8),
               Text(
                 widget.withdraw
-                    ? 'Elige cuánto deseas devolver a tu dinero disponible.'
-                    : 'Aparta una cantidad sin asociarla a una meta.',
+                    ? movaText(
+                        'Elige cuánto deseas devolver a tu dinero disponible.',
+                      )
+                    : movaText('Aparta una cantidad sin asociarla a una meta.'),
                 style: const TextStyle(color: Color(0xFF64748B), height: 1.35),
               ),
               const SizedBox(height: 16),
@@ -418,13 +424,13 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
                           children: [
                             Expanded(
                               child: _SavingsInfo(
-                                label: 'Ahorrado',
+                                label: movaText('Ahorrado'),
                                 value: appCurrencyController.format(savings),
                               ),
                             ),
                             Expanded(
                               child: _SavingsInfo(
-                                label: 'Disponible',
+                                label: movaText('Disponible'),
                                 value: appCurrencyController.format(available),
                               ),
                             ),
@@ -447,9 +453,9 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
                 },
                 onSubmitted: (_) => _submit(),
                 decoration: InputDecoration(
-                  labelText: 'Cantidad',
+                  labelText: movaText('Cantidad'),
                   prefixText: '$symbol ',
-                  hintText: '0.00',
+                  hintText: movaText('0.00'),
                   errorText: _error,
                   filled: true,
                   fillColor: const Color(0xFFF8FAFC),
@@ -469,14 +475,18 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancelar'),
+                      child: Text(movaText('Cancelar')),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: FilledButton(
                       onPressed: _submit,
-                      child: Text(widget.withdraw ? 'Retirar' : 'Guardar'),
+                      child: Text(
+                        widget.withdraw
+                            ? movaText('Retirar')
+                            : movaText('Guardar'),
+                      ),
                     ),
                   ),
                 ],
@@ -501,7 +511,7 @@ class _SavingsInfo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          movaText(label),
           style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
         ),
         const SizedBox(height: 3),
@@ -563,7 +573,9 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No se pudo abrir el selector de imágenes: $error'),
+          content: Text(
+            movaText('No se pudo abrir el selector de imágenes: $error'),
+          ),
         ),
       );
     }
@@ -575,8 +587,8 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
     final saved = _number(_initialSaved.text);
     if (saved > target) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El ahorro inicial no puede superar la meta'),
+        SnackBar(
+          content: Text(movaText('El ahorro inicial no puede superar la meta')),
         ),
       );
       return;
@@ -595,7 +607,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo crear la meta: $error')),
+        SnackBar(content: Text(movaText('No se pudo crear la meta: $error'))),
       );
     }
   }
@@ -609,7 +621,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
     if (optional && (value == null || value.trim().isEmpty)) return null;
     final number = double.tryParse((value ?? '').trim().replaceAll(',', '.'));
     return number == null || number <= 0
-        ? 'Ingresa un monto mayor que cero'
+        ? movaText('Ingresa un monto mayor que cero')
         : null;
   }
 
@@ -682,12 +694,12 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Crear nueva meta',
+                            movaText('Crear nueva meta'),
                             style: TextStyle(
                               fontSize: 21,
                               fontWeight: FontWeight.w800,
@@ -696,7 +708,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                           ),
                           SizedBox(height: 3),
                           Text(
-                            'Dale un propósito a tu ahorro',
+                            movaText('Dale un propósito a tu ahorro'),
                             style: TextStyle(
                               fontSize: 12,
                               color: Color(0xFF64748B),
@@ -715,8 +727,8 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                 const SizedBox(height: 20),
                 _imagePicker(),
                 const SizedBox(height: 21),
-                const Text(
-                  'Información de la meta',
+                Text(
+                  movaText('Información de la meta'),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
@@ -746,7 +758,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                           decimal: true,
                         ),
                         decoration: _decoration(
-                          'Monto objetivo',
+                          movaText('Monto objetivo'),
                           '0.00',
                           Icons.track_changes_outlined,
                           prefix: '\$ ',
@@ -762,7 +774,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                           decimal: true,
                         ),
                         decoration: _decoration(
-                          'Ahorro inicial',
+                          movaText('Ahorro inicial'),
                           'Opcional',
                           Icons.savings_outlined,
                           prefix: '\$ ',
@@ -774,8 +786,8 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Elige un icono',
+                Text(
+                  movaText('Elige un icono'),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
@@ -824,7 +836,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                 const SizedBox(height: 6),
                 Semantics(
                   button: true,
-                  label: 'Sin icono',
+                  label: movaText('Sin icono'),
                   selected: _icon == 'none',
                   child: InkWell(
                     onTap: () => setState(() => _icon = 'none'),
@@ -848,7 +860,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'Sin icono',
+                            movaText('Sin icono'),
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: _icon == 'none'
@@ -879,8 +891,8 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                           ),
                           side: const BorderSide(color: Color(0xFFD6DEE8)),
                         ),
-                        child: const Text(
-                          'Cancelar',
+                        child: Text(
+                          movaText('Cancelar'),
                           style: TextStyle(color: Color(0xFF475569)),
                         ),
                       ),
@@ -907,8 +919,8 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text(
-                                'Crear meta',
+                            : Text(
+                                movaText('Crear meta'),
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                       ),
@@ -936,7 +948,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
           border: Border.all(color: const Color(0xFFB9DED6), width: 1.2),
         ),
         child: _image == null
-            ? const Column(
+            ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
@@ -946,7 +958,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Agregar imagen',
+                    movaText('Agregar imagen'),
                     style: TextStyle(
                       color: Color(0xFF0C2340),
                       fontWeight: FontWeight.bold,
@@ -954,7 +966,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                   ),
                   SizedBox(height: 3),
                   Text(
-                    'Opcional · JPG, PNG o WebP',
+                    movaText('Opcional · JPG, PNG o WebP'),
                     style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                   ),
                 ],
@@ -1021,12 +1033,12 @@ class _SummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'RESUMEN DE AHORRO',
+                      movaText('RESUMEN DE AHORRO'),
                       style: TextStyle(
                         fontSize: 11,
                         letterSpacing: 1.2,
@@ -1036,7 +1048,7 @@ class _SummaryCard extends StatelessWidget {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      'Tu avance acumulado',
+                      movaText('Tu avance acumulado'),
                       style: TextStyle(fontSize: 13, color: Color(0xFFE2E8F0)),
                     ),
                   ],
@@ -1067,7 +1079,7 @@ class _SummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            'de ${appCurrencyController.format(target)} establecidos',
+            '${movaText('de')} ${appCurrencyController.format(target)} ${movaText('establecidos')}',
             style: const TextStyle(fontSize: 12, color: Color(0xFFB9C9DB)),
           ),
           const SizedBox(height: 14),
@@ -1085,7 +1097,7 @@ class _SummaryCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${(progress * 100).round()}% completado',
+                '${(progress * 100).round()}% ${movaText('completado')}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -1093,7 +1105,9 @@ class _SummaryCard extends StatelessWidget {
                 ),
               ),
               Text(
-                '$count ${count == 1 ? 'meta activa' : 'metas activas'}',
+                movaText(
+                  '$count ${count == 1 ? 'meta activa' : 'metas activas'}',
+                ),
                 style: const TextStyle(fontSize: 12, color: Color(0xFFB9C9DB)),
               ),
             ],
@@ -1139,7 +1153,9 @@ class _EditGoalSavingsDialogState extends State<_EditGoalSavingsDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Ingresa un valor entre ${appCurrencyController.format(0)} y ${appCurrencyController.format(target)}',
+            movaText(
+              'Ingresa un valor entre ${appCurrencyController.format(0)} y ${appCurrencyController.format(target)}',
+            ),
           ),
         ),
       );
@@ -1153,7 +1169,9 @@ class _EditGoalSavingsDialogState extends State<_EditGoalSavingsDialog> {
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo actualizar el ahorro: $error')),
+        SnackBar(
+          content: Text(movaText('No se pudo actualizar el ahorro: $error')),
+        ),
       );
     }
   }
@@ -1162,20 +1180,20 @@ class _EditGoalSavingsDialogState extends State<_EditGoalSavingsDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      title: const Text('Modificar ahorro'),
+      title: Text(movaText('Modificar ahorro')),
       content: TextField(
         controller: _amount,
         autofocus: true,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: const InputDecoration(
-          labelText: 'Cantidad ahorrada',
+        decoration: InputDecoration(
+          labelText: movaText('Cantidad ahorrada'),
           prefixText: '\$ ',
         ),
       ),
       actions: [
         TextButton(
           onPressed: _saving ? null : () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(movaText('Cancelar')),
         ),
         FilledButton(
           onPressed: _saving ? null : _save,
@@ -1185,7 +1203,7 @@ class _EditGoalSavingsDialogState extends State<_EditGoalSavingsDialog> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Guardar'),
+              : Text(movaText('Guardar')),
         ),
       ],
     );
@@ -1212,17 +1230,17 @@ class _NoGoalsCard extends StatelessWidget {
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         children: [
           Icon(Icons.flag_outlined, size: 42, color: Colors.grey),
           SizedBox(height: 10),
           Text(
-            'Aún no tienes metas',
+            context.l10n.text('no_goals_yet'),
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 6),
           Text(
-            'Crea una meta para darle un objetivo a tus ahorros.',
+            context.l10n.text('create_goal_savings'),
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: Colors.grey),
           ),
@@ -1301,9 +1319,9 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Retirar de la meta',
+              movaText('Retirar de la meta'),
               style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
             ),
           ),
@@ -1319,8 +1337,10 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Devuelve una parte de lo ahorrado a tu dinero disponible.',
+            Text(
+              movaText(
+                'Devuelve una parte de lo ahorrado a tu dinero disponible.',
+              ),
               style: TextStyle(color: Color(0xFF64748B), height: 1.35),
             ),
             const SizedBox(height: 16),
@@ -1340,9 +1360,9 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
                     size: 20,
                   ),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Disponible en la meta',
+                      movaText('Disponible en la meta'),
                       style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
                     ),
                   ),
@@ -1368,9 +1388,9 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
               },
               onSubmitted: (_) => _withdraw(),
               decoration: InputDecoration(
-                labelText: 'Monto a retirar',
+                labelText: movaText('Monto a retirar'),
                 prefixText: '${appCurrencyController.definition.symbol} ',
-                hintText: '0.00',
+                hintText: movaText('0.00'),
                 errorText: _error,
                 filled: true,
                 fillColor: const Color(0xFFF8FAFC),
@@ -1390,7 +1410,7 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
       actions: [
         TextButton(
           onPressed: _saving ? null : () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(movaText('Cancelar')),
         ),
         FilledButton(
           onPressed: _saving ? null : _withdraw,
@@ -1403,7 +1423,7 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Retirar'),
+              : Text(movaText('Retirar')),
         ),
       ],
     );
@@ -1419,7 +1439,7 @@ class _GoalHistoryDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      title: const Text('Historial de la meta'),
+      title: Text(movaText('Historial de la meta')),
       content: SizedBox(
         width: 360,
         child: FutureBuilder<List<Map<String, dynamic>>>(
@@ -1432,11 +1452,13 @@ class _GoalHistoryDialog extends StatelessWidget {
               );
             }
             if (snapshot.hasError) {
-              return Text('No se pudo cargar el historial: ${snapshot.error}');
+              return Text(
+                movaText('No se pudo cargar el historial: ${snapshot.error}'),
+              );
             }
             final movements = snapshot.data ?? [];
             if (movements.isEmpty) {
-              return const Text('Todavía no hay movimientos en esta meta.');
+              return Text(movaText('Todavía no hay movimientos en esta meta.'));
             }
             return ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 320),
@@ -1461,11 +1483,16 @@ class _GoalHistoryDialog extends StatelessWidget {
                           ? const Color(0xFFB42318)
                           : const Color(0xFF0C2340),
                     ),
-                    title: Text(withdrawal ? 'Retiro' : 'Ahorro agregado'),
+                    title: Text(
+                      withdrawal
+                          ? movaText('Retiro')
+                          : movaText('Ahorro agregado'),
+                    ),
                     subtitle: Text(
                       date == null
                           ? ''
-                          : '${date.day}/${date.month}/${date.year}',
+                          : MaterialLocalizations.of(context)
+                                .formatMediumDate(date),
                     ),
                     trailing: Text(
                       '${withdrawal ? '-' : '+'}${appCurrencyController.format(amount)}',
@@ -1486,7 +1513,7 @@ class _GoalHistoryDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
+          child: Text(movaText('Cerrar')),
         ),
       ],
     );
@@ -1565,7 +1592,7 @@ class _GoalCard extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Modificar ahorro',
+                      tooltip: movaText('Modificar ahorro'),
                       visualDensity: VisualDensity.compact,
                       constraints: const BoxConstraints(
                         minWidth: 28,
@@ -1582,7 +1609,7 @@ class _GoalCard extends StatelessWidget {
                       color: const Color(0xFF64748B),
                     ),
                     IconButton(
-                      tooltip: 'Eliminar meta',
+                      tooltip: movaText('Eliminar meta'),
                       visualDensity: VisualDensity.compact,
                       constraints: const BoxConstraints(
                         minWidth: 28,
@@ -1610,8 +1637,8 @@ class _GoalCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'PROGRESO DE LA META',
+                          Text(
+                            movaText('PROGRESO DE LA META'),
                             style: TextStyle(
                               color: Color(0xFF94A3B8),
                               fontSize: 9,
@@ -1688,7 +1715,7 @@ class _GoalCard extends StatelessWidget {
                           Icons.arrow_downward_rounded,
                           size: 17,
                         ),
-                        label: const Text('Retirar'),
+                        label: Text(movaText('Retirar')),
                         style: TextButton.styleFrom(
                           foregroundColor: const Color(0xFFB42318),
                           padding: const EdgeInsets.symmetric(horizontal: 7),
@@ -1702,7 +1729,7 @@ class _GoalCard extends StatelessWidget {
                               _GoalHistoryDialog(goalId: goal['id'] as int),
                         ),
                         icon: const Icon(Icons.history_rounded, size: 17),
-                        label: const Text('Historial'),
+                        label: Text(movaText('Historial')),
                         style: TextButton.styleFrom(
                           foregroundColor: const Color(0xFF0C2340),
                           padding: const EdgeInsets.symmetric(horizontal: 7),
@@ -1718,7 +1745,7 @@ class _GoalCard extends StatelessWidget {
                             await showDialog<void>(
                               context: context,
                               builder: (_) => _QrDialog(
-                                title: 'Compartir meta',
+                                title: movaText('Compartir meta'),
                                 data: SharedGoalPayload(
                                   id: id,
                                   name: goal['name'] as String,
@@ -1731,7 +1758,7 @@ class _GoalCard extends StatelessWidget {
                           }
                         },
                         icon: const Icon(Icons.qr_code_2_rounded, size: 17),
-                        label: const Text('Compartir'),
+                        label: Text(movaText('Compartir')),
                         style: TextButton.styleFrom(
                           foregroundColor: const Color(0xFF0C2340),
                           padding: const EdgeInsets.symmetric(horizontal: 7),
@@ -1752,7 +1779,7 @@ class _GoalCard extends StatelessWidget {
                           await showDialog<void>(
                             context: context,
                             builder: (_) => _QrDialog(
-                              title: 'QR de aporte',
+                              title: movaText('QR de aporte'),
                               data: ContributionPayload(
                                 contributionId: newSharedId(),
                                 goalId: id,
@@ -1766,7 +1793,7 @@ class _GoalCard extends StatelessWidget {
                           Icons.volunteer_activism_outlined,
                           size: 17,
                         ),
-                        label: const Text('Aporte'),
+                        label: Text(movaText('Aporte')),
                         style: TextButton.styleFrom(
                           foregroundColor: const Color(0xFF0C2340),
                           padding: const EdgeInsets.symmetric(horizontal: 7),
@@ -1812,17 +1839,20 @@ class _ContributionAmountDialogState extends State<_ContributionAmountDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Monto del aporte'),
+      title: Text(movaText('Monto del aporte')),
       content: TextField(
         controller: controller,
         autofocus: true,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: const InputDecoration(prefixText: '\$ ', hintText: '0.00'),
+        decoration: InputDecoration(
+          prefixText: '\$ ',
+          hintText: movaText('0.00'),
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(movaText('Cancelar')),
         ),
         FilledButton(
           onPressed: () {
@@ -1831,7 +1861,7 @@ class _ContributionAmountDialogState extends State<_ContributionAmountDialog> {
             );
             if (amount != null && amount > 0) Navigator.pop(context, amount);
           },
-          child: const Text('Crear QR'),
+          child: Text(movaText('Crear QR')),
         ),
       ],
     );
@@ -1872,7 +1902,7 @@ class _QrDialog extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cerrar'),
+                  child: Text(movaText('Cerrar')),
                 ),
               ),
             ],
@@ -1893,23 +1923,25 @@ class _DeleteGoalDialog extends StatelessWidget {
     final saved = (goal['saved_amount'] as num).toDouble();
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      title: const Text('Eliminar meta'),
+      title: Text(movaText('Eliminar meta')),
       content: Text(
         saved > 0
             ? 'Se eliminará esta meta y se devolverán ${appCurrencyController.format(saved)} a tu saldo. Esta acción no se puede deshacer.'
-            : '¿Quieres eliminar esta meta? Esta acción no se puede deshacer.',
+            : movaText(
+                '¿Quieres eliminar esta meta? Esta acción no se puede deshacer.',
+              ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancelar'),
+          child: Text(movaText('Cancelar')),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFFB42318),
           ),
-          child: const Text('Eliminar'),
+          child: Text(movaText('Eliminar')),
         ),
       ],
     );

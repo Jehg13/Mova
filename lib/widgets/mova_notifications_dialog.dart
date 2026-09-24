@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/database/database_helper.dart';
 
 class MovaNotificationsDialog extends StatefulWidget {
@@ -51,7 +52,7 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
       if (!mounted) return;
       setState(() => _savingKey = null);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo guardar la preferencia.')),
+        SnackBar(content: Text(movaText('No se pudo guardar la preferencia.'))),
       );
     }
   }
@@ -73,16 +74,17 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+      insetPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 460),
+        constraints: BoxConstraints(maxWidth: 460),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 14),
           child: _loading
-              ? const SizedBox(
+              ? SizedBox(
                   height: 260,
                   child: Center(child: CircularProgressIndicator()),
                 )
@@ -92,26 +94,26 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
+                            gradient: LinearGradient(
                               colors: [Color(0xFF0C2340), Color(0xFF36577D)],
                             ),
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.notifications_active_rounded,
                             color: Colors.white,
                             size: 24,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        const Expanded(
+                        SizedBox(width: 12),
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Notificaciones',
+                                l10n.text('notifications'),
                                 style: TextStyle(
                                   color: Color(0xFF102A43),
                                   fontSize: 21,
@@ -120,7 +122,7 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                               ),
                               SizedBox(height: 3),
                               Text(
-                                'Personaliza tus recordatorios',
+                                l10n.text('choose_notifications'),
                                 style: TextStyle(
                                   color: Color(0xFF64748B),
                                   fontSize: 12,
@@ -131,22 +133,20 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close_rounded),
+                          icon: Icon(Icons.close_rounded),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18),
                     Container(
-                      padding: const EdgeInsets.all(14),
+                      padding: EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: _enabled
-                            ? const Color(0xFFEAF6FA)
-                            : const Color(0xFFF1F5F9),
+                        color: _enabled ? Color(0xFFEAF6FA) : Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: _enabled
-                              ? const Color(0xFFD4EEF3)
-                              : const Color(0xFFE2E8F0),
+                              ? Color(0xFFD4EEF3)
+                              : Color(0xFFE2E8F0),
                         ),
                       ),
                       child: Row(
@@ -156,16 +156,16 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                                 ? Icons.notifications_active_outlined
                                 : Icons.notifications_off_outlined,
                             color: _enabled
-                                ? const Color(0xFF007C91)
-                                : const Color(0xFF64748B),
+                                ? Color(0xFF007C91)
+                                : Color(0xFF64748B),
                           ),
-                          const SizedBox(width: 12),
-                          const Expanded(
+                          SizedBox(width: 12),
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Permitir notificaciones',
+                                  l10n.text('allow_notifications'),
                                   style: TextStyle(
                                     color: Color(0xFF102A43),
                                     fontWeight: FontWeight.w800,
@@ -173,7 +173,7 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                                 ),
                                 SizedBox(height: 3),
                                 Text(
-                                  'Activa o pausa todos los avisos de MOVA',
+                                  l10n.text('notifications_help'),
                                   style: TextStyle(
                                     color: Color(0xFF64748B),
                                     fontSize: 12,
@@ -184,7 +184,7 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                           ),
                           Switch.adaptive(
                             value: _enabled,
-                            activeTrackColor: const Color(0xFF0C2340),
+                            activeTrackColor: Color(0xFF0C2340),
                             onChanged: _savingKey == 'notifications_enabled'
                                 ? null
                                 : (value) =>
@@ -193,9 +193,9 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'TIPOS DE AVISO',
+                    SizedBox(height: 18),
+                    Text(
+                      l10n.text('notification_types'),
                       style: TextStyle(
                         color: Color(0xFF64748B),
                         fontSize: 11,
@@ -203,11 +203,11 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                         letterSpacing: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     _NotificationOption(
                       icon: Icons.account_balance_wallet_outlined,
-                      title: 'Presupuesto',
-                      subtitle: 'Avisos relacionados con tu límite mensual',
+                      title: l10n.text('personal_budget'),
+                      subtitle: l10n.text('budget_help'),
                       value: _budget,
                       enabled: _enabled,
                       saving: _savingKey == 'notification_budget',
@@ -216,8 +216,8 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                     ),
                     _NotificationOption(
                       icon: Icons.flag_outlined,
-                      title: 'Metas',
-                      subtitle: 'Recordatorios para avanzar en tus objetivos',
+                      title: l10n.text('goals'),
+                      subtitle: l10n.text('goals_help'),
                       value: _goals,
                       enabled: _enabled,
                       saving: _savingKey == 'notification_goals',
@@ -226,26 +226,26 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                     ),
                     _NotificationOption(
                       icon: Icons.shopping_bag_outlined,
-                      title: 'Lista de compras',
-                      subtitle: 'Recordatorios de listas pendientes',
+                      title: l10n.text('shopping_lists'),
+                      subtitle: l10n.text('shopping_help'),
                       value: _shopping,
                       enabled: _enabled,
                       saving: _savingKey == 'notification_shopping',
                       onChanged: (value) =>
                           _toggle('notification_shopping', value),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF0C2340),
-                        padding: const EdgeInsets.symmetric(vertical: 13),
-                        side: const BorderSide(color: Color(0xFFD7E0EA)),
+                        foregroundColor: Color(0xFF0C2340),
+                        padding: EdgeInsets.symmetric(vertical: 13),
+                        side: BorderSide(color: Color(0xFFD7E0EA)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
                       ),
-                      child: const Text('Listo'),
+                      child: Text(l10n.text('done')),
                     ),
                   ],
                 ),
@@ -277,41 +277,38 @@ class _NotificationOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      margin: EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: enabled ? Colors.white : const Color(0xFFF8FAFC),
+        color: enabled ? Colors.white : Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF36577D), size: 21),
-          const SizedBox(width: 11),
+          Icon(icon, color: Color(0xFF36577D), size: 21),
+          SizedBox(width: 11),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Color(0xFF102A43),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
                 ),
               ],
             ),
           ),
           if (saving)
-            const SizedBox(
+            SizedBox(
               width: 18,
               height: 18,
               child: CircularProgressIndicator(strokeWidth: 2),
@@ -319,7 +316,7 @@ class _NotificationOption extends StatelessWidget {
           else
             Switch.adaptive(
               value: value,
-              activeTrackColor: const Color(0xFF0C2340),
+              activeTrackColor: Color(0xFF0C2340),
               onChanged: enabled ? onChanged : null,
             ),
         ],

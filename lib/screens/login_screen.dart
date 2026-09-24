@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/biometric_auth.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
+import 'package:mova/services/mova_localizations.dart';
 
 import 'navigation_wrapper.dart';
 import 'register_screen.dart';
@@ -9,11 +10,11 @@ import 'register_screen.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
-  static const Color primaryTeal = Color(0xFF0C2340);
-  static const Color darkNavy = Color(0xFF0C2340);
-  static const Color subtitleGrey = Color(0xFF64748B);
+  static Color primaryTeal = Color(0xFF0C2340);
+  static Color darkNavy = Color(0xFF0C2340);
+  static Color subtitleGrey = Color(0xFF64748B);
   static const Color inputBorderGrey = Color(0xFFE2E8F0);
-  static const Color backgroundColor = Color(0xFFF1F5F9);
+  static Color backgroundColor = Color(0xFFF1F5F9);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 850),
+      duration: Duration(milliseconds: 850),
     )..forward();
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
@@ -58,8 +59,8 @@ class _LoginScreenState extends State<LoginScreen>
     if (email.isEmpty || password.isEmpty) {
       showMovaError(
         context,
-        'Completa todos los campos.',
-        title: 'Faltan datos',
+        context.l10n.text('complete_fields'),
+        title: context.l10n.text('missing_data'),
       );
       return;
     }
@@ -75,14 +76,14 @@ class _LoginScreenState extends State<LoginScreen>
       if (usuario != null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const NavigationWrapper()),
+          MaterialPageRoute(builder: (context) => NavigationWrapper()),
         );
       } else {
         setState(() => _isLoading = false);
         showMovaError(
           context,
-          'Revisa tu correo y contraseña e inténtalo nuevamente.',
-          title: 'Datos incorrectos',
+          movaText('Revisa tu correo y contraseña e inténtalo nuevamente.'),
+          title: context.l10n.text('incorrect_data'),
         );
       }
     } catch (e) {
@@ -90,8 +91,8 @@ class _LoginScreenState extends State<LoginScreen>
       setState(() => _isLoading = false);
       showMovaError(
         context,
-        'No fue posible iniciar sesión.',
-        title: 'Error de acceso',
+        movaText('No fue posible iniciar sesión.'),
+        title: movaText('Error de acceso'),
       );
     }
   }
@@ -110,12 +111,12 @@ class _LoginScreenState extends State<LoginScreen>
   }) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-      prefixIcon: Icon(prefixIcon, color: const Color(0xFF94A3B8), size: 20),
+      hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+      prefixIcon: Icon(prefixIcon, color: Color(0xFF94A3B8), size: 20),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      fillColor: Color(0xFFF8FAFC),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: _buildBorder(),
       enabledBorder: _buildBorder(),
       focusedBorder: _buildBorder(color: LoginScreen.primaryTeal),
@@ -124,6 +125,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: LoginScreen.backgroundColor,
       body: SafeArea(
@@ -133,12 +135,9 @@ class _LoginScreenState extends State<LoginScreen>
               opacity: _fadeAnimation,
               child: SingleChildScrollView(
                 physics: constraints.maxHeight >= 720
-                    ? const NeverScrollableScrollPhysics()
-                    : const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 16.0,
-                ),
+                    ? NeverScrollableScrollPhysics()
+                    : AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     minHeight: constraints.maxHeight - 32.0,
@@ -148,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen>
                     children: [
                       // --- CABECERA: IMAGEN LOGO MOVA ---
                       Container(
-                        margin: const EdgeInsets.only(top: 8.0),
+                        margin: EdgeInsets.only(top: 8.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(40),
                           boxShadow: [
@@ -157,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 alpha: 0.08,
                               ),
                               blurRadius: 15,
-                              offset: const Offset(0, 6),
+                              offset: Offset(0, 6),
                             ),
                           ],
                         ),
@@ -172,27 +171,25 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       // --- TARJETA DE LOGIN ELEVADA ---
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(24.0),
+                        padding: EdgeInsets.all(24.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF0F172A)
-                                  .withValues(alpha: 0.04),
+                              color: Color(0xFF0F172A).withValues(alpha: 0.04),
                               blurRadius: 20,
-                              offset: const Offset(0, 8),
+                              offset: Offset(0, 8),
                             ),
                             BoxShadow(
-                              color: const Color(0xFF0F172A)
-                                  .withValues(alpha: 0.02),
+                              color: Color(0xFF0F172A).withValues(alpha: 0.02),
                               blurRadius: 6,
-                              offset: const Offset(0, 2),
+                              offset: Offset(0, 2),
                             ),
                           ],
                         ),
@@ -200,15 +197,15 @@ class _LoginScreenState extends State<LoginScreen>
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(
+                              padding: EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 7,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEAF1F7),
+                                color: Color(0xFFEAF1F7),
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
@@ -218,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                   SizedBox(width: 6),
                                   Text(
-                                    'ACCESO PERSONAL',
+                                    l10n.text('login_access'),
                                     style: TextStyle(
                                       color: LoginScreen.primaryTeal,
                                       fontSize: 10,
@@ -229,9 +226,9 @@ class _LoginScreenState extends State<LoginScreen>
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 15),
-                            const Text(
-                              "Bienvenido de nuevo",
+                            SizedBox(height: 15),
+                            Text(
+                              l10n.text('welcome_back'),
                               style: TextStyle(
                                 fontSize: 25,
                                 fontWeight: FontWeight.w900,
@@ -239,44 +236,44 @@ class _LoginScreenState extends State<LoginScreen>
                                 letterSpacing: -0.8,
                               ),
                             ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              "Continúa organizando tus finanzas.",
+                            SizedBox(height: 6),
+                            Text(
+                              l10n.text('continue_finances'),
                               style: TextStyle(
                                 fontSize: 13.5,
                                 color: LoginScreen.subtitleGrey,
                               ),
                             ),
-                            const SizedBox(height: 28),
+                            SizedBox(height: 28),
 
                             // CAMPO CORREO
-                            _buildLabel("Correo electrónico"),
-                            const SizedBox(height: 8),
+                            _buildLabel(l10n.text('email')),
+                            SizedBox(height: 8),
                             TextField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               decoration: _inputDecoration(
-                                hintText: "Ingresa tu correo",
+                                hintText: l10n.text('email'),
                                 prefixIcon: Icons.email_outlined,
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            SizedBox(height: 20),
 
                             // CAMPO CONTRASEÑA
-                            _buildLabel("Contraseña"),
-                            const SizedBox(height: 8),
+                            _buildLabel(l10n.text('password')),
+                            SizedBox(height: 8),
                             TextField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
                               decoration: _inputDecoration(
-                                hintText: "Ingresa tu contraseña",
+                                hintText: l10n.text('password'),
                                 prefixIcon: Icons.lock_outline,
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword
                                         ? Icons.visibility_off_outlined
                                         : Icons.visibility_outlined,
-                                    color: const Color(0xFF94A3B8),
+                                    color: Color(0xFF94A3B8),
                                     size: 20,
                                   ),
                                   onPressed: () {
@@ -287,7 +284,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16),
 
                             // RECORDARME Y OLVIDASTE CONTRASEÑA
                             Row(
@@ -306,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen>
                                             5,
                                           ),
                                         ),
-                                        side: const BorderSide(
+                                        side: BorderSide(
                                           color: Color(0xFFCBD5E1),
                                           width: 1.5,
                                         ),
@@ -317,9 +314,9 @@ class _LoginScreenState extends State<LoginScreen>
                                         },
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      "Recordarme",
+                                    SizedBox(width: 8),
+                                    Text(
+                                      l10n.text('remember_me'),
                                       style: TextStyle(
                                         fontSize: 12.5,
                                         color: LoginScreen.darkNavy,
@@ -330,8 +327,8 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
                                 GestureDetector(
                                   onTap: _mostrarRecuperacion,
-                                  child: const Text(
-                                    "¿Olvidaste tu contraseña?",
+                                  child: Text(
+                                    l10n.text('forgot_password'),
                                     style: TextStyle(
                                       fontSize: 12.5,
                                       fontWeight: FontWeight.w700,
@@ -341,7 +338,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 28),
+                            SizedBox(height: 28),
 
                             // BOTÓN INICIAR SESIÓN CON SOMBRA
                             Container(
@@ -355,7 +352,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       alpha: 0.3,
                                     ),
                                     blurRadius: 12,
-                                    offset: const Offset(0, 4),
+                                    offset: Offset(0, 4),
                                   ),
                                 ],
                               ),
@@ -370,7 +367,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                 ),
                                 child: _isLoading
-                                    ? const SizedBox(
+                                    ? SizedBox(
                                         width: 21,
                                         height: 21,
                                         child: CircularProgressIndicator(
@@ -378,12 +375,12 @@ class _LoginScreenState extends State<LoginScreen>
                                           strokeWidth: 2.5,
                                         ),
                                       )
-                                    : const Row(
+                                    : Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            "Iniciar sesión",
+                                            l10n.text('login'),
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w700,
@@ -402,12 +399,12 @@ class _LoginScreenState extends State<LoginScreen>
                       // --- FOOTER ---
                       Column(
                         children: [
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
-                                "¿Aún no tienes una cuenta? ",
+                              Text(
+                                l10n.text('no_account'),
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: LoginScreen.subtitleGrey,
@@ -419,13 +416,12 @@ class _LoginScreenState extends State<LoginScreen>
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          const RegisterScreen(),
+                                      builder: (context) => RegisterScreen(),
                                     ),
                                   );
                                 },
-                                child: const Text(
-                                  "Crear cuenta",
+                                child: Text(
+                                  l10n.text('create_account'),
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -435,10 +431,10 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(
                                 Icons.verified_user_outlined,
                                 size: 14,
@@ -446,7 +442,7 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                               SizedBox(width: 6),
                               Text(
-                                "Tus datos están protegidos",
+                                movaText("Tus datos están protegidos"),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: LoginScreen.subtitleGrey,
@@ -455,7 +451,7 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                         ],
                       ),
                     ],
@@ -480,8 +476,10 @@ class _LoginScreenState extends State<LoginScreen>
 
     if (!mounted || recovered != true) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Contraseña actualizada. Ya puedes iniciar sesión.'),
+      SnackBar(
+        content: Text(
+          movaText('Contraseña actualizada. Ya puedes iniciar sesión.'),
+        ),
       ),
     );
   }
@@ -491,7 +489,7 @@ class _LoginScreenState extends State<LoginScreen>
       alignment: Alignment.centerLeft,
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
           color: LoginScreen.darkNavy,
@@ -550,21 +548,18 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
       prefixIcon: Icon(icon, color: LoginScreen.primaryTeal, size: 20),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
+      fillColor: Color(0xFFF8FAFC),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: BorderSide(color: Color(0xFFE2E8F0)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: BorderSide(color: Color(0xFFE2E8F0)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: LoginScreen.primaryTeal,
-          width: 1.5,
-        ),
+        borderSide: BorderSide(color: LoginScreen.primaryTeal, width: 1.5),
       ),
     );
   }
@@ -583,7 +578,9 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
     if (!updated) {
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No existe una cuenta con ese correo')),
+        SnackBar(
+          content: Text(movaText('No existe una cuenta con ese correo')),
+        ),
       );
       return;
     }
@@ -602,7 +599,9 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
     if (!exists) {
       setState(() => _checkingIdentity = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No existe una cuenta con ese correo')),
+        SnackBar(
+          content: Text(movaText('No existe una cuenta con ese correo')),
+        ),
       );
       return;
     }
@@ -616,16 +615,18 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
 
     if (result == BiometricResult.unavailable) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'La huella no está disponible en este dispositivo. En Chrome debes usar la app móvil.',
+            movaText(
+              'La huella no está disponible en este dispositivo. En Chrome debes usar la app móvil.',
+            ),
           ),
         ),
       );
     } else if (result != BiometricResult.authenticated &&
         result != BiometricResult.canceled) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo verificar tu identidad')),
+        SnackBar(content: Text(movaText('No se pudo verificar tu identidad'))),
       );
     }
   }
@@ -634,9 +635,9 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 430),
+        constraints: BoxConstraints(maxWidth: 430),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -645,7 +646,7 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
               BoxShadow(
                 color: LoginScreen.darkNavy.withValues(alpha: 0.18),
                 blurRadius: 30,
-                offset: const Offset(0, 14),
+                offset: Offset(0, 14),
               ),
             ],
           ),
@@ -657,8 +658,8 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(24, 24, 20, 22),
-                    decoration: const BoxDecoration(
+                    padding: EdgeInsets.fromLTRB(24, 24, 20, 22),
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [Color(0xFF0C2340), Color(0xFF0C2340)],
                         begin: Alignment.topLeft,
@@ -669,24 +670,24 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.lock_reset_rounded,
                             color: Colors.white,
                             size: 28,
                           ),
                         ),
-                        const SizedBox(width: 14),
-                        const Expanded(
+                        SizedBox(width: 14),
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Recupera tu acceso',
+                                movaText('Recupera tu acceso'),
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 21,
@@ -695,7 +696,9 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                               ),
                               SizedBox(height: 5),
                               Text(
-                                'Crea una nueva contraseña para volver a entrar a Mova.',
+                                movaText(
+                                  'Crea una nueva contraseña para volver a entrar a Mova.',
+                                ),
                                 style: TextStyle(
                                   color: Color(0xFFD9F3EF),
                                   fontSize: 13,
@@ -709,27 +712,27 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                           onPressed: _saving
                               ? null
                               : () => Navigator.pop(context, false),
-                          icon: const Icon(Icons.close_rounded),
+                          icon: Icon(Icons.close_rounded),
                           color: Colors.white70,
-                          tooltip: 'Cerrar',
+                          tooltip: movaText('Cerrar'),
                         ),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
+                    padding: EdgeInsets.fromLTRB(24, 22, 24, 24),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(13),
+                            padding: EdgeInsets.all(13),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEFF8F7),
+                              color: Color(0xFFEFF8F7),
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: const Row(
+                            child: Row(
                               children: [
                                 Icon(
                                   Icons.info_outline_rounded,
@@ -739,7 +742,9 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                                 SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    'Primero confirma tu correo y tu identidad con la huella.',
+                                    movaText(
+                                      'Primero confirma tu correo y tu identidad con la huella.',
+                                    ),
                                     style: TextStyle(
                                       color: Color(0xFF28645D),
                                       fontSize: 12.5,
@@ -750,21 +755,21 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: 20),
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
                             decoration: _decoration(
-                              label: 'Correo electrónico',
+                              label: movaText('Correo electrónico'),
                               icon: Icons.alternate_email_rounded,
                             ),
                             validator: (value) =>
                                 value == null || value.trim().isEmpty
-                                ? 'Escribe tu correo electrónico'
+                                ? movaText('Escribe tu correo electrónico')
                                 : null,
                           ),
-                          const SizedBox(height: 14),
+                          SizedBox(height: 14),
                           if (!_identityVerified)
                             SizedBox(
                               width: double.infinity,
@@ -773,7 +778,7 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                                     ? null
                                     : _verifyIdentity,
                                 icon: _checkingIdentity
-                                    ? const SizedBox(
+                                    ? SizedBox(
                                         width: 18,
                                         height: 18,
                                         child: CircularProgressIndicator(
@@ -781,15 +786,15 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                                           color: Colors.white,
                                         ),
                                       )
-                                    : const Icon(Icons.fingerprint_rounded),
+                                    : Icon(Icons.fingerprint_rounded),
                                 label: Text(
                                   _checkingIdentity
-                                      ? 'Verificando...'
-                                      : 'Verificar con huella',
+                                      ? movaText('Verificando...')
+                                      : movaText('Verificar con huella'),
                                 ),
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0C2340),
-                                  minimumSize: const Size.fromHeight(50),
+                                  backgroundColor: Color(0xFF0C2340),
+                                  minimumSize: Size.fromHeight(50),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
                                   ),
@@ -799,12 +804,12 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                           if (_identityVerified) ...[
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(12),
+                              padding: EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEFF8F7),
+                                color: Color(0xFFEFF8F7),
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              child: const Row(
+                              child: Row(
                                 children: [
                                   Icon(
                                     Icons.verified_rounded,
@@ -812,7 +817,7 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                                   ),
                                   SizedBox(width: 10),
                                   Text(
-                                    'Identidad verificada',
+                                    movaText('Identidad verificada'),
                                     style: TextStyle(
                                       color: Color(0xFF28645D),
                                       fontWeight: FontWeight.w700,
@@ -821,13 +826,13 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 14),
+                            SizedBox(height: 14),
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
                               textInputAction: TextInputAction.next,
                               decoration: _decoration(
-                                label: 'Nueva contraseña',
+                                label: movaText('Nueva contraseña'),
                                 icon: Icons.lock_outline_rounded,
                                 suffixIcon: IconButton(
                                   onPressed: () => setState(
@@ -845,14 +850,14 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                                   ? 'Usa mínimo 8 caracteres'
                                   : null,
                             ),
-                            const SizedBox(height: 14),
+                            SizedBox(height: 14),
                             TextFormField(
                               controller: _confirmController,
                               obscureText: _obscureConfirm,
                               textInputAction: TextInputAction.done,
                               onFieldSubmitted: (_) => _saving ? null : _save(),
                               decoration: _decoration(
-                                label: 'Confirmar contraseña',
+                                label: movaText('Confirmar contraseña'),
                                 icon: Icons.verified_user_outlined,
                                 suffixIcon: IconButton(
                                   onPressed: () => setState(
@@ -867,11 +872,11 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                               ),
                               validator: (value) =>
                                   value != _passwordController.text
-                                  ? 'Las contraseñas no coinciden'
+                                  ? movaText('Las contraseñas no coinciden')
                                   : null,
                             ),
                           ],
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                           Row(
                             children: [
                               Expanded(
@@ -880,24 +885,22 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                                       ? null
                                       : () => Navigator.pop(context, false),
                                   style: OutlinedButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(50),
+                                    minimumSize: Size.fromHeight(50),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
                                     ),
-                                    side: const BorderSide(
-                                      color: Color(0xFFD7E0E8),
-                                    ),
+                                    side: BorderSide(color: Color(0xFFD7E0E8)),
                                   ),
-                                  child: const Text('Cancelar'),
+                                  child: Text(movaText('Cancelar')),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
                               Expanded(
                                 flex: 2,
                                 child: FilledButton.icon(
                                   onPressed: _saving ? null : _save,
                                   icon: _saving
-                                      ? const SizedBox(
+                                      ? SizedBox(
                                           width: 18,
                                           height: 18,
                                           child: CircularProgressIndicator(
@@ -905,16 +908,15 @@ class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
                                             color: Colors.white,
                                           ),
                                         )
-                                      : const Icon(
-                                          Icons.check_rounded,
-                                          size: 19,
-                                        ),
+                                      : Icon(Icons.check_rounded, size: 19),
                                   label: Text(
-                                    _saving ? 'Guardando...' : 'Actualizar',
+                                    _saving
+                                        ? movaText('Guardando...')
+                                        : movaText('Actualizar'),
                                   ),
                                   style: FilledButton.styleFrom(
                                     backgroundColor: LoginScreen.primaryTeal,
-                                    minimumSize: const Size.fromHeight(50),
+                                    minimumSize: Size.fromHeight(50),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
                                     ),

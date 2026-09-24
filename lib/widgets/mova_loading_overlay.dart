@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mova/services/mova_localizations.dart';
 
 class MovaLoadingOverlay extends StatefulWidget {
-  final String message;
+  final String? message;
 
-  const MovaLoadingOverlay({
-    super.key,
-    this.message = 'Preparando tu espacio financiero',
-  });
+  const MovaLoadingOverlay({super.key, this.message});
 
   @override
   State<MovaLoadingOverlay> createState() => _MovaLoadingOverlayState();
@@ -82,7 +80,7 @@ class _MovaLoadingOverlayState extends State<MovaLoadingOverlay>
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  widget.message,
+                  widget.message ?? context.l10n.text('preparing_finances'),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Color(0xFF0C2340),

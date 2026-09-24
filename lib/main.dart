@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
@@ -10,6 +11,7 @@ import 'services/theme_controller.dart';
 import 'services/notification_service.dart';
 import 'services/currency_controller.dart';
 import 'services/language_controller.dart';
+import 'services/mova_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,10 +49,16 @@ class MovaApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         locale: appLanguageController.language.locale,
         supportedLocales: const [Locale('es'), Locale('en'), Locale('pt')],
+        localizationsDelegates: const [
+          MovaLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         theme: movaLightTheme(),
         darkTheme: movaDarkTheme(),
         themeMode: ThemeMode.light,
-        home: const SplashScreen(),
+        home: SplashScreen(),
       ),
     );
   }

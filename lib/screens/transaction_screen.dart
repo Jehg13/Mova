@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
+import 'package:mova/services/mova_localizations.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
@@ -71,7 +72,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
   ];
 
   // Estilo de colores (Teal/Verde militar)
-  final Color primaryColor = const Color(0xFF0C2340);
+  final Color primaryColor = Color(0xFF0C2340);
 
   @override
   void dispose() {
@@ -100,11 +101,11 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
     final description = _descriptionController.text.trim();
 
     if (amount == null || amount <= 0) {
-      _showMessage('Ingresa un monto válido mayor que cero');
+      _showMessage(movaText('Ingresa un monto válido mayor que cero'));
       return;
     }
     if (description.isEmpty) {
-      _showMessage('Escribe una descripción');
+      _showMessage(movaText('Escribe una descripción'));
       return;
     }
 
@@ -122,8 +123,8 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
       if (!mounted) return;
       _showSuccess(
         isIncome
-            ? 'Ingreso guardado correctamente'
-            : 'Gasto guardado correctamente',
+            ? movaText('Ingreso guardado correctamente')
+            : movaText('Gasto guardado correctamente'),
       );
       _amountController.clear();
       _descriptionController.clear();
@@ -135,7 +136,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      _showMessage('No se pudo guardar el movimiento: $error');
+      _showMessage(movaText('No se pudo guardar el movimiento: $error'));
     }
   }
 
@@ -147,42 +148,25 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
     showMovaSuccess(context, message);
   }
 
-  String _formatDate(DateTime date) {
-    const months = [
-      'enero',
-      'febrero',
-      'marzo',
-      'abril',
-      'mayo',
-      'junio',
-      'julio',
-      'agosto',
-      'septiembre',
-      'octubre',
-      'noviembre',
-      'diciembre',
-    ];
-    return '${date.day} de ${months[date.month - 1]} de ${date.year}';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final currentCategories = isIncome ? incomeCategories : expenseCategories;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: Color(0xFFF1F5F9),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(11),
+                    padding: EdgeInsets.all(11),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [Color(0xFF0C2340), Color(0xFF36577D)],
                       ),
                       borderRadius: BorderRadius.circular(15),
@@ -195,25 +179,27 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isIncome ? "Agregar ingreso" : "Agregar gasto",
-                          style: const TextStyle(
+                          isIncome
+                              ? l10n.text('add_income')
+                              : l10n.text('add_expense'),
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF102A43),
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        SizedBox(height: 3),
                         Text(
                           isIncome
-                              ? "Registra el dinero que recibiste"
-                              : "Registra en qué utilizaste tu dinero",
-                          style: const TextStyle(
+                              ? l10n.text('income_help')
+                              : l10n.text('expense_help'),
+                          style: TextStyle(
                             fontSize: 12,
                             color: Color(0xFF64748B),
                           ),
@@ -223,16 +209,16 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // 2. TOGGLE (GASTO / INGRESO)
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE2E8F0),
+                  color: Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFD5DEE9)),
-                  boxShadow: const [
+                  border: Border.all(color: Color(0xFFD5DEE9)),
+                  boxShadow: [
                     BoxShadow(
                       color: Color(0x0C0C2340),
                       blurRadius: 12,
@@ -240,7 +226,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.all(4),
                 child: Row(
                   children: [
                     Expanded(
@@ -252,10 +238,10 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          padding: EdgeInsets.symmetric(vertical: 13),
                           decoration: BoxDecoration(
                             gradient: !isIncome
-                                ? const LinearGradient(
+                                ? LinearGradient(
                                     colors: [
                                       Color(0xFF0C2340),
                                       Color(0xFF1E3A5F),
@@ -273,11 +259,11 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                                   size: 17,
                                   color: !isIncome
                                       ? Colors.white
-                                      : const Color(0xFF64748B),
+                                      : Color(0xFF64748B),
                                 ),
-                                const SizedBox(width: 5),
+                                SizedBox(width: 5),
                                 Text(
-                                  "Gasto",
+                                  l10n.text('expense'),
                                   style: TextStyle(
                                     color: !isIncome
                                         ? Colors.white
@@ -300,10 +286,10 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          padding: EdgeInsets.symmetric(vertical: 13),
                           decoration: BoxDecoration(
                             gradient: isIncome
-                                ? const LinearGradient(
+                                ? LinearGradient(
                                     colors: [
                                       Color(0xFF0C2340),
                                       Color(0xFF1E3A5F),
@@ -321,11 +307,11 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                                   size: 17,
                                   color: isIncome
                                       ? Colors.white
-                                      : const Color(0xFF64748B),
+                                      : Color(0xFF64748B),
                                 ),
-                                const SizedBox(width: 5),
+                                SizedBox(width: 5),
                                 Text(
-                                  "Ingreso",
+                                  l10n.text('income_singular'),
                                   style: TextStyle(
                                     color: isIncome
                                         ? Colors.white
@@ -342,18 +328,15 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // 3. CAMPO DE MONTO DINÁMICO
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 20,
-                ),
+                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                 decoration: BoxDecoration(
                   gradient: isIncome
-                      ? const LinearGradient(
+                      ? LinearGradient(
                           colors: [Color(0xFF0C2340), Color(0xFF1E3A5F)],
                         )
                       : null,
@@ -362,25 +345,27 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   border: Border.all(color: primaryColor, width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryColor.withOpacity(.16),
+                      color: primaryColor.withValues(alpha: .16),
                       blurRadius: 18,
-                      offset: const Offset(0, 7),
+                      offset: Offset(0, 7),
                     ),
                   ],
                 ),
                 child: Column(
                   children: [
                     Text(
-                      isIncome ? "¿Cuánto recibiste?" : "¿Cuánto?",
+                      isIncome
+                          ? l10n.text('how_much_received')
+                          : l10n.text('how_much'),
                       style: TextStyle(
                         color: isIncome ? Colors.white70 : Colors.black54,
                         fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     TextField(
                       controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(
+                      keyboardType: TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       textAlign: TextAlign.center,
@@ -399,7 +384,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                           fontWeight: FontWeight.bold,
                           color: isIncome ? Colors.white : Colors.black,
                         ),
-                        hintText: '0.00',
+                        hintText: movaText('0.00'),
                         hintStyle: TextStyle(
                           color: isIncome ? Colors.white54 : Colors.black38,
                           fontSize: 28,
@@ -412,7 +397,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // 4. SELECTOR DE CATEGORÍA
               Row(
@@ -424,29 +409,28 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                     size: 18,
                     color: primaryColor,
                   ),
-                  const SizedBox(width: 7),
+                  SizedBox(width: 7),
                   Text(
-                    isIncome ? "Fuente del ingreso" : "Categoría",
-                    style: const TextStyle(
+                    isIncome
+                        ? l10n.text('income_source')
+                        : l10n.text('category'),
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF102A43),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
 
               // Creador desplegable
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
                       color: Color(0x080C2340),
                       blurRadius: 10,
@@ -464,26 +448,23 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                             (item) => item["name"] == selectedCategory,
                             orElse: () => currentCategories.first,
                           )["emoji"]!,
-                          style: const TextStyle(fontSize: 20),
+                          style: TextStyle(fontSize: 20),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: 10),
                         Text(
-                          selectedCategory,
-                          style: const TextStyle(
+                          movaText(selectedCategory),
+                          style: TextStyle(
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF102A43),
                           ),
                         ),
                       ],
                     ),
-                    const Icon(
-                      Icons.check_circle_rounded,
-                      color: Color(0xFF0C2340),
-                    ),
+                    Icon(Icons.check_circle_rounded, color: Color(0xFF0C2340)),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
 
               // Chips de Categorías
               Wrap(
@@ -497,10 +478,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                       });
                     },
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: selectedCategory == item["name"]
@@ -510,10 +488,10 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                           border: Border.all(
                             color: selectedCategory == item["name"]
                                 ? primaryColor
-                                : const Color(0xFFE2E8F0),
+                                : Color(0xFFE2E8F0),
                           ),
                           boxShadow: selectedCategory == item["name"]
-                              ? const [
+                              ? [
                                   BoxShadow(
                                     color: Color(0x180C2340),
                                     blurRadius: 8,
@@ -523,7 +501,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                               : null,
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             horizontal: 6,
                             vertical: 5,
                           ),
@@ -532,11 +510,11 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                             children: [
                               Text(
                                 item["emoji"]!,
-                                style: const TextStyle(fontSize: 14),
+                                style: TextStyle(fontSize: 14),
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4),
                               Text(
-                                item["name"]!,
+                                movaText(item["name"]!),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: selectedCategory == item["name"]
@@ -555,7 +533,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // 5. DESCRIPCIÓN
               Align(
@@ -567,9 +545,9 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                       size: 18,
                       color: primaryColor,
                     ),
-                    const SizedBox(width: 7),
-                    const Text(
-                      "Descripción",
+                    SizedBox(width: 7),
+                    Text(
+                      movaText("Descripción"),
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF102A43),
@@ -578,16 +556,16 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               TextField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.edit_note_rounded),
+                  prefixIcon: Icon(Icons.edit_note_rounded),
                   hintText: isIncome
-                      ? "¿De dónde provino este ingreso?"
-                      : "¿En qué gastaste?",
-                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                  contentPadding: const EdgeInsets.all(16),
+                      ? movaText("¿De dónde provino este ingreso?")
+                      : l10n.text('what_spent'),
+                  hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                  contentPadding: EdgeInsets.all(16),
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -596,11 +574,11 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: const Color(0xFFD8E1EB)),
+                    borderSide: BorderSide(color: Color(0xFFD8E1EB)),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // 6. FECHA
               Row(
@@ -610,9 +588,9 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                     size: 18,
                     color: primaryColor,
                   ),
-                  const SizedBox(width: 7),
-                  const Text(
-                    "Fecha",
+                  SizedBox(width: 7),
+                  Text(
+                    movaText("Fecha"),
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF102A43),
@@ -620,17 +598,17 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               InkWell(
                 onTap: _selectDate,
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: Colors.grey.shade300),
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
                         color: Color(0x080C2340),
                         blurRadius: 10,
@@ -641,8 +619,11 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(_formatDate(selectedDate)),
-                      const Icon(
+                      Text(
+                        MaterialLocalizations.of(context)
+                            .formatFullDate(selectedDate),
+                      ),
+                      Icon(
                         Icons.calendar_today_outlined,
                         size: 18,
                         color: Colors.grey,
@@ -651,17 +632,17 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
 
               TextField(
                 controller: _noteController,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.notes_rounded),
+                  prefixIcon: Icon(Icons.notes_rounded),
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Agregar nota (opcional)',
-                  hintStyle: const TextStyle(color: Colors.grey),
+                  hintText: l10n.text('optional_note'),
+                  hintStyle: TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.grey.shade300),
@@ -672,14 +653,14 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
 
               // 7. BOTÓN PRINCIPAL
               if (isIncome)
                 Padding(
                   padding: EdgeInsets.only(bottom: 8.0),
                   child: Text(
-                    "El ingreso se agregará a tu saldo.",
+                    movaText("El ingreso se agregará a tu saldo."),
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ),
@@ -694,10 +675,10 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                       borderRadius: BorderRadius.circular(17),
                     ),
                     elevation: 5,
-                    shadowColor: primaryColor.withOpacity(.28),
+                    shadowColor: primaryColor.withValues(alpha: .28),
                   ),
                   child: _isSaving
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 22,
                           height: 22,
                           child: CircularProgressIndicator(
@@ -706,8 +687,10 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                           ),
                         )
                       : Text(
-                          isIncome ? "Guardar ingreso" : "Guardar movimiento",
-                          style: const TextStyle(
+                          isIncome
+                              ? l10n.text('save_income')
+                              : l10n.text('save_movement'),
+                          style: TextStyle(
                             fontSize: 16,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,

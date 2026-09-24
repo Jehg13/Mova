@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
+import 'package:mova/services/mova_localizations.dart';
 
 class MovementsScreen extends StatefulWidget {
   const MovementsScreen({super.key});
@@ -40,19 +41,20 @@ class _MovementsScreenState extends State<MovementsScreen> {
     }
   }
 
-  String _date(String value) {
+  String _date(BuildContext context, String value) {
     final date = DateTime.tryParse(value);
     if (date == null) return '';
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    return MaterialLocalizations.of(context).formatMediumDate(date);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'Movimientos',
+        title: Text(
+          l10n.text('movements'),
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
         backgroundColor: const Color(0xFFF8FAFC),
@@ -69,7 +71,9 @@ class _MovementsScreenState extends State<MovementsScreen> {
           if (snapshot.hasError) {
             return Center(
               child: Text(
-                'No se pudieron cargar los movimientos: ${snapshot.error}',
+                movaText(
+                  'No se pudieron cargar los movimientos: ${snapshot.error}',
+                ),
               ),
             );
           }
@@ -118,9 +122,9 @@ class _MovementsScreenState extends State<MovementsScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Tu actividad financiera, en un solo lugar.',
+                          l10n.text('financial_activity'),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -151,7 +155,15 @@ class _MovementsScreenState extends State<MovementsScreen> {
                                     : Icons.tune_rounded,
                                 size: 16,
                               ),
-                              label: Text(filter),
+                              label: Text(
+                                filter == 'Todos'
+                                    ? l10n.text('all')
+                                    : filter == 'Ingresos'
+                                    ? l10n.text('income')
+                                    : filter == 'Gastos'
+                                    ? l10n.text('expenses')
+                                    : l10n.text('savings'),
+                              ),
                               selected: _filter == filter,
                               onSelected: (_) =>
                                   setState(() => _filter = filter),
@@ -170,11 +182,11 @@ class _MovementsScreenState extends State<MovementsScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (transactions.isEmpty)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(vertical: 80),
                     child: Center(
                       child: Text(
-                        'No hay movimientos en este filtro.',
+                        l10n.text('no_movements_filter'),
                         style: TextStyle(color: Color(0xFF64748B)),
                       ),
                     ),
@@ -183,7 +195,10 @@ class _MovementsScreenState extends State<MovementsScreen> {
                   ...transactions.map(
                     (transaction) => _MovementTile(
                       transaction: transaction,
-                      date: _date(transaction['date'] as String? ?? ''),
+                      date: _date(
+                        context,
+                        transaction['date'] as String? ?? '',
+                      ),
                     ),
                   ),
               ],
@@ -268,7 +283,7 @@ class _MovementTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '$prefix${appCurrencyController.format(amount)}',
+                movaText('$prefix${appCurrencyController.format(amount)}'),
                 style: TextStyle(
                   color: color,
                   fontSize: 13,

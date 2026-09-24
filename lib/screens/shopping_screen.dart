@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
+import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
 
 class ShoppingScreen extends StatefulWidget {
@@ -70,12 +71,13 @@ class _ShoppingScreenState extends State<ShoppingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         foregroundColor: const Color(0xFF102A43),
-        title: const Text(
-          'Mis compras',
+        title: Text(
+          l10n.text('my_shopping'),
           style: TextStyle(
             fontWeight: FontWeight.w900,
             fontSize: 24,
@@ -92,9 +94,9 @@ class _ShoppingScreenState extends State<ShoppingScreen>
           indicatorColor: const Color(0xFF0C2340),
           indicatorWeight: 3,
           labelStyle: const TextStyle(fontWeight: FontWeight.w800),
-          tabs: const [
-            Tab(text: 'Actuales'),
-            Tab(text: 'Historial'),
+          tabs: [
+            Tab(text: l10n.text('current')),
+            Tab(text: l10n.text('history')),
           ],
         ),
       ),
@@ -102,7 +104,7 @@ class _ShoppingScreenState extends State<ShoppingScreen>
         future: _lists,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
           final lists = snapshot.data ?? [];
           if (lists.isEmpty) {
@@ -130,7 +132,7 @@ class _ShoppingScreenState extends State<ShoppingScreen>
           ? FloatingActionButton.extended(
               onPressed: _create,
               icon: const Icon(Icons.add),
-              label: const Text('Nueva lista'),
+              label: Text(l10n.text('new_list')),
               backgroundColor: const Color(0xFF0C2340),
               foregroundColor: Colors.white,
             )
@@ -143,12 +145,12 @@ class _ShoppingScreenState extends State<ShoppingScreen>
       context: context,
       builder: (_) => _MovaDialog(
         icon: Icons.delete_sweep_outlined,
-        title: 'Eliminar lista',
-        subtitle: 'Se eliminarán también sus productos.',
+        title: movaText('Eliminar lista'),
+        subtitle: movaText('Se eliminarán también sus productos.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(movaText('Cancelar')),
           ),
           FilledButton.icon(
             style: FilledButton.styleFrom(
@@ -156,11 +158,13 @@ class _ShoppingScreenState extends State<ShoppingScreen>
             ),
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.delete_outline),
-            label: const Text('Eliminar'),
+            label: Text(movaText('Eliminar')),
           ),
         ],
         child: Text(
-          '¿Quieres eliminar "${list['name']}"? Esta acción no se puede deshacer.',
+          movaText(
+            '¿Quieres eliminar "${list['name']}"? Esta acción no se puede deshacer.',
+          ),
           style: const TextStyle(color: Color(0xFF475569), height: 1.4),
         ),
       ),
@@ -201,8 +205,8 @@ class _EmptyShoppingState extends StatelessWidget {
             const SizedBox(height: 22),
             Text(
               history
-                  ? 'Aún no hay compras finalizadas'
-                  : 'Planea tu primera compra',
+                  ? context.l10n.text('no_completed_shopping')
+                  : context.l10n.text('plan_first_shopping'),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF102A43),
@@ -213,8 +217,10 @@ class _EmptyShoppingState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               history
-                  ? 'Cuando finalices una lista aparecerá aquí.'
-                  : 'Organiza tus productos y controla cuánto vas a gastar.',
+                  ? movaText('Cuando finalices una lista aparecerá aquí.')
+                  : movaText(
+                      'Organiza tus productos y controla cuánto vas a gastar.',
+                    ),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Color(0xFF64748B), height: 1.4),
             ),
@@ -223,7 +229,7 @@ class _EmptyShoppingState extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onCreate,
                 icon: const Icon(Icons.add_rounded),
-                label: const Text('Crear lista'),
+                label: Text(context.l10n.text('create_list')),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF0C2340),
                   padding: const EdgeInsets.symmetric(
@@ -324,8 +330,8 @@ class _ShoppingListCard extends StatelessWidget {
                         Text(
                           store.isEmpty
                               ? (completed
-                                    ? 'Compra finalizada'
-                                    : 'Lista en curso')
+                                    ? movaText('Compra finalizada')
+                                    : movaText('Lista en curso'))
                               : store,
                           style: const TextStyle(
                             color: Color(0xFF64748B),
@@ -339,7 +345,7 @@ class _ShoppingListCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        tooltip: 'Eliminar lista',
+                        tooltip: movaText('Eliminar lista'),
                         onPressed: onDelete,
                         icon: const Icon(Icons.delete_outline),
                         color: const Color(0xFFB42318),
@@ -364,8 +370,8 @@ class _ShoppingListCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Text(
-                      'Total',
+                    Text(
+                      movaText('Total'),
                       style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
                     ),
                     const Spacer(),
@@ -386,7 +392,7 @@ class _ShoppingListCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Presupuesto ${money(budget)}',
+                        movaText('Presupuesto ${money(budget)}'),
                         style: const TextStyle(
                           color: Color(0xFF64748B),
                           fontSize: 11,
@@ -451,7 +457,9 @@ class _ShoppingSummaryCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  completed ? 'Compra finalizada' : 'Control de compra',
+                  completed
+                      ? movaText('Compra finalizada')
+                      : movaText('Control de compra'),
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 13,
@@ -485,8 +493,8 @@ class _ShoppingSummaryCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text(
-                      'Presupuesto',
+                    Text(
+                      movaText('Presupuesto'),
                       style: TextStyle(color: Colors.white70, fontSize: 11),
                     ),
                     Text(
@@ -517,7 +525,9 @@ class _ShoppingSummaryCard extends StatelessWidget {
                 Text(
                   difference >= 0
                       ? 'Disponible: ${money(difference)}'
-                      : 'Sobre el presupuesto: ${money(difference.abs())}',
+                      : movaText(
+                          'Sobre el presupuesto: ${money(difference.abs())}',
+                        ),
                   style: TextStyle(
                     color: difference >= 0
                         ? const Color(0xFFC7EAF4)
@@ -643,7 +653,9 @@ class _ShoppingProductCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  purchased ? 'Agregado al carrito' : 'Pendiente por comprar',
+                  purchased
+                      ? movaText('Agregado al carrito')
+                      : movaText('Pendiente por comprar'),
                   style: TextStyle(
                     color: purchased
                         ? const Color(0xFF0C2340)
@@ -673,7 +685,7 @@ class _ShoppingProductCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                pending ? 'Precio pendiente' : money(subtotal),
+                pending ? movaText('Precio pendiente') : money(subtotal),
                 style: TextStyle(
                   color: pending
                       ? const Color(0xFFB7791F)
@@ -696,13 +708,13 @@ class _ShoppingProductCard extends StatelessWidget {
                   children: [
                     IconButton(
                       visualDensity: VisualDensity.compact,
-                      tooltip: 'Editar',
+                      tooltip: movaText('Editar'),
                       onPressed: onEdit,
                       icon: const Icon(Icons.edit_outlined, size: 18),
                     ),
                     IconButton(
                       visualDensity: VisualDensity.compact,
-                      tooltip: 'Eliminar',
+                      tooltip: movaText('Eliminar'),
                       onPressed: onDelete,
                       icon: const Icon(Icons.delete_outline, size: 18),
                       color: const Color(0xFFB42318),
@@ -779,8 +791,8 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
     if (total <= 0) {
       await showMovaError(
         context,
-        'Agrega al menos un producto antes de finalizar.',
-        title: 'Compra incompleta',
+        movaText('Agrega al menos un producto antes de finalizar.'),
+        title: movaText('Compra incompleta'),
       );
       return;
     }
@@ -788,21 +800,25 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
       context: context,
       builder: (context) => _MovaDialog(
         icon: Icons.receipt_long_rounded,
-        title: 'Registrar compra',
-        subtitle: 'Esta acción no se puede deshacer.',
+        title: movaText('Registrar compra'),
+        subtitle: movaText('Esta acción no se puede deshacer.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(movaText('Cancelar')),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.check_rounded),
-            label: const Text('Registrar gasto'),
+            label: Text(movaText('Registrar gasto')),
           ),
         ],
         child: Text(
-          'Se registrará un gasto de ${appCurrencyController.format(total)} en la categoría Compras.',
+          movaText(
+            movaText(
+              'Se registrará un gasto de ${appCurrencyController.format(total)} en la categoría Compras.',
+            ),
+          ),
           style: const TextStyle(color: Color(0xFF475569), height: 1.4),
         ),
       ),
@@ -849,7 +865,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
               if (!completed)
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  tooltip: 'Editar nombre',
+                  tooltip: movaText('Editar nombre'),
                   onPressed: () async {
                     final name = await showDialog<String>(
                       context: context,
@@ -886,7 +902,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                         color: const Color(0xFFEAF6FA),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
                           Icon(
                             Icons.touch_app_outlined,
@@ -896,7 +912,11 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                           SizedBox(width: 9),
                           Expanded(
                             child: Text(
-                              'Marca cada producto conforme lo agregues al carrito. Edita cantidad y precio en cualquier momento.',
+                              movaText(
+                                movaText(
+                                  'Marca cada producto conforme lo agregues al carrito. Edita cantidad y precio en cualquier momento.',
+                                ),
+                              ),
                               style: TextStyle(
                                 color: Color(0xFF1E3A5F),
                                 fontSize: 12,
@@ -928,8 +948,8 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                     ),
                                   ),
                                   const SizedBox(height: 14),
-                                  const Text(
-                                    'Tu lista está vacía',
+                                  Text(
+                                    movaText('Tu lista está vacía'),
                                     style: TextStyle(
                                       color: Color(0xFF102A43),
                                       fontSize: 17,
@@ -937,8 +957,12 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                     ),
                                   ),
                                   const SizedBox(height: 6),
-                                  const Text(
-                                    'Agrega productos para calcular tu compra.',
+                                  Text(
+                                    movaText(
+                                      movaText(
+                                        'Agrega productos para calcular tu compra.',
+                                      ),
+                                    ),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(color: Color(0xFF64748B)),
                                   ),
@@ -946,7 +970,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                   FilledButton.icon(
                                     onPressed: () => _addProduct(),
                                     icon: const Icon(Icons.add_rounded),
-                                    label: const Text('Agregar producto'),
+                                    label: Text(movaText('Agregar producto')),
                                     style: FilledButton.styleFrom(
                                       backgroundColor: const Color(0xFF0C2340),
                                       foregroundColor: Colors.white,
@@ -980,14 +1004,15 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                     context: context,
                                     builder: (_) => _MovaDialog(
                                       icon: Icons.delete_outline,
-                                      title: 'Eliminar producto',
-                                      subtitle:
-                                          'Esta acción no se puede deshacer.',
+                                      title: movaText('Eliminar producto'),
+                                      subtitle: movaText(
+                                        'Esta acción no se puede deshacer.',
+                                      ),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(context, false),
-                                          child: const Text('Cancelar'),
+                                          child: Text(movaText('Cancelar')),
                                         ),
                                         FilledButton.icon(
                                           style: FilledButton.styleFrom(
@@ -1000,7 +1025,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                           icon: const Icon(
                                             Icons.delete_outline,
                                           ),
-                                          label: const Text('Eliminar'),
+                                          label: Text(movaText('Eliminar')),
                                         ),
                                       ],
                                       child: Text(
@@ -1038,8 +1063,8 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Total estimado',
+                            Text(
+                              movaText('Total estimado'),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1063,7 +1088,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                 child: OutlinedButton.icon(
                                   onPressed: () => _addProduct(),
                                   icon: const Icon(Icons.add),
-                                  label: const Text('Producto'),
+                                  label: Text(movaText('Producto')),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: const Color(0xFF0C2340),
                                     side: const BorderSide(
@@ -1091,7 +1116,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                             strokeWidth: 2,
                                           ),
                                         )
-                                      : const Text('Finalizar'),
+                                      : Text(movaText('Finalizar')),
                                   style: FilledButton.styleFrom(
                                     backgroundColor: const Color(0xFF0C2340),
                                     foregroundColor: Colors.white,
@@ -1162,12 +1187,12 @@ class _RenameDialogState extends State<_RenameDialog> {
   @override
   Widget build(BuildContext context) => _MovaDialog(
     icon: Icons.edit_note_rounded,
-    title: 'Renombrar lista',
-    subtitle: 'Usa un nombre fácil de reconocer.',
+    title: movaText('Renombrar lista'),
+    subtitle: movaText('Usa un nombre fácil de reconocer.'),
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancelar'),
+        child: Text(movaText('Cancelar')),
       ),
       FilledButton.icon(
         onPressed: _saving ? null : _save,
@@ -1178,7 +1203,7 @@ class _RenameDialogState extends State<_RenameDialog> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : const Icon(Icons.check_rounded),
-        label: const Text('Guardar'),
+        label: Text(movaText('Guardar')),
       ),
     ],
     child: Form(
@@ -1298,8 +1323,8 @@ class _ProductDialogState extends State<_ProductDialog> {
         (p != null && p < 0)) {
       showMovaError(
         context,
-        'Completa el producto con valores válidos.',
-        title: 'Revisa el producto',
+        movaText('Completa el producto con valores válidos.'),
+        title: movaText('Revisa el producto'),
       );
       return;
     }
@@ -1315,12 +1340,14 @@ class _ProductDialogState extends State<_ProductDialog> {
     icon: widget.product == null
         ? Icons.add_shopping_cart_rounded
         : Icons.edit_rounded,
-    title: widget.product == null ? 'Agregar producto' : 'Editar producto',
-    subtitle: 'Define qué necesitas y calcula el costo al instante.',
+    title: widget.product == null
+        ? movaText('Agregar producto')
+        : movaText('Editar producto'),
+    subtitle: movaText('Define qué necesitas y calcula el costo al instante.'),
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cerrar'),
+        child: Text(movaText('Cerrar')),
       ),
       FilledButton.icon(
         onPressed: _saving ? null : _save,
@@ -1331,7 +1358,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : const Icon(Icons.check_rounded),
-        label: const Text('Guardar'),
+        label: Text(movaText('Guardar')),
       ),
     ],
     child: SingleChildScrollView(
@@ -1387,7 +1414,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                     decimal: true,
                   ),
                   decoration: _inputDecoration(
-                    'Precio opcional',
+                    movaText('Precio opcional'),
                     Icons.attach_money_rounded,
                     '0.00',
                   ),
@@ -1399,7 +1426,7 @@ class _ProductDialogState extends State<_ProductDialog> {
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'El precio se aplicará por:',
+              movaText('El precio se aplicará por:'),
               style: TextStyle(
                 color: Color(0xFF64748B),
                 fontSize: 12,
@@ -1419,8 +1446,10 @@ class _ProductDialogState extends State<_ProductDialog> {
             ),
             items: _units
                 .map(
-                  (unit) =>
-                      DropdownMenuItem(value: unit, child: Text('Por $unit')),
+                  (unit) => DropdownMenuItem(
+                    value: unit,
+                    child: Text(movaText('Por $unit')),
+                  ),
                 )
                 .toList(),
             onChanged: (value) {
@@ -1446,8 +1475,8 @@ class _ProductDialogState extends State<_ProductDialog> {
 
 InputDecoration _inputDecoration(String label, IconData icon, String hint) =>
     InputDecoration(
-      labelText: label,
-      hintText: hint,
+      labelText: movaText(label),
+      hintText: movaText(hint),
       prefixIcon: Icon(icon, color: const Color(0xFF0C2340), size: 20),
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
@@ -1521,12 +1550,12 @@ class _ListDialogState extends State<_ListDialog> {
   @override
   Widget build(BuildContext context) => _MovaDialog(
     icon: Icons.playlist_add_rounded,
-    title: 'Nueva lista',
-    subtitle: 'Planifica tu próxima compra.',
+    title: movaText('Nueva lista'),
+    subtitle: movaText('Planifica tu próxima compra.'),
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancelar'),
+        child: Text(movaText('Cancelar')),
       ),
       FilledButton.icon(
         onPressed: _saving ? null : _save,
@@ -1537,7 +1566,7 @@ class _ListDialogState extends State<_ListDialog> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : const Icon(Icons.check_rounded),
-        label: const Text('Crear lista'),
+        label: Text(movaText('Crear lista')),
       ),
     ],
     child: Form(
@@ -1551,7 +1580,7 @@ class _ListDialogState extends State<_ListDialog> {
               autofocus: true,
               textCapitalization: TextCapitalization.sentences,
               decoration: _inputDecoration(
-                'Nombre de la lista',
+                movaText('Nombre de la lista'),
                 Icons.list_alt_rounded,
                 'Ej. Compras de la semana',
               ),
@@ -1584,7 +1613,9 @@ class _ListDialogState extends State<_ListDialog> {
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) return null;
                       final n = double.tryParse(v.replaceAll(',', '.'));
-                      return n == null || n < 0 ? 'Monto inválido' : null;
+                      return n == null || n < 0
+                          ? movaText('Monto inválido')
+                          : null;
                     },
                   ),
                 ),
@@ -1600,8 +1631,9 @@ class _ListDialogState extends State<_ListDialog> {
                       ),
                       child: Text(
                         _date == null
-                            ? 'Sin fecha'
-                            : '${_date!.day}/${_date!.month}/${_date!.year}',
+                            ? movaText('Sin fecha')
+                            : MaterialLocalizations.of(context)
+                                  .formatMediumDate(_date!),
                         style: const TextStyle(fontSize: 13),
                       ),
                     ),
@@ -1736,7 +1768,7 @@ class _MovaDialog extends StatelessWidget {
                           ),
                         ),
                         IconButton(
-                          tooltip: 'Cerrar',
+                          tooltip: movaText('Cerrar'),
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close_rounded),
                           color: const Color(0xFF64748B),
