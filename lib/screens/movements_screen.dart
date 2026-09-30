@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/services/mova_localizations.dart';
+import 'package:mova/widgets/receipt_image_preview.dart';
+import 'package:mova/widgets/mova_design_system.dart';
 
 class MovementsScreen extends StatefulWidget {
   const MovementsScreen({super.key});
@@ -51,14 +55,14 @@ class _MovementsScreenState extends State<MovementsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: MovaDesign.canvas,
       appBar: AppBar(
         title: Text(
           l10n.text('movements'),
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: const Color(0xFFF8FAFC),
-        foregroundColor: const Color(0xFF102A43),
+        backgroundColor: MovaDesign.canvas,
+        foregroundColor: MovaDesign.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
@@ -90,53 +94,50 @@ class _MovementsScreenState extends State<MovementsScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
               children: [
-                Container(
-                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0C2340), Color(0xFF36577D)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(22),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x220C2340),
-                        blurRadius: 16,
-                        offset: Offset(0, 7),
-                      ),
-                    ],
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, bottom: 16),
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(11),
+                        width: 42,
+                        height: 42,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: .14),
-                          borderRadius: BorderRadius.circular(15),
+                          color: const Color(0xFFE5F1F4),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
                           Icons.swap_vert_rounded,
-                          color: Colors.white,
-                          size: 25,
+                          color: MovaDesign.accent,
+                          size: 23,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 11),
                       Expanded(
-                        child: Text(
-                          l10n.text('financial_activity'),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            height: 1.25,
-                            fontWeight: FontWeight.w800,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.text('financial_activity'),
+                              style: const TextStyle(
+                                color: MovaDesign.ink,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              l10n.text('movements'),
+                              style: const TextStyle(
+                                color: MovaDesign.muted,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -167,12 +168,20 @@ class _MovementsScreenState extends State<MovementsScreen> {
                               selected: _filter == filter,
                               onSelected: (_) =>
                                   setState(() => _filter = filter),
-                              selectedColor: const Color(0xFFDCE7F2),
+                              selectedColor: const Color(0xFFE2F1F3),
                               labelStyle: TextStyle(
                                 color: _filter == filter
-                                    ? const Color(0xFF0C2340)
-                                    : const Color(0xFF64748B),
+                                    ? MovaDesign.navy
+                                    : MovaDesign.muted,
                                 fontWeight: FontWeight.w700,
+                              ),
+                              side: BorderSide(
+                                color: _filter == filter
+                                    ? const Color(0xFFB8DDE1)
+                                    : MovaDesign.border,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
                               ),
                             ),
                           ),
@@ -180,27 +189,39 @@ class _MovementsScreenState extends State<MovementsScreen> {
                         .toList(),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 if (transactions.isEmpty)
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: 80),
-                    child: Center(
-                      child: Text(
-                        l10n.text('no_movements_filter'),
-                        style: TextStyle(color: Color(0xFF64748B)),
-                      ),
+                    padding: const EdgeInsets.symmetric(vertical: 56),
+                    child: MovaEmptyState(
+                      icon: Icons.receipt_long_rounded,
+                      title: l10n.text('no_movements_filter'),
+                      message: l10n.text('financial_activity'),
                     ),
                   )
-                else
-                  ...transactions.map(
-                    (transaction) => _MovementTile(
-                      transaction: transaction,
-                      date: _date(
-                        context,
-                        transaction['date'] as String? ?? '',
+                else ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 7),
+                    child: Text(
+                      l10n.text('financial_activity'),
+                      style: const TextStyle(
+                        color: MovaDesign.muted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
+                  ...transactions.asMap().entries.map(
+                    (entry) => _MovementTile(
+                      transaction: entry.value,
+                      date: _date(
+                        context,
+                        entry.value['date'] as String? ?? '',
+                      ),
+                      showDivider: entry.key < transactions.length - 1,
+                    ),
+                  ),
+                ],
               ],
             ),
           );
@@ -213,8 +234,70 @@ class _MovementsScreenState extends State<MovementsScreen> {
 class _MovementTile extends StatelessWidget {
   final Map<String, dynamic> transaction;
   final String date;
+  final bool showDivider;
 
-  const _MovementTile({required this.transaction, required this.date});
+  const _MovementTile({
+    required this.transaction,
+    required this.date,
+    required this.showDivider,
+  });
+
+  Future<void> _showReceipt(BuildContext context) async {
+    final l10n = context.l10n;
+    final rawItems = transaction['receipt_items'] as String?;
+    List<String> items = const [];
+    if (rawItems != null && rawItems.isNotEmpty) {
+      try {
+        items = List<String>.from(jsonDecode(rawItems) as List);
+      } on FormatException {
+        items = [rawItems];
+      } on TypeError {
+        items = [rawItems];
+      }
+    }
+    final imagePath = transaction['receipt_image_path'] as String?;
+    final reference = transaction['receipt_reference'] as String?;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          transaction['description'] as String? ?? l10n.text('expense'),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (imagePath != null && imagePath.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: ReceiptImagePreview(path: imagePath, height: 220),
+                ),
+              if (reference != null && reference.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text('${l10n.text('receipt_reference')}: $reference'),
+              ],
+              if (items.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  l10n.text('receipt_items'),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                ...items.map((item) => Text(item)),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.text('close')),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +306,11 @@ class _MovementTile extends StatelessWidget {
     final savingsWithdrawal = DatabaseHelper.isSavingsWithdrawal(transaction);
     final isExpense = transaction['is_income'] == 0 && !savingsDeposit;
     final amount = (transaction['amount'] as num).toDouble();
-    final color = isExpense ? const Color(0xFFB42318) : const Color(0xFF0C2340);
+    final color = isExpense
+        ? MovaDesign.negative
+        : savingsDeposit || savingsWithdrawal
+        ? MovaDesign.navy
+        : MovaDesign.positive;
     final prefix = isExpense || savingsWithdrawal ? '-' : '+';
     final label = savingsDeposit || savingsWithdrawal
         ? l10n.text('savings')
@@ -231,80 +318,104 @@ class _MovementTile extends StatelessWidget {
         ? l10n.text('expense')
         : l10n.text('income_singular');
     final category = l10n.translate(transaction['category'] as String? ?? '');
+    final description = transaction['description'] as String? ?? label;
+    final icon = savingsDeposit || savingsWithdrawal
+        ? Icons.savings_rounded
+        : isExpense
+        ? _expenseIcon(transaction['category'] as String? ?? '')
+        : Icons.arrow_outward_rounded;
+    final hasReceipt =
+        (transaction['receipt_image_path'] as String?)?.isNotEmpty == true ||
+        (transaction['receipt_items'] as String?)?.isNotEmpty == true;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 21,
-            backgroundColor: color.withValues(alpha: .1),
-            child: Icon(
-              savingsDeposit || savingsWithdrawal
-                  ? Icons.savings_outlined
-                  : isExpense
-                  ? Icons.south_west_rounded
-                  : Icons.arrow_outward_rounded,
-              color: color,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction['description'] as String? ?? label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF102A43),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$category · $date',
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 13),
+          child: Row(
             children: [
-              Text(
-                movaText('$prefix${appCurrencyController.format(amount)}'),
-                style: TextStyle(
-                  color: color,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: .09),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: MovaDesign.ink,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$category · $date',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: MovaDesign.muted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color.withValues(alpha: .75),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    movaText('$prefix${appCurrencyController.format(amount)}'),
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: color.withValues(alpha: .8),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
+              if (hasReceipt)
+                IconButton(
+                  tooltip: l10n.text('receipt_view'),
+                  onPressed: () => _showReceipt(context),
+                  icon: const Icon(Icons.receipt_long_outlined, size: 19),
+                ),
             ],
           ),
-        ],
-      ),
+        ),
+        if (showDivider)
+          const Divider(height: 1, indent: 56, color: MovaDesign.border),
+      ],
     );
   }
 }
+
+IconData _expenseIcon(String category) => switch (category) {
+  'Comida' => Icons.restaurant_rounded,
+  'Transporte' => Icons.directions_car_rounded,
+  'Compras' => Icons.shopping_bag_rounded,
+  'Hogar' => Icons.home_rounded,
+  'Entretenimiento' => Icons.movie_rounded,
+  'Salud' => Icons.health_and_safety_rounded,
+  _ => Icons.south_west_rounded,
+};

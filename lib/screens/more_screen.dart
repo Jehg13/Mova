@@ -7,11 +7,18 @@ import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/biometric_auth.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
 import 'package:mova/services/notification_service.dart';
+import 'package:mova/services/subscription_reminder_service.dart';
+import 'package:mova/services/scheduled_payment_reminder_service.dart';
+import 'package:mova/screens/upcoming_payments_screen.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/services/language_controller.dart';
 import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/widgets/user_avatar.dart';
 import 'package:mova/widgets/mova_notifications_dialog.dart';
+import 'package:mova/screens/subscriptions_screen.dart';
+import 'package:mova/screens/accounts_screen.dart';
+import 'package:mova/screens/backups_screen.dart';
+import 'package:mova/screens/nivo_screen.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'login_screen.dart';
@@ -609,6 +616,17 @@ class _MoreScreenState extends State<MoreScreen> {
                   children: [
                     _buildOptionTile(
                       context: context,
+                      icon: Icons.auto_awesome_outlined,
+                      title: 'Nivo',
+                      subtitle: movaText('Tu asistente financiero local'),
+                      onTap: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(builder: (_) => const NivoScreen()),
+                      ),
+                    ),
+                    _buildDivider(),
+                    _buildOptionTile(
+                      context: context,
                       icon: Icons.monetization_on_outlined,
                       title: l10n.text('personal_budget'),
                       subtitle: movaText("Define cuánto quieres gastar"),
@@ -633,6 +651,19 @@ class _MoreScreenState extends State<MoreScreen> {
                     _buildDivider(),
                     _buildOptionTile(
                       context: context,
+                      icon: Icons.account_balance_wallet_outlined,
+                      title: l10n.text('my_accounts'),
+                      subtitle: l10n.text('manage_accounts'),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AccountsScreen(),
+                        ),
+                      ),
+                    ),
+                    _buildDivider(),
+                    _buildOptionTile(
+                      context: context,
                       icon: Icons.shopping_cart_outlined,
                       title: l10n.text('shopping_lists'),
                       subtitle: movaText(
@@ -641,6 +672,32 @@ class _MoreScreenState extends State<MoreScreen> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => ShoppingScreen()),
+                      ),
+                    ),
+                    _buildDivider(),
+                    _buildOptionTile(
+                      context: context,
+                      icon: Icons.event_note_outlined,
+                      title: l10n.text('upcoming_payments'),
+                      subtitle: l10n.text('payments_summary'),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const UpcomingPaymentsScreen(),
+                        ),
+                      ),
+                    ),
+                    _buildDivider(),
+                    _buildOptionTile(
+                      context: context,
+                      icon: Icons.autorenew_rounded,
+                      title: l10n.text('subscriptions'),
+                      subtitle: l10n.text('manage_recurring_payments'),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SubscriptionsScreen(),
+                        ),
                       ),
                     ),
                   ],
@@ -703,17 +760,28 @@ class _MoreScreenState extends State<MoreScreen> {
                     _buildOptionTile(
                       context: context,
                       icon: Icons.upload_outlined,
-                      title: movaText("Exportar datos"),
-                      subtitle: movaText("Descarga tus movimientos"),
-                      onTap: () => _exportData(context),
+                      title: l10n.text('backups_title'),
+                      subtitle: l10n.text('backups_subtitle'),
+                      onTap: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BackupsScreen(),
+                        ),
+                      ),
                     ),
                     _buildDivider(),
                     _buildOptionTile(
                       context: context,
-                      icon: Icons.download_outlined,
-                      title: movaText("Importar datos"),
-                      subtitle: movaText("Importa información existente"),
-                      onTap: () => _importData(context),
+                      icon: Icons.file_open_outlined,
+                      title: l10n.text('backup_import'),
+                      subtitle: l10n.text('backup_restore_warning'),
+                      onTap: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const BackupsScreen(openImportOnStart: true),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -851,7 +919,7 @@ class _MoreScreenState extends State<MoreScreen> {
             SizedBox(height: 8),
             Text(
               movaText(
-                'Se eliminarán tu cuenta, movimientos, metas, listas y configuraciones. No podrás recuperar estos datos.',
+                'Se eliminarán tu cuenta, movimientos, metas, listas, suscripciones e historial. No podrás recuperar estos datos.',
               ),
               style: TextStyle(color: Color(0xFF64748B), height: 1.4),
             ),
@@ -873,7 +941,12 @@ class _MoreScreenState extends State<MoreScreen> {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      await DatabaseHelper().deleteAccount();
+      final database = DatabaseHelper();
+      final subscriptions = await database.getSubscriptions();
+      for (final subscription in subscriptions) {
+        await NotificationService.cancelSubscriptionReminder(subscription.id);
+      }
+      await database.deleteAccount();
       if (!context.mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
@@ -1092,12 +1165,16 @@ class _MoreScreenState extends State<MoreScreen> {
     );
   }
 
-  Future<void> _exportData(BuildContext context) async {
+  @Deprecated('Use BackupsScreen to export a backup file')
+  Future<void> exportBackupJsonToClipboardForCompatibility(
+    BuildContext context,
+  ) async {
     final data = await DatabaseHelper().exportData();
     final encoded = jsonEncode(data);
-    final transactionCount = (data['transactions'] as List).length;
-    final goalCount = (data['goals'] as List).length;
-    final shoppingCount = (data['shopping_lists'] as List).length;
+    final backupData = data['data'] as Map<String, dynamic>;
+    final transactionCount = (backupData['transactions'] as List).length;
+    final goalCount = (backupData['goals'] as List).length;
+    final shoppingCount = (backupData['shopping_lists'] as List).length;
     await Clipboard.setData(ClipboardData(text: encoded));
     if (!context.mounted) return;
     await showDialog<void>(
@@ -1183,7 +1260,10 @@ class _MoreScreenState extends State<MoreScreen> {
     );
   }
 
-  Future<void> _importData(BuildContext context) async {
+  @Deprecated('Use BackupsScreen to import and restore a backup file')
+  Future<void> importBackupJsonFromClipboardForCompatibility(
+    BuildContext context,
+  ) async {
     final controller = TextEditingController();
     final text = await showDialog<String>(
       context: context,
@@ -1301,13 +1381,28 @@ class _MoreScreenState extends State<MoreScreen> {
     if (text == null || text.trim().isEmpty || !context.mounted) return;
     try {
       final decoded = jsonDecode(text);
-      final transactions = decoded is Map ? decoded['transactions'] : null;
-      final count = transactions is List
-          ? await DatabaseHelper().importTransactions(transactions)
+      final count = decoded is Map
+          ? await DatabaseHelper().importBackup(
+              Map<String, dynamic>.from(decoded),
+            )
           : 0;
+      String? reminderError;
+      try {
+        await SubscriptionReminderService().syncAll();
+        await ScheduledPaymentReminderService().syncAll();
+      } catch (error) {
+        reminderError = '$error';
+      }
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(movaText('$count movimientos importados'))),
+        SnackBar(
+          content: Text(
+            reminderError == null
+                ? movaText('$count movimientos importados')
+                : '${movaText('$count movimientos importados')}. '
+                      '${context.l10n.text('reminder_schedule_error')}: $reminderError',
+          ),
+        ),
       );
     } catch (_) {
       if (!context.mounted) return;

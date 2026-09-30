@@ -8,6 +8,7 @@ import 'package:mova/models/shared_goal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
 import 'package:mova/services/mova_localizations.dart';
+import 'package:mova/widgets/mova_design_system.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
@@ -42,7 +43,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: MovaDesign.canvas,
       body: SafeArea(
         child: FutureBuilder<List<Map<String, dynamic>>>(
           future: _goals,
@@ -78,11 +79,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 children: [
                   Text(
                     l10n.text('my_goals'),
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF102A43),
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -118,11 +115,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _newGoal,
-        backgroundColor: const Color(0xFF1E293B),
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add_rounded),
         label: Text(
           l10n.text('new_goal'),
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -1011,23 +1007,9 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = target <= 0 ? 0.0 : (saved / target).clamp(0.0, 1.0);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 19, 20, 18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0C2340), Color(0xFF1E3A5F)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x220C2340),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
+    return MovaSurface(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      elevation: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1039,17 +1021,21 @@ class _SummaryCard extends StatelessWidget {
                   children: [
                     Text(
                       movaText('RESUMEN DE AHORRO'),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
-                        letterSpacing: 1.2,
-                        color: Color(0xFFB9C9DB),
-                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                        color: MovaDesign.muted,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 5),
                     Text(
                       movaText('Tu avance acumulado'),
-                      style: TextStyle(fontSize: 13, color: Color(0xFFE2E8F0)),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: MovaDesign.ink,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -1057,13 +1043,13 @@ class _SummaryCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(11),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .12),
-                  shape: BoxShape.circle,
+                  color: const Color(0xFFE8F3F5),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.savings_rounded,
-                  size: 28,
-                  color: Colors.white,
+                  size: 22,
+                  color: MovaDesign.accent,
                 ),
               ),
             ],
@@ -1073,25 +1059,18 @@ class _SummaryCard extends StatelessWidget {
             appCurrencyController.format(saved),
             style: const TextStyle(
               fontSize: 30,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -.7,
+              color: MovaDesign.ink,
             ),
           ),
           const SizedBox(height: 3),
           Text(
             '${movaText('de')} ${appCurrencyController.format(target)} ${movaText('establecidos')}',
-            style: const TextStyle(fontSize: 12, color: Color(0xFFB9C9DB)),
+            style: const TextStyle(fontSize: 12, color: MovaDesign.muted),
           ),
           const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: Colors.white.withValues(alpha: .18),
-              color: const Color(0xFFB9D7F0),
-            ),
-          ),
+          MovaProgressBar(value: progress, height: 8),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1099,7 +1078,7 @@ class _SummaryCard extends StatelessWidget {
               Text(
                 '${(progress * 100).round()}% ${movaText('completado')}',
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: MovaDesign.positive,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1108,7 +1087,7 @@ class _SummaryCard extends StatelessWidget {
                 movaText(
                   '$count ${count == 1 ? 'meta activa' : 'metas activas'}',
                 ),
-                style: const TextStyle(fontSize: 12, color: Color(0xFFB9C9DB)),
+                style: const TextStyle(fontSize: 12, color: MovaDesign.muted),
               ),
             ],
           ),

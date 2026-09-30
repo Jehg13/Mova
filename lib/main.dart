@@ -12,6 +12,7 @@ import 'services/notification_service.dart';
 import 'services/currency_controller.dart';
 import 'services/language_controller.dart';
 import 'services/mova_localizations.dart';
+import 'services/backup_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,8 +36,39 @@ Future<void> main() async {
   runApp(const MovaApp());
 }
 
-class MovaApp extends StatelessWidget {
+class MovaApp extends StatefulWidget {
   const MovaApp({super.key});
+
+  @override
+  State<MovaApp> createState() => _MovaAppState();
+}
+
+class _MovaAppState extends State<MovaApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _runAutomaticBackup();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _runAutomaticBackup();
+  }
+
+  Future<void> _runAutomaticBackup() async {
+    try {
+      await BackupManager().runAutomaticBackupIfDue();
+    } catch (error) {
+      debugPrint('No se pudo realizar el backup automático: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

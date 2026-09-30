@@ -3,6 +3,7 @@ import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
+import 'package:mova/widgets/mova_design_system.dart';
 
 class ShoppingScreen extends StatefulWidget {
   const ShoppingScreen({super.key});
@@ -73,7 +74,7 @@ class _ShoppingScreenState extends State<ShoppingScreen>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: MovaDesign.canvas,
       appBar: AppBar(
         foregroundColor: const Color(0xFF102A43),
         title: Text(
@@ -84,7 +85,7 @@ class _ShoppingScreenState extends State<ShoppingScreen>
             letterSpacing: -0.5,
           ),
         ),
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: MovaDesign.canvas,
         elevation: 0,
         scrolledUnderElevation: 0,
         bottom: TabBar(
@@ -849,7 +850,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
         }
         final completed = list['status'] == 'completed';
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: MovaDesign.canvas,
           appBar: AppBar(
             foregroundColor: const Color(0xFF102A43),
             title: Text(
@@ -858,7 +859,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
-            backgroundColor: const Color(0xFFF8FAFC),
+            backgroundColor: MovaDesign.canvas,
             elevation: 0,
             scrolledUnderElevation: 0,
             actions: [

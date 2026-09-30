@@ -4,6 +4,10 @@
 <dict>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Usamos Face ID para proteger la recuperación de tu cuenta.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>MOVA usa la cámara para escanear comprobantes de tus gastos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MOVA necesita acceso a tus fotos para leer comprobantes que elijas.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

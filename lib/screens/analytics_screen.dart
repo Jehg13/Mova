@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/services/mova_localizations.dart';
+import 'package:mova/models/subscription.dart';
+import 'package:mova/screens/subscriptions_screen.dart';
+import 'package:mova/widgets/mova_design_system.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -16,6 +19,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   final _database = DatabaseHelper();
   String _period = 'this_month';
   late Future<List<Map<String, dynamic>>> _transactions;
+  late Future<List<Subscription>> _subscriptions;
 
   @override
   void initState() {
@@ -25,6 +29,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   void _load() {
     _transactions = _database.getTransactions();
+    _subscriptions = _database.getSubscriptions();
   }
 
   void _refresh() {
@@ -71,7 +76,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: MovaDesign.canvas,
       body: SafeArea(
         child: FutureBuilder<List<Map<String, dynamic>>>(
           future: _transactions,
@@ -134,6 +139,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   const SizedBox(height: 16),
                   _PeriodBanner(period: displayedPeriod),
                   const SizedBox(height: 14),
+                  _SubscriptionAnalyticsCard(
+                    subscriptions: _subscriptions,
+                    onOpen: () async {
+                      await Navigator.of(context).push<void>(
+                        MaterialPageRoute(
+                          builder: (_) => const SubscriptionsScreen(),
+                        ),
+                      );
+                      if (mounted) _refresh();
+                    },
+                  ),
+                  const SizedBox(height: 14),
                   _SummaryCard(transactions: transactions, money: _money),
                   const SizedBox(height: 16),
                   _DailyChartCard(transactions: transactions, money: _money),
@@ -148,6 +165,132 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         ),
       ),
     );
+  }
+}
+
+class _SubscriptionAnalyticsCard extends StatelessWidget {
+  const _SubscriptionAnalyticsCard({
+    required this.subscriptions,
+    required this.onOpen,
+  });
+  final Future<List<Subscription>> subscriptions;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return FutureBuilder<List<Subscription>>(
+      future: subscriptions,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            snapshot.hasError) {
+          return const SizedBox.shrink();
+        }
+        final all = snapshot.data ?? const <Subscription>[];
+        final active = all
+            .where((item) => item.status == SubscriptionStatus.active)
+            .toList();
+        if (all.isEmpty) return const SizedBox.shrink();
+        final byCategory = <String, Map<String, double>>{};
+        for (final subscription in active) {
+          final monthlyAmount = switch (subscription.frequency) {
+            SubscriptionFrequency.weekly => subscription.amount * 52 / 12,
+            SubscriptionFrequency.biweekly => subscription.amount * 26 / 12,
+            SubscriptionFrequency.monthly => subscription.amount,
+            SubscriptionFrequency.bimonthly => subscription.amount / 2,
+            SubscriptionFrequency.quarterly => subscription.amount / 3,
+            SubscriptionFrequency.semiannual => subscription.amount / 6,
+            SubscriptionFrequency.annual => subscription.amount / 12,
+          };
+          final currencyTotals = byCategory.putIfAbsent(
+            subscription.category,
+            () => {},
+          );
+          currencyTotals.update(
+            subscription.currency,
+            (value) => value + monthlyAmount,
+            ifAbsent: () => monthlyAmount,
+          );
+        }
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.text('subscriptions'),
+                      style: const TextStyle(
+                        color: Color(0xFF102A43),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: onOpen,
+                    child: Text(l10n.text('view_all')),
+                  ),
+                ],
+              ),
+              Text(
+                '${active.length} ${l10n.text('active').toLowerCase()} · '
+                '${all.where((item) => item.status == SubscriptionStatus.cancelled).length} '
+                '${l10n.text('cancelled').toLowerCase()}',
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+              ),
+              if (byCategory.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                for (final entry in byCategory.entries)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Expanded(child: Text(entry.key)),
+                        Text(
+                          entry.value.entries
+                              .map(
+                                (amount) =>
+                                    '${_subscriptionSymbol(amount.key)}${amount.value.toStringAsFixed(2)}',
+                              )
+                              .join(' · '),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+              ] else
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(l10n.text('no_active_subscriptions')),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+String _subscriptionSymbol(String currency) {
+  switch (currency) {
+    case 'USD':
+      return 'US\$';
+    case 'EUR':
+      return '€';
+    case 'CAD':
+      return 'CA\$';
+    case 'GBP':
+      return '£';
+    default:
+      return '\$';
   }
 }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/database/database_helper.dart';
+import 'package:mova/services/subscription_reminder_service.dart';
+import 'package:mova/services/scheduled_payment_reminder_service.dart';
 
 class MovaNotificationsDialog extends StatefulWidget {
   const MovaNotificationsDialog({super.key});
@@ -17,6 +19,8 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
   bool _budget = true;
   bool _goals = true;
   bool _shopping = true;
+  bool _subscriptions = true;
+  bool _payments = true;
   String? _savingKey;
 
   @override
@@ -31,6 +35,8 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
       _database.getNotificationOption('notification_budget'),
       _database.getNotificationOption('notification_goals'),
       _database.getNotificationOption('notification_shopping'),
+      _database.getNotificationOption('notification_subscriptions'),
+      _database.getNotificationOption('notification_payments'),
     ]);
     if (!mounted) return;
     setState(() {
@@ -38,6 +44,8 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
       _budget = values[1];
       _goals = values[2];
       _shopping = values[3];
+      _subscriptions = values[4];
+      _payments = values[5];
       _loading = false;
     });
   }
@@ -46,6 +54,13 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
     setState(() => _savingKey = key);
     try {
       await _database.setNotificationOption(key, value);
+      if (key == 'notifications_enabled' ||
+          key == 'notification_subscriptions') {
+        await SubscriptionReminderService().syncAll();
+      }
+      if (key == 'notifications_enabled' || key == 'notification_payments') {
+        await ScheduledPaymentReminderService().syncAll();
+      }
       if (!mounted) return;
       setState(() => _savingKey = null);
     } catch (_) {
@@ -65,8 +80,12 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
         _budget = value;
       } else if (key == 'notification_goals') {
         _goals = value;
-      } else {
+      } else if (key == 'notification_shopping') {
         _shopping = value;
+      } else if (key == 'notification_payments') {
+        _payments = value;
+      } else {
+        _subscriptions = value;
       }
     });
     await _set(key, value);
@@ -233,6 +252,26 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                       saving: _savingKey == 'notification_shopping',
                       onChanged: (value) =>
                           _toggle('notification_shopping', value),
+                    ),
+                    _NotificationOption(
+                      icon: Icons.autorenew_rounded,
+                      title: l10n.text('subscriptions'),
+                      subtitle: l10n.text('subscription_reminders_help'),
+                      value: _subscriptions,
+                      enabled: _enabled,
+                      saving: _savingKey == 'notification_subscriptions',
+                      onChanged: (value) =>
+                          _toggle('notification_subscriptions', value),
+                    ),
+                    _NotificationOption(
+                      icon: Icons.event_note_outlined,
+                      title: l10n.text('upcoming_payments'),
+                      subtitle: l10n.text('payment_reminders_help'),
+                      value: _payments,
+                      enabled: _enabled,
+                      saving: _savingKey == 'notification_payments',
+                      onChanged: (value) =>
+                          _toggle('notification_payments', value),
                     ),
                     SizedBox(height: 10),
                     OutlinedButton(
