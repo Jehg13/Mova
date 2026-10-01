@@ -438,7 +438,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
     final currentCategories = isIncome ? incomeCategories : expenseCategories;
 
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -451,7 +451,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                     padding: EdgeInsets.all(11),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF0C2340), Color(0xFF36577D)],
+                        colors: [Color(0xFF0C2340), Color(0xFF535353)],
                       ),
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -485,7 +485,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                               : l10n.text('expense_help'),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF64748B),
+                            color: Color(0xFF727272),
                           ),
                         ),
                       ],
@@ -499,7 +499,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE7EDF3),
+                  color: const Color(0xFFECECEC),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 padding: EdgeInsets.all(4),
@@ -654,7 +654,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFD8E1EB)),
+                      border: Border.all(color: const Color(0xFFE0E0E0)),
                     ),
                     child: Row(
                       children: [
@@ -721,10 +721,8 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
                 child: Stack(
                   children: [
-                    const Positioned(
-                      top: -90,
-                      right: -90,
-                      child: MovaAmbientGlow(size: 220),
+                    const Positioned.fill(
+                      child: MovaRadialHighlight(color: Color(0xFF9E9E9E)),
                     ),
                     Column(
                       children: [
@@ -733,7 +731,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                               ? l10n.text('how_much_received')
                               : l10n.text('how_much'),
                           style: const TextStyle(
-                            color: Color(0xFFC5D5E4),
+                            color: Color(0xFFD3D3D3),
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -761,11 +759,11 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                             prefixStyle: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF8CE1E8),
+                              color: Color(0xFFCFCFCF),
                             ),
                             hintText: movaText('0.00'),
                             hintStyle: TextStyle(
-                              color: Color(0xFF7890A7),
+                              color: Color(0xFF8D8D8D),
                               fontSize: 42,
                               fontWeight: FontWeight.w700,
                             ),
@@ -950,7 +948,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                           border: Border.all(
                             color: selectedCategory == item["name"]
                                 ? primaryColor
-                                : Color(0xFFE2E8F0),
+                                : Color(0xFFE7E7E7),
                           ),
                           boxShadow: selectedCategory == item["name"]
                               ? [
@@ -1036,7 +1034,7 @@ class AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Color(0xFFD8E1EB)),
+                    borderSide: BorderSide(color: Color(0xFFE0E0E0)),
                   ),
                 ),
               ),

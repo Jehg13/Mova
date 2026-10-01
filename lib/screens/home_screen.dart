@@ -30,7 +30,7 @@ class HomeScreen extends StatefulWidget {
 
   static const Color primaryTeal = MovaDesign.accent;
   static const Color darkNavy = Color(0xFF0C2340);
-  static const Color subtitleGrey = Color(0xFF64748B);
+  static const Color subtitleGrey = Color(0xFF727272);
   static const Color backgroundColor = MovaDesign.canvas;
 
   @override
@@ -44,7 +44,14 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    DatabaseHelper.financialDataVersion.addListener(refresh);
     _loadHomeData();
+  }
+
+  @override
+  void dispose() {
+    DatabaseHelper.financialDataVersion.removeListener(refresh);
+    super.dispose();
   }
 
   void refresh() {
@@ -81,81 +88,69 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: HomeScreen.backgroundColor,
-      body: Stack(
-        children: [
-          const Positioned(
-            top: -150,
-            right: -145,
-            child: MovaAmbientGlow(size: 390, color: Color(0x1F20A6B5)),
-          ),
-          SafeArea(
-            child: FutureBuilder<_HomeData>(
-              future: _homeData,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      movaText(
-                        'No se pudo cargar el resumen: ${snapshot.error}',
-                      ),
-                    ),
-                  );
-                }
-                final data = snapshot.data!;
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    setState(_loadHomeData);
-                    await _homeData;
-                  },
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        HeaderSection(onOpenSettings: widget.onOpenSettings),
-                        const SizedBox(height: 22),
-                        BalanceCard(balance: data.balance),
-                        const SizedBox(height: 14),
-                        QuickSummarySection(
-                          income: data.income,
-                          expenses: data.expenses,
-                          savings: data.savings,
-                        ),
-                        if (data.accounts.isNotEmpty) ...[
-                          const SizedBox(height: 20),
-                          AccountsOverviewSection(
-                            accounts: data.accounts,
-                            overview: data.accountOverview,
-                            onTap: widget.onOpenAccounts,
-                          ),
-                        ],
-                        if (data.upcomingPaymentItems.isNotEmpty) ...[
-                          const SizedBox(height: 18),
-                          UpcomingPaymentsOverviewSection(
-                            payments: data.upcomingPaymentItems,
-                            onTap: widget.onOpenPayments,
-                          ),
-                        ],
-                        const SizedBox(height: 27),
-                        RecentTransactionsSection(
-                          transactions: data.transactions,
-                        ),
-                        const SizedBox(height: 24),
-                        GoalSection(goals: data.goals),
-                        const SizedBox(height: 12),
-                      ],
-                    ),
-                  ),
-                );
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: FutureBuilder<_HomeData>(
+          future: _homeData,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  movaText('No se pudo cargar el resumen: ${snapshot.error}'),
+                ),
+              );
+            }
+            final data = snapshot.data!;
+            return RefreshIndicator(
+              onRefresh: () async {
+                setState(_loadHomeData);
+                await _homeData;
               },
-            ),
-          ),
-        ],
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    HeaderSection(onOpenSettings: widget.onOpenSettings),
+                    const SizedBox(height: 22),
+                    BalanceCard(balance: data.balance),
+                    const SizedBox(height: 14),
+                    QuickSummarySection(
+                      income: data.income,
+                      expenses: data.expenses,
+                      savings: data.savings,
+                    ),
+                    if (data.accounts.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      AccountsOverviewSection(
+                        accounts: data.accounts,
+                        overview: data.accountOverview,
+                        onTap: widget.onOpenAccounts,
+                      ),
+                    ],
+                    if (data.upcomingPaymentItems.isNotEmpty) ...[
+                      const SizedBox(height: 18),
+                      UpcomingPaymentsOverviewSection(
+                        payments: data.upcomingPaymentItems,
+                        onTap: widget.onOpenPayments,
+                      ),
+                    ],
+                    const SizedBox(height: 27),
+                    RecentTransactionsSection(transactions: data.transactions),
+                    const SizedBox(height: 24),
+                    GoalSection(goals: data.goals),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -263,7 +258,7 @@ class AccountsOverviewSection extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: const Color(0xFFE7E7E7)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,7 +278,7 @@ class AccountsOverviewSection extends StatelessWidget {
                   ),
                   Text(
                     '${accounts.length}',
-                    style: const TextStyle(color: Color(0xFF64748B)),
+                    style: const TextStyle(color: Color(0xFF727272)),
                   ),
                 ],
               ),
@@ -356,7 +351,7 @@ List<Widget> _overviewRows(
           Text(
             '${debt ? '−' : ''}${_accountTotals(values)}',
             style: TextStyle(
-              color: debt ? const Color(0xFFB42318) : null,
+              color: debt ? const Color(0xFF414141) : null,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -418,7 +413,7 @@ class UpcomingPaymentsOverviewSection extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: const Color(0xFFE7E7E7)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,7 +434,7 @@ class UpcomingPaymentsOverviewSection extends StatelessWidget {
                   Text(
                     context.l10n.text('view_all'),
                     style: const TextStyle(
-                      color: Color(0xFF2563EB),
+                      color: Color(0xFF606060),
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
                     ),
@@ -467,7 +462,7 @@ class UpcomingPaymentsOverviewSection extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Color(0xFF475569),
+                            color: Color(0xFF535353),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -550,7 +545,7 @@ class UpcomingSubscriptionsSection extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: const Color(0xFFE7E7E7)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -575,7 +570,7 @@ class UpcomingSubscriptionsSection extends StatelessWidget {
                   Text(
                     '${subscriptions.length} ${context.l10n.text('active')}',
                     style: const TextStyle(
-                      color: Color(0xFF64748B),
+                      color: Color(0xFF727272),
                       fontSize: 12,
                     ),
                   ),
@@ -600,7 +595,7 @@ class UpcomingSubscriptionsSection extends StatelessWidget {
                         Text(
                           '${_subscriptionMoney(subscription.amount, subscription.currency)} · ${_daysUntilCharge(context, subscription.nextChargeDate)}',
                           style: const TextStyle(
-                            color: Color(0xFF475569),
+                            color: Color(0xFF535353),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -846,7 +841,7 @@ class HeaderSection extends StatelessWidget {
               ListTile(
                 leading: const Icon(
                   Icons.logout_rounded,
-                  color: Color(0xFFB42318),
+                  color: Color(0xFF414141),
                 ),
                 title: Text(l10n.text('logout')),
                 subtitle: Text(l10n.text('exit_device')),
@@ -1010,31 +1005,28 @@ class BalanceCard extends StatelessWidget {
         gradient: MovaDesign.primaryGradient,
         borderRadius: BorderRadius.circular(24),
         boxShadow: MovaDesign.cardShadow,
-        border: Border.all(color: const Color(0x268CE1E8)),
+        border: Border.all(color: const Color(0x338CE1E8)),
       ),
       child: Stack(
         children: [
-          const Positioned(
-            right: -68,
-            top: -72,
-            child: MovaAmbientGlow(size: 230),
+          const Positioned.fill(
+            child: MovaRadialHighlight(color: Color(0xFF9E9E9E)),
           ),
           Positioned(
-            right: -58,
-            top: -72,
+            top: 16,
+            right: 16,
             child: Container(
-              width: 190,
-              height: 190,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFF8CE1E8).withValues(alpha: .13),
-                  width: 28,
+                  color: Colors.white.withValues(alpha: .075),
+                  width: 1,
                 ),
               ),
             ),
           ),
-          const Positioned(right: -8, bottom: -10, child: _BalanceSignalArt()),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1042,14 +1034,14 @@ class BalanceCard extends StatelessWidget {
                 children: [
                   const Icon(
                     Icons.account_balance_wallet_outlined,
-                    color: Color(0xFF8CE1E8),
+                    color: Color(0xFFCFCFCF),
                     size: 18,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     movaText('Dinero disponible'),
                     style: const TextStyle(
-                      color: Color(0xFFC5D5E4),
+                      color: Color(0xFFD3D3D3),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1098,13 +1090,13 @@ class BalanceCard extends StatelessWidget {
                         const Icon(
                           Icons.account_balance_wallet_outlined,
                           size: 13,
-                          color: Color(0xFF8CE1E8),
+                          color: Color(0xFFCFCFCF),
                         ),
                         const SizedBox(width: 6),
                         Text(
                           '${movaText('balance')} · ${appCurrencyController.code}',
                           style: const TextStyle(
-                            color: Color(0xFFD2E1EC),
+                            color: Color(0xFFDFDFDF),
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             letterSpacing: .35,
@@ -1116,7 +1108,7 @@ class BalanceCard extends StatelessWidget {
                   const Spacer(),
                   const Icon(
                     Icons.auto_awesome_rounded,
-                    color: Color(0xFF8CE1E8),
+                    color: Color(0xFFCFCFCF),
                     size: 15,
                   ),
                 ],
@@ -1127,71 +1119,6 @@ class BalanceCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _BalanceSignalArt extends StatelessWidget {
-  const _BalanceSignalArt();
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 142,
-    height: 104,
-    child: CustomPaint(painter: _BalanceSignalPainter()),
-  );
-}
-
-class _BalanceSignalPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final line = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.3
-      ..color = const Color(0xFFA5E8EC).withValues(alpha: .19);
-    final highlight = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4
-      ..color = const Color(0xFF8CE1E8).withValues(alpha: .32);
-    final center = Offset(size.width + 9, size.height + 15);
-
-    for (var index = 0; index < 4; index++) {
-      canvas.drawCircle(center, 33 + index * 17, line);
-    }
-
-    canvas.save();
-    canvas.translate(size.width * .65, size.height * .38);
-    canvas.rotate(-.45);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset.zero,
-        width: size.width * .9,
-        height: size.height * .52,
-      ),
-      highlight,
-    );
-    canvas.rotate(.9);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset.zero,
-        width: size.width * .75,
-        height: size.height * .46,
-      ),
-      line,
-    );
-    canvas.restore();
-    canvas.drawCircle(
-      Offset(size.width * .27, size.height * .74),
-      2,
-      Paint()..color = const Color(0xFFB7E8EC).withValues(alpha: .55),
-    );
-    canvas.drawCircle(
-      Offset(size.width * .53, size.height * .28),
-      1.4,
-      Paint()..color = const Color(0xFFB7E8EC).withValues(alpha: .38),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _BalanceSignalPainter oldDelegate) => false;
 }
 
 // --- 3. RESUMEN RÁPIDO ---
@@ -1323,7 +1250,7 @@ class RecentTransactionsSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8EEF5),
+                    color: const Color(0xFFEDEDED),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -1374,7 +1301,7 @@ class RecentTransactionsSection extends StatelessWidget {
                           Icon(
                             Icons.receipt_long_outlined,
                             size: 32,
-                            color: Color(0xFF94A3B8),
+                            color: Color(0xFFA1A1A1),
                           ),
                           SizedBox(height: 8),
                           Text(
@@ -1394,7 +1321,7 @@ class RecentTransactionsSection extends StatelessWidget {
                       child: Text(
                         '${transactions.length} movimiento${transactions.length == 1 ? '' : 's'} registrados',
                         style: const TextStyle(
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF727272),
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1563,7 +1490,7 @@ class GoalSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8EEF5),
+                  color: const Color(0xFFEDEDED),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -1591,7 +1518,7 @@ class GoalSection extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: const Color(0xFFE7E7E7)),
               ),
               child: Row(
                 children: [
@@ -1691,7 +1618,7 @@ class _GoalFallbackIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: Color(0xFFE8EEF5),
+      color: Color(0xFFEDEDED),
       child: Center(
         child: Icon(
           Icons.flag_outlined,

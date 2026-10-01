@@ -97,10 +97,13 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-  OutlineInputBorder _buildBorder({Color color = LoginScreen.inputBorderGrey}) {
+  OutlineInputBorder _buildBorder({
+    Color color = LoginScreen.inputBorderGrey,
+    double width = 1,
+  }) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: color, width: 1.2),
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: color, width: width),
     );
   }
 
@@ -111,15 +114,37 @@ class _LoginScreenState extends State<LoginScreen>
   }) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-      prefixIcon: Icon(prefixIcon, color: Color(0xFF94A3B8), size: 20),
+      hintStyle: const TextStyle(
+        color: Color(0xFF98A2B3),
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      prefixIcon: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+        child: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE9EFF6),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(prefixIcon, color: LoginScreen.darkNavy, size: 20),
+        ),
+      ),
+      prefixIconConstraints: const BoxConstraints(minWidth: 62, minHeight: 56),
       suffixIcon: suffixIcon,
+      suffixIconConstraints: const BoxConstraints(minWidth: 52, minHeight: 52),
       filled: true,
-      fillColor: Color(0xFFF8FAFC),
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      fillColor: const Color(0xFFF8FAFC),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
       border: _buildBorder(),
-      enabledBorder: _buildBorder(),
-      focusedBorder: _buildBorder(color: LoginScreen.primaryTeal),
+      enabledBorder: _buildBorder(color: const Color(0xFFD7E0EB)),
+      focusedBorder: _buildBorder(color: LoginScreen.darkNavy, width: 1.8),
+      errorBorder: _buildBorder(color: const Color(0xFF475467)),
+      focusedErrorBorder: _buildBorder(
+        color: const Color(0xFF101828),
+        width: 1.7,
+      ),
     );
   }
 
@@ -252,6 +277,14 @@ class _LoginScreenState extends State<LoginScreen>
                             TextField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.email],
+                              cursorColor: LoginScreen.primaryTeal,
+                              style: const TextStyle(
+                                color: Color(0xFF101828),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
                               decoration: _inputDecoration(
                                 hintText: l10n.text('email'),
                                 prefixIcon: Icons.email_outlined,
@@ -265,6 +298,15 @@ class _LoginScreenState extends State<LoginScreen>
                             TextField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.done,
+                              autofillHints: const [AutofillHints.password],
+                              cursorColor: LoginScreen.primaryTeal,
+                              style: const TextStyle(
+                                color: Color(0xFF101828),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: .2,
+                              ),
                               decoration: _inputDecoration(
                                 hintText: l10n.text('password'),
                                 prefixIcon: Icons.lock_outline,
@@ -490,9 +532,10 @@ class _LoginScreenState extends State<LoginScreen>
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
           color: LoginScreen.darkNavy,
+          letterSpacing: .15,
         ),
       ),
     );

@@ -83,91 +83,285 @@ Future<void> _showLegalDocument(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (sheetContext) => Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(sheetContext).height * .86,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(24, 22, 16, 12),
-              child: Row(
-                children: [
-                  Icon(icon, color: Color(0xFF0C2340), size: 25),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      movaText(title),
-                      style: TextStyle(
-                        color: Color(0xFF102A43),
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
+    builder: (sheetContext) {
+      const navy = Color(0xFF0C2340);
+      const muted = Color(0xFF667085);
+      final description = title == _termsTitle
+          ? 'Lee estas condiciones para conocer el uso responsable de MOVA.'
+          : 'Consulta qué información se guarda y cómo puedes administrar tus datos.';
+      return Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(sheetContext).height * .9,
+        ),
+        decoration: const BoxDecoration(
+          color: Color(0xFFF4F7FB),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 42,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                padding: const EdgeInsets.fromLTRB(18, 17, 12, 17),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF183B60), navy],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(23),
+                  boxShadow: [
+                    BoxShadow(
+                      color: navy.withValues(alpha: .17),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: .12),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: .16),
+                            ),
+                          ),
+                          child: Icon(icon, color: Colors.white, size: 23),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                movaText(title),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -.3,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                movaText('INFORMACIÓN LEGAL DE MOVA'),
+                                style: const TextStyle(
+                                  color: Color(0xFFC8D7E8),
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          tooltip: movaText('Cerrar'),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.white.withValues(
+                              alpha: .12,
+                            ),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(38, 38),
+                          ),
+                          icon: const Icon(Icons.close_rounded, size: 19),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      movaText(description),
+                      style: const TextStyle(
+                        color: Color(0xFFE0E8F1),
+                        fontSize: 12,
+                        height: 1.4,
                       ),
                     ),
-                  ),
-                  IconButton(
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.verified_user_outlined,
+                          color: Color(0xFFC8D7E8),
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          movaText('Actualizado el 23 de septiembre de 2026'),
+                          style: const TextStyle(
+                            color: Color(0xFFC8D7E8),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 0, 22, 2),
+                child: Row(
+                  children: [
+                    Text(
+                      movaText('CONTENIDO'),
+                      style: const TextStyle(
+                        color: muted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        height: 1,
+                        color: const Color(0xFFE1E7EF),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${sections.length} ${movaText('secciones')}',
+                      style: const TextStyle(
+                        color: muted,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
+                  itemCount: sections.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 9),
+                  itemBuilder: (_, index) {
+                    final section = sections[index];
+                    return Container(
+                      padding: const EdgeInsets.fromLTRB(14, 14, 16, 15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(17),
+                        border: Border.all(color: const Color(0xFFE5EAF1)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: navy.withValues(alpha: .035),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEAF0F7),
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                            child: Text(
+                              '${index + 1}'.padLeft(2, '0'),
+                              style: const TextStyle(
+                                color: navy,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: .3,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  movaText(section.title),
+                                  style: const TextStyle(
+                                    color: navy,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.25,
+                                  ),
+                                ),
+                                const SizedBox(height: 7),
+                                Text(
+                                  movaText(section.body),
+                                  style: const TextStyle(
+                                    color: muted,
+                                    fontSize: 12,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
                     onPressed: () => Navigator.pop(sheetContext),
-                    icon: Icon(Icons.close_rounded),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: navy,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.check_rounded, size: 19),
+                        const SizedBox(width: 8),
+                        Text(
+                          movaText('Entendido'),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(24, 0, 24, 14),
-              child: Text(
-                movaText(
-                  title == _termsTitle
-                      ? 'Lee estas condiciones para conocer el uso responsable de MOVA.'
-                      : 'Consulta qué información se guarda y cómo puedes administrar tus datos.',
-                ),
-                style: TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 13,
-                  height: 1.4,
                 ),
               ),
-            ),
-            Divider(height: 1),
-            Expanded(
-              child: ListView.separated(
-                padding: EdgeInsets.fromLTRB(24, 16, 24, 28),
-                itemCount: sections.length,
-                separatorBuilder: (_, _) => SizedBox(height: 18),
-                itemBuilder: (_, index) {
-                  final section = sections[index];
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        movaText(section.title),
-                        style: TextStyle(
-                          color: Color(0xFF102A43),
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        movaText(section.body),
-                        style: TextStyle(
-                          color: Color(0xFF64748B),
-                          height: 1.45,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 
@@ -267,7 +461,7 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                         Container(
                           padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Color(0xFFE8EEF5),
+                            color: Color(0xFFEDEDED),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
@@ -292,7 +486,7 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                                 movaText('Administra tu información personal'),
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF64748B),
+                                  color: Color(0xFF727272),
                                 ),
                               ),
                             ],
@@ -311,10 +505,10 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                       padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFFF1F6FB), Color(0xFFE7F5F3)],
+                          colors: [Color(0xFFF5F5F5), Color(0xFFF2F2F2)],
                         ),
                         borderRadius: BorderRadius.circular(22),
-                        border: Border.all(color: Color(0xFFD8E5EC)),
+                        border: Border.all(color: Color(0xFFE3E3E3)),
                       ),
                       child: Column(
                         children: [
@@ -328,13 +522,13 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                                   gradient: LinearGradient(
                                     colors: [
                                       Color(0xFF0C2340),
-                                      Color(0xFF00A6A6),
+                                      Color(0xFF838383),
                                     ],
                                   ),
                                 ),
                                 child: CircleAvatar(
                                   radius: 50,
-                                  backgroundColor: Color(0xFFE8EEF5),
+                                  backgroundColor: Color(0xFFEDEDED),
                                   backgroundImage: _image == null
                                       ? null
                                       : MemoryImage(_image!),
@@ -381,7 +575,7 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                             ),
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Color(0xFF334E68),
+                              color: Color(0xFF4A4A4A),
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
@@ -407,7 +601,7 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                                 ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Color(0xFF0C2340),
-                                  side: BorderSide(color: Color(0xFF9CB7C7)),
+                                  side: BorderSide(color: Color(0xFFB2B2B2)),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(13),
                                   ),
@@ -426,7 +620,7 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                                   ),
                                   label: Text(movaText('Quitar foto')),
                                   style: TextButton.styleFrom(
-                                    foregroundColor: Color(0xFFB42318),
+                                    foregroundColor: Color(0xFF414141),
                                   ),
                                 ),
                             ],
@@ -466,8 +660,8 @@ class _ProfileDialogState extends State<_ProfileDialog> {
                                 ? null
                                 : () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: Color(0xFF334E68),
-                              side: BorderSide(color: Color(0xFFD0DCE5)),
+                              foregroundColor: Color(0xFF4A4A4A),
+                              side: BorderSide(color: Color(0xFFDADADA)),
                               padding: EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
@@ -534,7 +728,7 @@ class _ProfileField extends StatelessWidget {
       decoration: BoxDecoration(
         color: Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFFE2E8F0)),
+        border: Border.all(color: Color(0xFFE7E7E7)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,7 +747,7 @@ class _ProfileField extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF64748B),
+                    color: Color(0xFF727272),
                   ),
                 ),
                 child,
@@ -569,10 +763,10 @@ class _ProfileField extends StatelessWidget {
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});
 
-  static Color backgroundColor = Color(0xFFF1F5F9);
+  static Color backgroundColor = Color(0xFFF4F4F4);
   static Color darkNavy = Color(0xFF0F172A);
-  static Color subtitleGrey = Color(0xFF64748B);
-  static Color sectionHeaderColor = Color(0xFF475569);
+  static Color subtitleGrey = Color(0xFF727272);
+  static Color sectionHeaderColor = Color(0xFF535353);
 
   @override
   State<MoreScreen> createState() => _MoreScreenState();
@@ -888,12 +1082,12 @@ class _MoreScreenState extends State<MoreScreen> {
             Container(
               padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Color(0xFFFDECEC),
+                color: Color(0xFFF0F0F0),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 Icons.delete_forever_outlined,
-                color: Color(0xFFB42318),
+                color: Color(0xFF414141),
               ),
             ),
             SizedBox(width: 12),
@@ -912,7 +1106,7 @@ class _MoreScreenState extends State<MoreScreen> {
             Text(
               movaText('Esta acción es permanente.'),
               style: TextStyle(
-                color: Color(0xFFB42318),
+                color: Color(0xFF414141),
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -921,7 +1115,7 @@ class _MoreScreenState extends State<MoreScreen> {
               movaText(
                 'Se eliminarán tu cuenta, movimientos, metas, listas, suscripciones e historial. No podrás recuperar estos datos.',
               ),
-              style: TextStyle(color: Color(0xFF64748B), height: 1.4),
+              style: TextStyle(color: Color(0xFF727272), height: 1.4),
             ),
           ],
         ),
@@ -931,7 +1125,7 @@ class _MoreScreenState extends State<MoreScreen> {
             child: Text(movaText('Cancelar')),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Color(0xFFB42318)),
+            style: FilledButton.styleFrom(backgroundColor: Color(0xFF414141)),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(movaText('Eliminar cuenta')),
           ),
@@ -964,6 +1158,7 @@ class _MoreScreenState extends State<MoreScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
+    final theme = Theme.of(context);
     return Padding(
       padding: EdgeInsets.only(left: 3.0, bottom: 8.0),
       child: Row(
@@ -972,7 +1167,7 @@ class _MoreScreenState extends State<MoreScreen> {
             width: 4,
             height: 15,
             decoration: BoxDecoration(
-              color: Color(0xFF0C2340),
+              color: theme.colorScheme.primary,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -982,7 +1177,7 @@ class _MoreScreenState extends State<MoreScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
-              color: MoreScreen.sectionHeaderColor,
+              color: theme.colorScheme.onSurfaceVariant,
               letterSpacing: 1.1,
             ),
           ),
@@ -992,13 +1187,14 @@ class _MoreScreenState extends State<MoreScreen> {
   }
 
   Widget _buildMoreHeader(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(18, 17, 18, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Color(0xFFE2E8F0)),
+        border: Border.all(color: theme.dividerColor),
         boxShadow: [
           BoxShadow(
             color: Color(0x080C2340),
@@ -1014,7 +1210,7 @@ class _MoreScreenState extends State<MoreScreen> {
             height: 48,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0C2340), Color(0xFF36577D)],
+                colors: [Color(0xFF0C2340), Color(0xFF535353)],
               ),
               borderRadius: BorderRadius.circular(15),
             ),
@@ -1030,7 +1226,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   style: TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.w800,
-                    color: MoreScreen.darkNavy,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(height: 3),
@@ -1038,7 +1234,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   movaText('Todo lo que necesitas para controlar MOVA'),
                   style: TextStyle(
                     fontSize: 12,
-                    color: MoreScreen.subtitleGrey,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -1047,12 +1243,12 @@ class _MoreScreenState extends State<MoreScreen> {
           Container(
             padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Color(0xFFE8EEF5),
+              color: theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.settings_outlined,
-              color: MoreScreen.darkNavy,
+              color: theme.colorScheme.onSurface,
               size: 19,
             ),
           ),
@@ -1118,7 +1314,7 @@ class _MoreScreenState extends State<MoreScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Color(0xFFCBD5E1),
+                              color: Color(0xFFD4D4D4),
                               fontSize: 12,
                             ),
                           ),
@@ -1127,7 +1323,7 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: Color(0xFFCBD5E1),
+                      color: Color(0xFFD4D4D4),
                       size: 17,
                     ),
                   ],
@@ -1206,7 +1402,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   text: movaText(
                     'El archivo se copió al portapapeles. Pégalo en un lugar seguro para conservarlo.',
                   ),
-                  color: Color(0xFFE8F5F0),
+                  color: Color(0xFFF2F2F2),
                 ),
                 SizedBox(height: 14),
                 Row(
@@ -1283,7 +1479,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   subtitle: movaText(
                     'Agrega información de otra copia de MOVA',
                   ),
-                  color: Color(0xFF007C91),
+                  color: Color(0xFF636363),
                 ),
                 SizedBox(height: 18),
                 _infoPanel(
@@ -1293,14 +1489,14 @@ class _MoreScreenState extends State<MoreScreen> {
                   text: movaText(
                     'Pega aquí el JSON exportado desde MOVA. Tus datos actuales no se eliminarán.',
                   ),
-                  color: Color(0xFFEAF6FA),
+                  color: Color(0xFFF4F4F4),
                 ),
                 SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
                     color: Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Color(0xFFD7E3E8)),
+                    border: Border.all(color: Color(0xFFE1E1E1)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1312,7 +1508,7 @@ class _MoreScreenState extends State<MoreScreen> {
                             Icon(
                               Icons.data_object_rounded,
                               size: 19,
-                              color: Color(0xFF007C91),
+                              color: Color(0xFF636363),
                             ),
                             SizedBox(width: 8),
                             Text(
@@ -1335,7 +1531,7 @@ class _MoreScreenState extends State<MoreScreen> {
                         decoration: InputDecoration(
                           hintText: '{ "version": 1, "transactions": [...] }',
                           hintStyle: TextStyle(
-                            color: Color(0xFF94A3B8),
+                            color: Color(0xFFA1A1A1),
                             fontSize: 13,
                           ),
                           border: InputBorder.none,
@@ -1518,12 +1714,13 @@ class _MoreScreenState extends State<MoreScreen> {
     required BuildContext context,
     required Widget child,
   }) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFFE2E8F0), width: 1),
+        border: Border.all(color: theme.dividerColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Color(0x0A0C2340),
@@ -1544,6 +1741,7 @@ class _MoreScreenState extends State<MoreScreen> {
     required VoidCallback onTap,
   }) {
     final accent = _optionAccent(title);
+    final theme = Theme.of(context);
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(16),
@@ -1587,7 +1785,7 @@ class _MoreScreenState extends State<MoreScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: MoreScreen.darkNavy,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     SizedBox(height: 3),
@@ -1598,7 +1796,7 @@ class _MoreScreenState extends State<MoreScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         height: 1.2,
-                        color: MoreScreen.subtitleGrey,
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -1622,19 +1820,19 @@ class _MoreScreenState extends State<MoreScreen> {
       case 'Presupuesto':
         return Color(0xFF0C2340);
       case 'Categorías':
-        return Color(0xFF36577D);
+        return Color(0xFF535353);
       case 'Listas de compras':
-        return Color(0xFF526D8D);
+        return Color(0xFF6A6A6A);
       case 'Notificaciones':
         return Color(0xFF1E3A5F);
       case 'Seguridad':
         return Color(0xFF263F61);
       case 'Exportar datos':
-        return Color(0xFF315A80);
+        return Color(0xFF545454);
       case 'Importar datos':
-        return Color(0xFF3E6C91);
+        return Color(0xFF656565);
       case 'Acerca de MOVA':
-        return Color(0xFF587A9B);
+        return Color(0xFF757575);
       default:
         return Color(0xFF0C2340);
     }
@@ -1644,7 +1842,7 @@ class _MoreScreenState extends State<MoreScreen> {
     return Divider(
       height: 1,
       thickness: 1,
-      color: Color(0xFFF1F5F9),
+      color: Color(0xFFF4F4F4),
       indent: 52,
     );
   }
@@ -1701,7 +1899,7 @@ class _LanguageDialog extends StatelessWidget {
                             Text(
                               l10n.text('select_language'),
                               style: const TextStyle(
-                                color: Color(0xFF64748B),
+                                color: Color(0xFF727272),
                                 fontSize: 12.5,
                               ),
                             ),
@@ -1711,7 +1909,7 @@ class _LanguageDialog extends StatelessWidget {
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.close_rounded),
-                        color: const Color(0xFF64748B),
+                        color: const Color(0xFF727272),
                       ),
                     ],
                   ),
@@ -1813,10 +2011,10 @@ class _LanguageOption extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFEAF2F9) : Colors.white,
+          color: selected ? const Color(0xFFF1F1F1) : Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected ? color : const Color(0xFFE2E8F0),
+            color: selected ? color : const Color(0xFFE7E7E7),
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -1829,7 +2027,7 @@ class _LanguageOption extends StatelessWidget {
                   ? 'EN'
                   : 'PT',
               style: TextStyle(
-                color: selected ? color : const Color(0xFF64748B),
+                color: selected ? color : const Color(0xFF727272),
                 fontWeight: FontWeight.w900,
                 letterSpacing: 1,
               ),
@@ -1851,7 +2049,7 @@ class _LanguageOption extends StatelessWidget {
                   Text(
                     _label(context),
                     style: const TextStyle(
-                      color: Color(0xFF64748B),
+                      color: Color(0xFF727272),
                       fontSize: 12,
                     ),
                   ),
@@ -1869,7 +2067,7 @@ class _LanguageOption extends StatelessWidget {
                   : const Icon(
                       Icons.radio_button_unchecked_rounded,
                       key: ValueKey(false),
-                      color: Color(0xFFCBD5E1),
+                      color: Color(0xFFD4D4D4),
                     ),
             ),
           ],
@@ -1930,7 +2128,7 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
           Container(
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Color(0xFFE8EEF5),
+              color: Color(0xFFEDEDED),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -1952,7 +2150,7 @@ class _NotificationsDialogState extends State<_NotificationsDialog> {
                   movaText('Elige qué recordatorios quieres recibir'),
                   style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF64748B),
+                    color: Color(0xFF727272),
                     fontWeight: FontWeight.normal,
                   ),
                 ),
@@ -2087,7 +2285,7 @@ Future<void> _showAbout(BuildContext context) async {
               Container(
                 padding: EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: Color(0xFFEAF6FA),
+                  color: Color(0xFFF4F4F4),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -2095,7 +2293,7 @@ Future<void> _showAbout(BuildContext context) async {
                   children: [
                     Icon(
                       Icons.wifi_off_rounded,
-                      color: Color(0xFF007C91),
+                      color: Color(0xFF636363),
                       size: 21,
                     ),
                     SizedBox(width: 10),
@@ -2258,7 +2456,7 @@ class _SecurityDialogState extends State<_SecurityDialog> {
                         Text(
                           l10n.text('security_intro'),
                           style: const TextStyle(
-                            color: Color(0xFF64748B),
+                            color: Color(0xFF727272),
                             fontSize: 12.5,
                           ),
                         ),
@@ -2268,7 +2466,7 @@ class _SecurityDialogState extends State<_SecurityDialog> {
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close_rounded),
-                    color: const Color(0xFF64748B),
+                    color: const Color(0xFF727272),
                   ),
                 ],
               ),
@@ -2276,16 +2474,16 @@ class _SecurityDialogState extends State<_SecurityDialog> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEAF6FA),
+                  color: const Color(0xFFF4F4F4),
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFD4EEF3)),
+                  border: Border.all(color: const Color(0xFFE9E9E9)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(
                       Icons.info_outline_rounded,
-                      color: Color(0xFF007C91),
+                      color: Color(0xFF636363),
                       size: 20,
                     ),
                     const SizedBox(width: 10),
@@ -2293,7 +2491,7 @@ class _SecurityDialogState extends State<_SecurityDialog> {
                       child: Text(
                         l10n.text('security_exclusive_note'),
                         style: const TextStyle(
-                          color: Color(0xFF28645D),
+                          color: Color(0xFF575757),
                           fontSize: 12,
                           height: 1.35,
                         ),
@@ -2334,7 +2532,7 @@ class _SecurityDialogState extends State<_SecurityDialog> {
                     icon: const Icon(Icons.lock_open_rounded, size: 18),
                     label: Text(movaText('Desactivar protección')),
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFB42318),
+                      foregroundColor: const Color(0xFF414141),
                     ),
                   ),
                 ],
@@ -2345,7 +2543,7 @@ class _SecurityDialogState extends State<_SecurityDialog> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF0C2340),
                   minimumSize: const Size.fromHeight(50),
-                  side: const BorderSide(color: Color(0xFFD7E0EA)),
+                  side: const BorderSide(color: Color(0xFFDFDFDF)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -2385,10 +2583,10 @@ class _SecurityOption extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFEAF2F9) : Colors.white,
+          color: selected ? const Color(0xFFF1F1F1) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? navy : const Color(0xFFE2E8F0),
+            color: selected ? navy : const Color(0xFFE7E7E7),
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -2398,12 +2596,12 @@ class _SecurityOption extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: selected ? navy : const Color(0xFFF1F5F9),
+                color: selected ? navy : const Color(0xFFF4F4F4),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
-                color: selected ? Colors.white : const Color(0xFF526D8D),
+                color: selected ? Colors.white : const Color(0xFF6A6A6A),
               ),
             ),
             const SizedBox(width: 13),
@@ -2422,7 +2620,7 @@ class _SecurityOption extends StatelessWidget {
                   Text(
                     subtitle,
                     style: const TextStyle(
-                      color: Color(0xFF64748B),
+                      color: Color(0xFF727272),
                       fontSize: 12,
                     ),
                   ),
@@ -2433,7 +2631,7 @@ class _SecurityOption extends StatelessWidget {
               selected
                   ? Icons.check_circle_rounded
                   : Icons.radio_button_unchecked_rounded,
-              color: selected ? navy : const Color(0xFFCBD5E1),
+              color: selected ? navy : const Color(0xFFD4D4D4),
             ),
           ],
         ),
@@ -2566,27 +2764,42 @@ class _BudgetDialogState extends State<_BudgetDialog> {
       title: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(10),
+            width: 46,
+            height: 46,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary
-                  .withValues(alpha: .12),
-              borderRadius: BorderRadius.circular(14),
+              color: const Color(0xFFEAF0F7),
+              borderRadius: BorderRadius.circular(15),
             ),
             child: Icon(
               Icons.account_balance_wallet_outlined,
-              color: Theme.of(context).colorScheme.primary,
+              color: const Color(0xFF0C2340),
+              size: 23,
             ),
           ),
-          SizedBox(width: 12),
+          SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(movaText('Presupuesto'), style: TextStyle(fontSize: 19)),
-                SizedBox(height: 3),
+                Text(
+                  movaText('Presupuesto'),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.45,
+                    color: const Color(0xFF0C2340),
+                  ),
+                ),
+                SizedBox(height: 4),
                 Text(
                   movaText('Controla tus gastos sin perder de vista tu límite'),
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.25,
+                    color: const Color(0xFF667085),
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
               ],
             ),
@@ -2621,6 +2834,9 @@ class _BudgetDialogState extends State<_BudgetDialog> {
               0;
           final progress = budget > 0 ? (spent / budget).clamp(0.0, 1.0) : 0.0;
           final exceeded = budget > 0 && spent > budget;
+          final progressLabel = budget > 0
+              ? '${(spent / budget * 100).round()}%'
+              : '0%';
           return ConstrainedBox(
             constraints: BoxConstraints(maxWidth: 520, maxHeight: 520),
             child: SingleChildScrollView(
@@ -2629,17 +2845,10 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    padding: EdgeInsets.all(14),
+                    padding: EdgeInsets.symmetric(horizontal: 18, vertical: 17),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: exceeded
-                            ? [Colors.red.shade50, Colors.orange.shade50]
-                            : [
-                                Theme.of(context).colorScheme.primaryContainer,
-                                Theme.of(context).colorScheme.surface,
-                              ],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
+                      color: const Color(0xFF0C2340),
+                      borderRadius: BorderRadius.circular(19),
                     ),
                     child: Row(
                       children: [
@@ -2654,42 +2863,60 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                                     ? movaText('Esta semana')
                                     : movaText('Este mes'),
                                 style: TextStyle(
-                                  color: exceeded
-                                      ? Colors.red.shade800
-                                      : Theme.of(context).colorScheme.primary,
+                                  color: const Color(0xFFD8E2EE),
                                   fontWeight: FontWeight.w700,
+                                  fontSize: 13,
                                 ),
                               ),
-                              SizedBox(height: 6),
+                              SizedBox(height: 8),
                               Text(
                                 '${_formatMoney(spent)} $_currency',
                                 style: TextStyle(
-                                  fontSize: 22,
+                                  color: Colors.white,
+                                  fontSize: 23,
                                   fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.4,
                                 ),
                               ),
+                              SizedBox(height: 2),
                               Text(
                                 movaText('gastado hasta hoy'),
                                 style: TextStyle(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                  fontSize: 12,
+                                  color: const Color(0xFFB8C6D8),
+                                  fontSize: 12.5,
                                 ),
                               ),
                             ],
                           ),
                         ),
+                        const SizedBox(width: 16),
                         SizedBox(
-                          width: 58,
-                          height: 58,
-                          child: CircularProgressIndicator(
-                            value: progress,
-                            strokeWidth: 7,
-                            backgroundColor: Colors.white.withValues(
-                              alpha: .75,
-                            ),
-                            color: exceeded ? Colors.red : Color(0xFF0C2340),
+                          width: 64,
+                          height: 64,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox.expand(
+                                child: CircularProgressIndicator(
+                                  value: progress,
+                                  strokeWidth: 6,
+                                  backgroundColor: Colors.white.withValues(
+                                    alpha: .2,
+                                  ),
+                                  valueColor: const AlwaysStoppedAnimation(
+                                    Colors.white,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                progressLabel,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -2713,6 +2940,20 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                     onSelectionChanged: (selection) {
                       setState(() => _budgetPeriod = selection.first);
                     },
+                    style: SegmentedButton.styleFrom(
+                      foregroundColor: const Color(0xFF344054),
+                      selectedForegroundColor: Colors.white,
+                      selectedBackgroundColor: const Color(0xFF0C2340),
+                      backgroundColor: Colors.white,
+                      side: const BorderSide(color: Color(0xFFD0D8E2)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                   SizedBox(height: 10),
                   Text(
@@ -2739,7 +2980,10 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                     decoration: InputDecoration(
                       labelText: movaText('Límite mensual (${currency.code})'),
                       hintText: movaText('Ej. 8,000.00'),
-                      prefixIcon: Icon(Icons.savings_outlined),
+                      prefixIcon: Icon(
+                        Icons.savings_outlined,
+                        color: const Color(0xFF0C2340),
+                      ),
                       suffixIcon: _controller.text.isEmpty
                           ? null
                           : IconButton(
@@ -2750,20 +2994,36 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                                 setState(() {});
                               },
                             ),
-                      border: OutlineInputBorder(),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: const BorderSide(color: Color(0xFFD7E0EB)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: const BorderSide(color: Color(0xFFD7E0EB)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF0C2340),
+                          width: 1.7,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: 12),
                   Container(
                     padding: EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondaryContainer
-                          .withValues(alpha: .45),
+                      color: const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.secondary
-                            .withValues(alpha: .25),
-                      ),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2771,21 +3031,24 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                         Row(
                           children: [
                             Icon(
-                              Icons.public,
+                              Icons.public_rounded,
                               size: 20,
-                              color: Theme.of(context).colorScheme.secondary,
+                              color: const Color(0xFF0C2340),
                             ),
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 movaText('Moneda general de MOVA'),
-                                style: TextStyle(fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF0C2340),
+                                ),
                               ),
                             ),
                             Text(
                               currency.code,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
+                              style: const TextStyle(
+                                color: Color(0xFF0C2340),
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
@@ -2800,37 +3063,131 @@ class _BudgetDialogState extends State<_BudgetDialog> {
                           ),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            height: 1.35,
+                            color: const Color(0xFF667085),
                           ),
                         ),
                         SizedBox(height: 10),
-                        DropdownButtonFormField<String>(
-                          initialValue: _currency,
-                          isExpanded: true,
-                          decoration: InputDecoration(
-                            labelText: movaText('Moneda de la aplicación'),
-                            prefixIcon: Icon(Icons.currency_exchange),
-                            border: OutlineInputBorder(),
+                        Theme(
+                          data: Theme.of(context).copyWith(
+                            highlightColor: const Color(0xFFEAF0F7),
+                            hoverColor: const Color(0xFFF1F5F9),
+                            focusColor: const Color(0xFFEAF0F7),
                           ),
-                          items: movaCurrencies
-                              .map(
-                                (item) => DropdownMenuItem(
-                                  value: item.code,
-                                  child: Text(
-                                    movaText(
-                                      '${item.code} · ${item.name} (${item.symbol})',
-                                    ),
+                          child: DropdownButtonFormField<String>(
+                            initialValue: _currency,
+                            isExpanded: true,
+                            menuMaxHeight: 320,
+                            dropdownColor: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            elevation: 10,
+                            decoration: InputDecoration(
+                              labelText: movaText('Moneda de la aplicación'),
+                              prefixIcon: const Icon(
+                                Icons.currency_exchange_rounded,
+                                color: Color(0xFF0C2340),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 15,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD7E0EB),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD7E0EB),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF0C2340),
+                                  width: 1.7,
+                                ),
+                              ),
+                            ),
+                            items: movaCurrencies.map((item) {
+                              final localizedName = movaText(
+                                '${item.code} · ${item.name} (${item.symbol})',
+                              );
+                              final separator = localizedName.indexOf(' · ');
+                              final displayName = separator < 0
+                                  ? localizedName
+                                  : localizedName.substring(separator + 3);
+                              final selected = item.code == _currency;
+                              return DropdownMenuItem(
+                                value: item.code,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 52,
+                                        height: 32,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: selected
+                                              ? const Color(0xFF0C2340)
+                                              : const Color(0xFFEAF0F7),
+                                          borderRadius: BorderRadius.circular(
+                                            11,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          item.code,
+                                          style: TextStyle(
+                                            color: selected
+                                                ? Colors.white
+                                                : const Color(0xFF0C2340),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: .3,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          displayName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Color(0xFF182230),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        selected
+                                            ? Icons.check_circle_rounded
+                                            : Icons.circle_outlined,
+                                        size: 19,
+                                        color: selected
+                                            ? const Color(0xFF0C2340)
+                                            : const Color(0xFFD0D5DD),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() => _currency = value);
-                            }
-                          },
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() => _currency = value);
+                              }
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -2926,11 +3283,10 @@ class _CategoriesScreenState extends State<_CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MoreScreen.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(movaText('Categorías')),
-        backgroundColor: MoreScreen.backgroundColor,
-        foregroundColor: MoreScreen.darkNavy,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -2969,7 +3325,7 @@ class _CategoriesScreenState extends State<_CategoriesScreen> {
                         : context.l10n.text('expense'),
                   ),
                   trailing: IconButton(
-                    icon: Icon(Icons.delete_outline, color: Color(0xFFB42318)),
+                    icon: Icon(Icons.delete_outline, color: Color(0xFF414141)),
                     onPressed: () async {
                       await _database.deleteCustomCategory(
                         category['id'] as int,
@@ -3016,7 +3372,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   Widget build(BuildContext context) {
     final isIncome = _type == 'income';
-    final accent = isIncome ? Color(0xFF0C2340) : Color(0xFF36577D);
+    final accent = isIncome ? Color(0xFF0C2340) : Color(0xFF535353);
     return MediaQuery.removeViewInsets(
       context: context,
       removeBottom: true,
@@ -3044,9 +3400,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                 SizedBox(height: 7),
                 Container(
                   decoration: BoxDecoration(
-                    color: Color(0xFFF7F9FC),
+                    color: Color(0xFFF9F9F9),
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Color(0xFFD8E1EB)),
+                    border: Border.all(color: Color(0xFFE0E0E0)),
                   ),
                   child: TextField(
                     controller: _name,
@@ -3054,7 +3410,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
                       hintText: movaText('Ej. Comida, transporte o freelance'),
-                      hintStyle: TextStyle(color: Color(0xFF94A3B8)),
+                      hintStyle: TextStyle(color: Color(0xFFA1A1A1)),
                       prefixIcon: Icon(Icons.edit_rounded, size: 20),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(
@@ -3081,7 +3437,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                         'expense',
                         'Gasto',
                         Icons.arrow_downward_rounded,
-                        Color(0xFF36577D),
+                        Color(0xFF535353),
                       ),
                     ),
                     SizedBox(width: 10),
@@ -3101,9 +3457,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                   decoration: BoxDecoration(
-                    color: Color(0xFFF7F9FC),
+                    color: Color(0xFFF9F9F9),
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Color(0xFFD8E1EB)),
+                    border: Border.all(color: Color(0xFFE0E0E0)),
                   ),
                   child: Row(
                     children: [
@@ -3136,7 +3492,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                       ),
                       Icon(
                         Icons.keyboard_rounded,
-                        color: Color(0xFF94A3B8),
+                        color: Color(0xFFA1A1A1),
                         size: 19,
                       ),
                     ],
@@ -3205,7 +3561,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF334E68),
+            color: Color(0xFF4A4A4A),
           ),
         ),
       ],
@@ -3247,7 +3603,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
         IconButton(
           onPressed: () => Navigator.pop(context),
           visualDensity: VisualDensity.compact,
-          icon: Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+          icon: Icon(Icons.close_rounded, color: Color(0xFF727272)),
         ),
       ],
     );
@@ -3262,10 +3618,10 @@ class _CategoryDialogState extends State<_CategoryDialog> {
         duration: Duration(milliseconds: 180),
         padding: EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: .12) : Color(0xFFF7F9FC),
+          color: selected ? color.withValues(alpha: .12) : Color(0xFFF9F9F9),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected ? color : Color(0xFFD7E3E8),
+            color: selected ? color : Color(0xFFE1E1E1),
             width: selected ? 1.5 : 1,
           ),
           boxShadow: selected
@@ -3280,7 +3636,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
         ),
         child: Column(
           children: [
-            Icon(icon, color: selected ? color : Color(0xFF64748B), size: 20),
+            Icon(icon, color: selected ? color : Color(0xFF727272), size: 20),
             SizedBox(height: 4),
             Text(
               movaText(label),

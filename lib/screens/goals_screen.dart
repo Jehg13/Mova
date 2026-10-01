@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:mova/models/financial_account.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/database/database_helper.dart';
+import 'package:mova/screens/accounts_screen.dart';
 import 'package:mova/services/goal_image_picker.dart';
 import 'package:mova/models/shared_goal.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -24,7 +26,18 @@ class _GoalsScreenState extends State<GoalsScreen> {
   @override
   void initState() {
     super.initState();
+    DatabaseHelper.financialDataVersion.addListener(_refreshGoals);
     _loadGoals();
+  }
+
+  @override
+  void dispose() {
+    DatabaseHelper.financialDataVersion.removeListener(_refreshGoals);
+    super.dispose();
+  }
+
+  void _refreshGoals() {
+    if (mounted) setState(_loadGoals);
   }
 
   void _loadGoals() {
@@ -43,7 +56,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: FutureBuilder<List<Map<String, dynamic>>>(
           future: _goals,
@@ -84,7 +97,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   const SizedBox(height: 4),
                   Text(
                     l10n.text('goals_subtitle'),
-                    style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+                    style: TextStyle(fontSize: 14, color: Color(0xFF727272)),
                   ),
                   const SizedBox(height: 20),
                   _SummaryCard(
@@ -92,6 +105,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     target: target,
                     count: goals.length,
                   ),
+                  const SizedBox(height: 20),
+                  const _GoalAccountsCard(),
                   const SizedBox(height: 20),
                   _UnassignedSavingsCard(onChanged: () => setState(_loadGoals)),
                   const SizedBox(height: 20),
@@ -125,6 +140,400 @@ class _GoalsScreenState extends State<GoalsScreen> {
   }
 }
 
+class _GoalAccountsCard extends StatefulWidget {
+  const _GoalAccountsCard();
+
+  @override
+  State<_GoalAccountsCard> createState() => _GoalAccountsCardState();
+}
+
+class _GoalAccountsCardState extends State<_GoalAccountsCard> {
+  final _database = DatabaseHelper();
+  late Future<List<FinancialAccount>> _accounts;
+  late Future<Map<int?, double>> _savingsByAccount;
+
+  @override
+  void initState() {
+    super.initState();
+    DatabaseHelper.financialDataVersion.addListener(_refreshAccounts);
+    _loadAccounts();
+  }
+
+  @override
+  void dispose() {
+    DatabaseHelper.financialDataVersion.removeListener(_refreshAccounts);
+    super.dispose();
+  }
+
+  void _loadAccounts() {
+    _accounts = _database.getFinancialAccounts(includeInactive: false);
+    _savingsByAccount = _database.getUnassignedSavingsByAccount();
+  }
+
+  void _refreshAccounts() {
+    if (mounted) setState(_loadAccounts);
+  }
+
+  Future<void> _transfer(List<FinancialAccount> accounts) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => TransferScreen(accounts: accounts)),
+    );
+    if (changed == true && mounted) setState(_loadAccounts);
+  }
+
+  Future<void> _openAccounts() async {
+    await Navigator.of(context)
+        .push<void>(MaterialPageRoute(builder: (_) => const AccountsScreen()));
+    if (mounted) setState(_loadAccounts);
+  }
+
+  String _money(double amount, String currency) {
+    final definition = movaCurrencies.firstWhere(
+      (item) => item.code == currency,
+      orElse: () => movaCurrencies.first,
+    );
+    return '${definition.symbol}${amount.toStringAsFixed(2)} ${definition.code}';
+  }
+
+  bool _canTransfer(List<FinancialAccount> accounts) => accounts.any(
+    (source) =>
+        source.type != FinancialAccountType.creditCard &&
+        accounts.any(
+          (destination) =>
+              destination.id != source.id &&
+              destination.currency == source.currency,
+        ),
+  );
+
+  IconData _icon(FinancialAccountType type) => switch (type) {
+    FinancialAccountType.cash => Icons.payments_outlined,
+    FinancialAccountType.bank => Icons.account_balance_outlined,
+    FinancialAccountType.debitCard => Icons.credit_card_outlined,
+    FinancialAccountType.creditCard => Icons.credit_card_rounded,
+    FinancialAccountType.savings => Icons.savings_outlined,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return FutureBuilder<List<FinancialAccount>>(
+      future: _accounts,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(l10n.text('accounts_load_error')),
+            ),
+          );
+        }
+
+        final accounts = snapshot.data ?? const <FinancialAccount>[];
+        return FutureBuilder<Map<int?, double>>(
+          future: _savingsByAccount,
+          builder: (context, savingsSnapshot) {
+            if (savingsSnapshot.connectionState == ConnectionState.waiting) {
+              return const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(
+                    child: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ),
+              );
+            }
+            if (savingsSnapshot.hasError) {
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.text('accounts_load_error')),
+                ),
+              );
+            }
+            final savingsByAccount =
+                savingsSnapshot.data ?? const <int?, double>{};
+            final eligibleForLegacySavings = accounts
+                .where(
+                  (account) =>
+                      account.type != FinancialAccountType.creditCard &&
+                      account.currency == appCurrencyController.code,
+                )
+                .toList();
+            final unassignedSavings = savingsByAccount[null] ?? 0;
+            final inferSingleAccountSavings =
+                eligibleForLegacySavings.length == 1;
+            return Card(
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEAF0F7),
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: const Icon(
+                            Icons.account_balance_wallet_outlined,
+                            color: Color(0xFF0C2340),
+                            size: 21,
+                          ),
+                        ),
+                        const SizedBox(width: 11),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.text('money_by_account'),
+                                style: const TextStyle(
+                                  color: Color(0xFF0C2340),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                l10n.text('money_by_account_hint'),
+                                style: const TextStyle(
+                                  color: Color(0xFF667085),
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    if (accounts.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: Text(
+                          l10n.text('accounts_empty'),
+                          style: const TextStyle(
+                            color: Color(0xFF667085),
+                            fontSize: 13,
+                          ),
+                        ),
+                      )
+                    else
+                      ...accounts.map(
+                        (account) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 34,
+                                height: 34,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color:
+                                      account.type ==
+                                          FinancialAccountType.creditCard
+                                      ? const Color(0xFFF1F3F6)
+                                      : const Color(0xFFF5F8FB),
+                                  borderRadius: BorderRadius.circular(11),
+                                ),
+                                child: Icon(
+                                  _icon(account.type),
+                                  color: const Color(0xFF0C2340),
+                                  size: 18,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      account.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Color(0xFF182230),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      l10n.text(
+                                        'account_type_${account.type.name}',
+                                      ),
+                                      style: const TextStyle(
+                                        color: Color(0xFF667085),
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Builder(
+                                builder: (context) {
+                                  final linkedSavings =
+                                      savingsByAccount[account.id] ?? 0;
+                                  final inferredSavings =
+                                      inferSingleAccountSavings &&
+                                          account.id ==
+                                              eligibleForLegacySavings.single.id
+                                      ? unassignedSavings
+                                      : 0.0;
+                                  final allocatedSavings =
+                                      linkedSavings + inferredSavings;
+                                  final realBalance =
+                                      account.balance +
+                                      (linkedSavings > 0 ? linkedSavings : 0);
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      if (allocatedSavings > 0 &&
+                                          account.type !=
+                                              FinancialAccountType.creditCard)
+                                        Text(
+                                          l10n.text(
+                                            'account_real_balance_label',
+                                          ),
+                                          style: const TextStyle(
+                                            color: Color(0xFF667085),
+                                            fontSize: 9,
+                                          ),
+                                        ),
+                                      Text(
+                                        _money(realBalance, account.currency),
+                                        textAlign: TextAlign.end,
+                                        style: TextStyle(
+                                          color:
+                                              account.type ==
+                                                  FinancialAccountType
+                                                      .creditCard
+                                              ? const Color(0xFF667085)
+                                              : const Color(0xFF0C2340),
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      if (allocatedSavings > 0 &&
+                                          account.type !=
+                                              FinancialAccountType
+                                                  .creditCard) ...[
+                                        Text(
+                                          '${l10n.text('account_available_label')}: '
+                                          '${_money(account.balance - inferredSavings, account.currency)}',
+                                          style: const TextStyle(
+                                            color: Color(0xFF0C2340),
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${l10n.text('account_allocated_label')}: '
+                                          '${_money(allocatedSavings, account.currency)}',
+                                          style: const TextStyle(
+                                            color: Color(0xFF667085),
+                                            fontSize: 9,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (accounts.any(
+                      (account) =>
+                          account.type == FinancialAccountType.creditCard,
+                    ))
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          l10n.text('credit_card_transfer_note'),
+                          style: const TextStyle(
+                            color: Color(0xFF667085),
+                            fontSize: 11,
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    if (unassignedSavings > 0 && !inferSingleAccountSavings)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          '${l10n.text('unassigned_savings_account_label')}: '
+                          '${_money(unassignedSavings, appCurrencyController.code)}',
+                          style: const TextStyle(
+                            color: Color(0xFF667085),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _canTransfer(accounts)
+                            ? () => _transfer(accounts)
+                            : _openAccounts,
+                        icon: Icon(
+                          _canTransfer(accounts)
+                              ? Icons.swap_horiz_rounded
+                              : Icons.add_card_outlined,
+                          size: 19,
+                        ),
+                        label: Text(
+                          _canTransfer(accounts)
+                              ? l10n.text('transfer_money')
+                              : l10n.text('manage_accounts'),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF0C2340),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size.fromHeight(46),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 class _UnassignedSavingsCard extends StatefulWidget {
   final VoidCallback onChanged;
 
@@ -151,18 +560,24 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
 
   Future<void> _openAmountDialog({required bool withdraw}) async {
     if (_saving) return;
-    final amount = await showDialog<double>(
+    final result = await showDialog<({double amount, int accountId})>(
       context: context,
       builder: (_) =>
           _SavingsAmountDialog(withdraw: withdraw, currentSavings: _balance),
     );
-    if (amount == null || !mounted) return;
+    if (result == null || !mounted) return;
     setState(() => _saving = true);
     try {
       if (withdraw) {
-        await _database.withdrawUnassignedSavings(amount);
+        await _database.withdrawUnassignedSavings(
+          result.amount,
+          accountId: result.accountId,
+        );
       } else {
-        await _database.addUnassignedSavings(amount);
+        await _database.moveToUnassignedSavings(
+          result.amount,
+          accountId: result.accountId,
+        );
       }
       if (!mounted) return;
       final updatedBalance = await _database.getUnassignedSavings();
@@ -200,104 +615,182 @@ class _UnassignedSavingsCardState extends State<_UnassignedSavingsCard> {
       builder: (context, snapshot) {
         final balance = snapshot.data ?? 0;
         return Container(
-          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFEAF0F7), Color(0xFFDCE7F2)],
+              colors: [Color(0xFF0B1F3A), Color(0xFF172B45)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFC3D2E1)),
-            boxShadow: const [
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withValues(alpha: .12)),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x120C2340),
-                blurRadius: 14,
-                offset: Offset(0, 6),
+                color: const Color(0xFF0B1F3A).withValues(alpha: .16),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .8),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(
-                      Icons.savings_outlined,
-                      color: Color(0xFF0C2340),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -52,
+                  top: -78,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 210,
+                      height: 210,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            Colors.white.withValues(alpha: .11),
+                            Colors.white.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          movaText('Ahorro libre'),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          movaText('Ahorra sin tener una meta específica'),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF526D8D),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                appCurrencyController.format(balance),
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF102A43),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _saving
-                          ? null
-                          : () => _openAmountDialog(withdraw: false),
-                      icon: const Icon(Icons.add_rounded, size: 18),
-                      label: _saving
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(movaText('Agregar')),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: .1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: .14),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.savings_outlined,
+                              color: Colors.white,
+                              size: 23,
+                            ),
+                          ),
+                          const SizedBox(width: 13),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  movaText('Ahorro libre'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  movaText(
+                                    'Ahorra sin tener una meta específica',
+                                  ),
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: .68),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 21),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        child: Text(
+                          appCurrencyController.format(balance),
+                          key: ValueKey(balance),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 31,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -.7,
+                            height: 1.1,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: _saving
+                                  ? null
+                                  : () => _openAmountDialog(withdraw: false),
+                              icon: _saving
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: MovaDesign.navy,
+                                      ),
+                                    )
+                                  : const Icon(Icons.add_rounded, size: 19),
+                              label: Text(movaText('Agregar')),
+                              style: FilledButton.styleFrom(
+                                foregroundColor: MovaDesign.navy,
+                                backgroundColor: Colors.white,
+                                disabledForegroundColor: MovaDesign.navy
+                                    .withValues(alpha: .55),
+                                disabledBackgroundColor: Colors.white
+                                    .withValues(alpha: .75),
+                                minimumSize: const Size(0, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                textStyle: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: !_saving && balance > 0
+                                  ? () => _openAmountDialog(withdraw: true)
+                                  : null,
+                              icon: const Icon(
+                                Icons.south_west_rounded,
+                                size: 18,
+                              ),
+                              label: Text(movaText('Retirar')),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                disabledForegroundColor: Colors.white
+                                    .withValues(alpha: .42),
+                                side: BorderSide(
+                                  color: Colors.white.withValues(alpha: .42),
+                                ),
+                                minimumSize: const Size(0, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                textStyle: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: FilledButton.tonalIcon(
-                      onPressed: !_saving && balance > 0
-                          ? () => _openAmountDialog(withdraw: true)
-                          : null,
-                      icon: const Icon(Icons.remove_rounded, size: 18),
-                      label: Text(movaText('Retirar')),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -320,13 +813,29 @@ class _SavingsAmountDialog extends StatefulWidget {
 
 class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
   final _controller = TextEditingController();
+  final _database = DatabaseHelper();
   String? _error;
-  late Future<double> _availableBalance;
+  late Future<List<FinancialAccount>> _accounts;
+  int? _selectedAccountId;
 
   @override
   void initState() {
     super.initState();
-    _availableBalance = DatabaseHelper().getAvailableBalance();
+    _accounts = _database.getFinancialAccounts(includeInactive: false).then((
+      accounts,
+    ) {
+      final eligibleAccounts = accounts
+          .where(
+            (account) =>
+                account.type != FinancialAccountType.creditCard &&
+                account.currency == appCurrencyController.code,
+          )
+          .toList();
+      if (eligibleAccounts.isNotEmpty) {
+        _selectedAccountId = eligibleAccounts.first.id;
+      }
+      return eligibleAccounts;
+    });
   }
 
   @override
@@ -341,7 +850,12 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
       setState(() => _error = movaText('Escribe una cantidad mayor a cero.'));
       return;
     }
-    Navigator.of(context).pop(value);
+    final accountId = _selectedAccountId;
+    if (accountId == null) {
+      setState(() => _error = movaText('Selecciona una cuenta.'));
+      return;
+    }
+    Navigator.of(context).pop((amount: value, accountId: accountId));
   }
 
   @override
@@ -362,7 +876,7 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
                   Container(
                     padding: const EdgeInsets.all(11),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE6EEF7),
+                      color: const Color(0xFFEDEDED),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Icon(
@@ -395,43 +909,102 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
               Text(
                 widget.withdraw
                     ? movaText(
-                        'Elige cuánto deseas devolver a tu dinero disponible.',
+                        'Elige cuánto deseas retirar y a qué cuenta devolverlo.',
                       )
-                    : movaText('Aparta una cantidad sin asociarla a una meta.'),
-                style: const TextStyle(color: Color(0xFF64748B), height: 1.35),
+                    : movaText(
+                        'Elige de qué cuenta apartar el dinero, sin asociarlo a una meta.',
+                      ),
+                style: const TextStyle(color: Color(0xFF727272), height: 1.35),
               ),
               const SizedBox(height: 16),
               FutureBuilder<double>(
                 future: widget.currentSavings,
                 builder: (context, snapshot) {
                   final savings = snapshot.data ?? 0;
-                  return FutureBuilder<double>(
-                    future: _availableBalance,
-                    builder: (context, availableSnapshot) {
-                      final available = availableSnapshot.data ?? 0;
-                      return Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _SavingsInfo(
-                                label: movaText('Ahorrado'),
-                                value: appCurrencyController.format(savings),
-                              ),
+                  return FutureBuilder<List<FinancialAccount>>(
+                    future: _accounts,
+                    builder: (context, accountsSnapshot) {
+                      final accounts = accountsSnapshot.data ?? const [];
+                      FinancialAccount? selectedAccount;
+                      for (final account in accounts) {
+                        if (account.id == _selectedAccountId) {
+                          selectedAccount = account;
+                          break;
+                        }
+                      }
+                      return Column(
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF4F4F4),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            Expanded(
-                              child: _SavingsInfo(
-                                label: movaText('Disponible'),
-                                value: appCurrencyController.format(available),
-                              ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _SavingsInfo(
+                                    label: movaText('Ahorrado'),
+                                    value: appCurrencyController.format(
+                                      savings,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _SavingsInfo(
+                                    label: widget.withdraw
+                                        ? movaText('saving_destination_label')
+                                        : movaText('saving_source_label'),
+                                    value: appCurrencyController.format(
+                                      selectedAccount?.balance ?? 0,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 14),
+                          if (accountsSnapshot.connectionState ==
+                              ConnectionState.waiting)
+                            const LinearProgressIndicator()
+                          else if (accounts.isEmpty)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                movaText(
+                                  'No hay cuentas activas en la moneda principal.',
+                                ),
+                                style: const TextStyle(
+                                  color: Color(0xFFB42318),
+                                ),
+                              ),
+                            )
+                          else
+                            DropdownButtonFormField<int>(
+                              initialValue: selectedAccount?.id,
+                              decoration: InputDecoration(
+                                labelText: movaText(
+                                  widget.withdraw
+                                      ? 'saving_destination_label'
+                                      : 'saving_source_label',
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              items: accounts
+                                  .map(
+                                    (account) => DropdownMenuItem(
+                                      value: account.id,
+                                      child: Text(account.name),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) =>
+                                  setState(() => _selectedAccountId = value),
+                            ),
+                        ],
                       );
                     },
                   );
@@ -457,11 +1030,11 @@ class _SavingsAmountDialogState extends State<_SavingsAmountDialog> {
                   fillColor: const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+                    borderSide: const BorderSide(color: Color(0xFFDFDFDF)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+                    borderSide: const BorderSide(color: Color(0xFFDFDFDF)),
                   ),
                 ),
               ),
@@ -508,7 +1081,7 @@ class _SavingsInfo extends StatelessWidget {
       children: [
         Text(
           movaText(label),
-          style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+          style: const TextStyle(color: Color(0xFF727272), fontSize: 12),
         ),
         const SizedBox(height: 3),
         Text(
@@ -631,17 +1204,17 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
       labelText: label,
       hintText: hint,
       prefixText: prefix,
-      prefixIcon: Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
+      prefixIcon: Icon(icon, size: 20, color: const Color(0xFFA1A1A1)),
       filled: true,
       fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
@@ -680,7 +1253,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                     Container(
                       padding: const EdgeInsets.all(11),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDDF3EE),
+                        color: const Color(0xFFEEEEEE),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: const Icon(
@@ -707,7 +1280,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                             movaText('Dale un propósito a tu ahorro'),
                             style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF64748B),
+                              color: Color(0xFF727272),
                             ),
                           ),
                         ],
@@ -716,7 +1289,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                     IconButton(
                       onPressed: _saving ? null : () => Navigator.pop(context),
                       icon: const Icon(Icons.close_rounded),
-                      color: const Color(0xFF64748B),
+                      color: const Color(0xFF727272),
                     ),
                   ],
                 ),
@@ -813,7 +1386,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                             border: Border.all(
                               color: selected
                                   ? const Color(0xFF0C2340)
-                                  : const Color(0xFFE2E8F0),
+                                  : const Color(0xFFE7E7E7),
                               width: selected ? 2 : 1,
                             ),
                           ),
@@ -822,7 +1395,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                             size: 21,
                             color: selected
                                 ? Colors.white
-                                : const Color(0xFF64748B),
+                                : const Color(0xFF727272),
                           ),
                         ),
                       ),
@@ -852,7 +1425,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                             size: 18,
                             color: _icon == 'none'
                                 ? const Color(0xFF0C2340)
-                                : const Color(0xFF64748B),
+                                : const Color(0xFF727272),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -864,7 +1437,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                                   : FontWeight.w600,
                               color: _icon == 'none'
                                   ? const Color(0xFF0C2340)
-                                  : const Color(0xFF475569),
+                                  : const Color(0xFF535353),
                             ),
                           ),
                         ],
@@ -885,11 +1458,11 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
-                          side: const BorderSide(color: Color(0xFFD6DEE8)),
+                          side: const BorderSide(color: Color(0xFFDDDDDD)),
                         ),
                         child: Text(
                           movaText('Cancelar'),
-                          style: TextStyle(color: Color(0xFF475569)),
+                          style: TextStyle(color: Color(0xFF535353)),
                         ),
                       ),
                     ),
@@ -939,9 +1512,9 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
         width: double.infinity,
         height: 142,
         decoration: BoxDecoration(
-          color: const Color(0xFFEAF5F2),
+          color: const Color(0xFFF2F2F2),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFB9DED6), width: 1.2),
+          border: Border.all(color: const Color(0xFFD6D6D6), width: 1.2),
         ),
         child: _image == null
             ? Column(
@@ -963,7 +1536,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                   SizedBox(height: 3),
                   Text(
                     movaText('Opcional · JPG, PNG o WebP'),
-                    style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                    style: TextStyle(fontSize: 11, color: Color(0xFF727272)),
                   ),
                 ],
               )
@@ -981,7 +1554,7 @@ class _CreateGoalDialogState extends State<_CreateGoalDialog> {
                         icon: const Icon(Icons.close, size: 18),
                         style: IconButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF334155),
+                          foregroundColor: const Color(0xFF3F3F3F),
                         ),
                       ),
                     ),
@@ -1041,15 +1614,23 @@ class _SummaryCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.all(11),
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8F3F5),
-                  borderRadius: BorderRadius.circular(14),
+                  color: MovaDesign.navy,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: MovaDesign.navy.withValues(alpha: .18),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.savings_rounded,
-                  size: 22,
-                  color: MovaDesign.accent,
+                  size: 21,
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -1073,16 +1654,27 @@ class _SummaryCard extends StatelessWidget {
           MovaProgressBar(value: progress, height: 8),
           const SizedBox(height: 8),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                '${(progress * 100).round()}% ${movaText('completado')}',
-                style: const TextStyle(
-                  color: MovaDesign.positive,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: MovaDesign.softBlue,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${(progress * 100).round()}% ${movaText('completado')}',
+                  style: const TextStyle(
+                    color: MovaDesign.navy,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
+              const Spacer(),
               Text(
                 movaText(
                   '$count ${count == 1 ? 'meta activa' : 'metas activas'}',
@@ -1200,7 +1792,7 @@ class _NoGoalsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFFE7E7E7)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0F0C2340),
@@ -1289,12 +1881,12 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFDECEC),
+              color: const Color(0xFFF0F0F0),
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
               Icons.south_west_rounded,
-              color: Color(0xFFB42318),
+              color: Color(0xFF414141),
             ),
           ),
           const SizedBox(width: 12),
@@ -1320,7 +1912,7 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
               movaText(
                 'Devuelve una parte de lo ahorrado a tu dinero disponible.',
               ),
-              style: TextStyle(color: Color(0xFF64748B), height: 1.35),
+              style: TextStyle(color: Color(0xFF727272), height: 1.35),
             ),
             const SizedBox(height: 16),
             Container(
@@ -1329,20 +1921,20 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: const Color(0xFFE7E7E7)),
               ),
               child: Row(
                 children: [
                   const Icon(
                     Icons.account_balance_wallet_outlined,
-                    color: Color(0xFF526D8D),
+                    color: Color(0xFF6A6A6A),
                     size: 20,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       movaText('Disponible en la meta'),
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                      style: TextStyle(color: Color(0xFF727272), fontSize: 12),
                     ),
                   ),
                   Text(
@@ -1375,11 +1967,11 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
                 fillColor: const Color(0xFFF8FAFC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+                  borderSide: const BorderSide(color: Color(0xFFDFDFDF)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+                  borderSide: const BorderSide(color: Color(0xFFDFDFDF)),
                 ),
               ),
             ),
@@ -1394,7 +1986,7 @@ class _WithdrawGoalDialogState extends State<_WithdrawGoalDialog> {
         FilledButton(
           onPressed: _saving ? null : _withdraw,
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFFB42318),
+            backgroundColor: const Color(0xFF414141),
           ),
           child: _saving
               ? const SizedBox(
@@ -1459,7 +2051,7 @@ class _GoalHistoryDialog extends StatelessWidget {
                           ? Icons.arrow_downward_rounded
                           : Icons.arrow_upward_rounded,
                       color: withdrawal
-                          ? const Color(0xFFB42318)
+                          ? const Color(0xFF414141)
                           : const Color(0xFF0C2340),
                     ),
                     title: Text(
@@ -1478,7 +2070,7 @@ class _GoalHistoryDialog extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: withdrawal
-                            ? const Color(0xFFB42318)
+                            ? const Color(0xFF414141)
                             : const Color(0xFF0C2340),
                       ),
                     ),
@@ -1519,20 +2111,17 @@ class _GoalCard extends StatelessWidget {
         : null;
     final icon =
         _CreateGoalDialogState.icons[goal['icon']] ?? Icons.flag_outlined;
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
+    return MovaSurface(
+      padding: const EdgeInsets.all(16),
+      radius: MovaDesign.radiusLarge,
+      elevation: progress >= .9,
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(17),
             child: SizedBox(
-              width: narrow ? 62 : 72,
-              height: narrow ? 62 : 72,
+              width: narrow ? 60 : 68,
+              height: narrow ? 60 : 68,
               child: image != null && image.isNotEmpty
                   ? Image.memory(
                       image,
@@ -1540,12 +2129,24 @@ class _GoalCard extends StatelessWidget {
                       errorBuilder: (_, _, _) => _goalIconFallback(icon),
                     )
                   : goal['icon'] == 'none'
-                  ? Container(color: const Color(0xFFF8FAFC))
+                  ? Container(
+                      color: MovaDesign.softBlue,
+                      child: const Icon(
+                        Icons.flag_outlined,
+                        color: MovaDesign.muted,
+                      ),
+                    )
                   : Container(
-                      color: const Color(0xFFEAF5F2),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFF2F2F2), Color(0xFFE9E9E9)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
                       child: Icon(
                         icon,
-                        color: const Color(0xFF0C2340),
+                        color: MovaDesign.navy,
                         size: narrow ? 27 : 31,
                       ),
                     ),
@@ -1564,9 +2165,9 @@ class _GoalCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF102A43),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: MovaDesign.ink,
                         ),
                       ),
                     ),
@@ -1585,7 +2186,7 @@ class _GoalCard extends StatelessWidget {
                         if (updated == true) onChanged();
                       },
                       icon: const Icon(Icons.edit_outlined, size: 18),
-                      color: const Color(0xFF64748B),
+                      color: const Color(0xFF727272),
                     ),
                     IconButton(
                       tooltip: movaText('Eliminar meta'),
@@ -1604,7 +2205,7 @@ class _GoalCard extends StatelessWidget {
                         onChanged();
                       },
                       icon: const Icon(Icons.delete_outline, size: 18),
-                      color: const Color(0xFFB42318),
+                      color: const Color(0xFF414141),
                     ),
                   ],
                 ),
@@ -1619,7 +2220,7 @@ class _GoalCard extends StatelessWidget {
                           Text(
                             movaText('PROGRESO DE LA META'),
                             style: TextStyle(
-                              color: Color(0xFF94A3B8),
+                              color: Color(0xFFA1A1A1),
                               fontSize: 9,
                               fontWeight: FontWeight.w800,
                               letterSpacing: .8,
@@ -1630,51 +2231,81 @@ class _GoalCard extends StatelessWidget {
                             '${appCurrencyController.format(saved)} de ${appCurrencyController.format(target)}',
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF64748B),
+                              color: Color(0xFF727272),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 9,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEAF2F8),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '${(progress * 100).round()}%',
-                        style: const TextStyle(
-                          color: Color(0xFF0C2340),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                        ),
+                    SizedBox(
+                      width: 42,
+                      height: 42,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 39,
+                            height: 39,
+                            child: CircularProgressIndicator(
+                              value: progress,
+                              strokeWidth: 3.5,
+                              strokeCap: StrokeCap.round,
+                              backgroundColor: MovaDesign.softBlue,
+                              color: progress >= .9
+                                  ? MovaDesign.positive
+                                  : MovaDesign.accent,
+                            ),
+                          ),
+                          Text(
+                            '${(progress * 100).round()}%',
+                            style: const TextStyle(
+                              color: MovaDesign.navy,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 8,
-                    backgroundColor: const Color(0xFFE2E8F0),
-                    color: const Color(0xFF0C2340),
-                  ),
+                const SizedBox(height: 9),
+                MovaProgressBar(
+                  value: progress,
+                  height: 7,
+                  color: progress >= .9
+                      ? MovaDesign.positive
+                      : MovaDesign.accent,
                 ),
+                if (progress >= .9 && progress < 1) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.auto_awesome_rounded,
+                        size: 13,
+                        color: MovaDesign.warning,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        context.l10n.text('goal_almost_complete'),
+                        style: const TextStyle(
+                          color: MovaDesign.warning,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 13),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 5),
+                  padding: const EdgeInsets.fromLTRB(7, 5, 7, 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE8EEF4)),
+                    color: const Color(0xFFF9F9F9),
+                    borderRadius: BorderRadius.circular(13),
                   ),
                   child: Wrap(
                     alignment: WrapAlignment.start,
@@ -1696,7 +2327,7 @@ class _GoalCard extends StatelessWidget {
                         ),
                         label: Text(movaText('Retirar')),
                         style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFFB42318),
+                          foregroundColor: const Color(0xFF414141),
                           padding: const EdgeInsets.symmetric(horizontal: 7),
                           minimumSize: const Size(0, 34),
                         ),
@@ -1792,7 +2423,7 @@ class _GoalCard extends StatelessWidget {
 
   Widget _goalIconFallback(IconData icon) {
     return Container(
-      color: const Color(0xFFEAF3FA),
+      color: const Color(0xFFF2F2F2),
       child: Icon(icon, color: const Color(0xFF0C2340), size: 31),
     );
   }
@@ -1918,7 +2549,7 @@ class _DeleteGoalDialog extends StatelessWidget {
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFFB42318),
+            backgroundColor: const Color(0xFF414141),
           ),
           child: Text(movaText('Eliminar')),
         ),

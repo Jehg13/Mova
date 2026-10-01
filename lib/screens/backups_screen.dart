@@ -10,7 +10,6 @@ import 'package:mova/services/language_controller.dart';
 import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/services/scheduled_payment_reminder_service.dart';
 import 'package:mova/services/subscription_reminder_service.dart';
-import 'package:mova/widgets/mova_design_system.dart';
 import 'package:share_plus/share_plus.dart';
 
 class BackupsScreen extends StatefulWidget {
@@ -399,10 +398,10 @@ class _BackupsScreenState extends State<BackupsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.text('backups_title')),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: const Color(0xFF102A43),
         elevation: 0,
         actions: [
@@ -421,7 +420,7 @@ class _BackupsScreenState extends State<BackupsScreen> {
           children: [
             Text(
               l10n.text('backups_subtitle'),
-              style: const TextStyle(color: Color(0xFF64748B)),
+              style: const TextStyle(color: Color(0xFF727272)),
             ),
             const SizedBox(height: 18),
             SizedBox(
@@ -512,7 +511,7 @@ class _BackupsScreenState extends State<BackupsScreen> {
                     Text(
                       l10n.text('backup_local_note'),
                       style: const TextStyle(
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF727272),
                         fontSize: 12,
                         height: 1.4,
                       ),
@@ -535,7 +534,7 @@ class _BackupsScreenState extends State<BackupsScreen> {
               _sectionCard(
                 child: Text(
                   l10n.text('backup_empty'),
-                  style: const TextStyle(color: Color(0xFF64748B)),
+                  style: const TextStyle(color: Color(0xFF727272)),
                 ),
               )
             else
@@ -551,7 +550,7 @@ class _BackupsScreenState extends State<BackupsScreen> {
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
+      border: Border.all(color: const Color(0xFFE7E7E7)),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -572,12 +571,12 @@ class _BackupsScreenState extends State<BackupsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFFE7E7E7)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
         leading: const CircleAvatar(
-          backgroundColor: Color(0xFFE8F0F7),
+          backgroundColor: Color(0xFFEFEFEF),
           child: Icon(Icons.backup_outlined, color: Color(0xFF0C2340)),
         ),
         title: Text(

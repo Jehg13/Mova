@@ -116,7 +116,7 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                           padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [Color(0xFF0C2340), Color(0xFF36577D)],
+                              colors: [Color(0xFF0C2340), Color(0xFF535353)],
                             ),
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -143,7 +143,7 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                               Text(
                                 l10n.text('choose_notifications'),
                                 style: TextStyle(
-                                  color: Color(0xFF64748B),
+                                  color: Color(0xFF727272),
                                   fontSize: 12,
                                 ),
                               ),
@@ -160,12 +160,12 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                     Container(
                       padding: EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: _enabled ? Color(0xFFEAF6FA) : Color(0xFFF1F5F9),
+                        color: _enabled ? Color(0xFFF4F4F4) : Color(0xFFF4F4F4),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: _enabled
-                              ? Color(0xFFD4EEF3)
-                              : Color(0xFFE2E8F0),
+                              ? Color(0xFFE9E9E9)
+                              : Color(0xFFE7E7E7),
                         ),
                       ),
                       child: Row(
@@ -175,8 +175,8 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                                 ? Icons.notifications_active_outlined
                                 : Icons.notifications_off_outlined,
                             color: _enabled
-                                ? Color(0xFF007C91)
-                                : Color(0xFF64748B),
+                                ? Color(0xFF636363)
+                                : Color(0xFF727272),
                           ),
                           SizedBox(width: 12),
                           Expanded(
@@ -194,7 +194,7 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                                 Text(
                                   l10n.text('notifications_help'),
                                   style: TextStyle(
-                                    color: Color(0xFF64748B),
+                                    color: Color(0xFF727272),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -216,7 +216,7 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                     Text(
                       l10n.text('notification_types'),
                       style: TextStyle(
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF727272),
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.1,
@@ -279,7 +279,7 @@ class _MovaNotificationsDialogState extends State<MovaNotificationsDialog> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Color(0xFF0C2340),
                         padding: EdgeInsets.symmetric(vertical: 13),
-                        side: BorderSide(color: Color(0xFFD7E0EA)),
+                        side: BorderSide(color: Color(0xFFDFDFDF)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -321,11 +321,11 @@ class _NotificationOption extends StatelessWidget {
       decoration: BoxDecoration(
         color: enabled ? Colors.white : Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFFE2E8F0)),
+        border: Border.all(color: Color(0xFFE7E7E7)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Color(0xFF36577D), size: 21),
+          Icon(icon, color: Color(0xFF535353), size: 21),
           SizedBox(width: 11),
           Expanded(
             child: Column(
@@ -341,7 +341,7 @@ class _NotificationOption extends StatelessWidget {
                 SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                  style: TextStyle(color: Color(0xFF727272), fontSize: 11),
                 ),
               ],
             ),

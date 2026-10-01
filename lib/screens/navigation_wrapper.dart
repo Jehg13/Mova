@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,6 @@ import 'package:mova/screens/upcoming_payments_screen.dart';
 
 import 'home_screen.dart';
 import 'transaction_screen.dart';
-import '../widgets/mova_loading_overlay.dart';
 import '../widgets/mova_feedback_dialog.dart';
 import '../widgets/mova_design_system.dart';
 
@@ -33,24 +31,28 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   final _database = DatabaseHelper();
   bool _locked = false;
   bool _checkingLock = true;
-  bool _isSwitchingSection = false;
   int _selectedIndex = 0;
+  final Set<int> _visitedSections = {0};
   final GlobalKey<HomeScreenState> _homeKey = GlobalKey<HomeScreenState>();
   final GlobalKey<AddTransactionScreenState> _transactionKey =
       GlobalKey<AddTransactionScreenState>();
 
-  late final List<Widget> _screens = [
-    HomeScreen(
-      key: _homeKey,
-      onOpenSubscriptions: _openSubscriptions,
-      onOpenAccounts: _openAccounts,
-      onOpenPayments: _openPayments,
-    ), // Índice 0: Inicio
-    const AnalyticsScreen(), // Índice 1
-    AddTransactionScreen(key: _transactionKey), // Índice 2: Agregar
-    const GoalsScreen(), // Índice 3
-    const MoreScreen(), // Índice 4
-  ];
+  Widget _screenForIndex(int index) {
+    if (!_visitedSections.contains(index)) return const SizedBox.shrink();
+    return switch (index) {
+      0 => HomeScreen(
+        key: _homeKey,
+        onOpenSubscriptions: _openSubscriptions,
+        onOpenAccounts: _openAccounts,
+        onOpenPayments: _openPayments,
+      ),
+      1 => const AnalyticsScreen(),
+      2 => AddTransactionScreen(key: _transactionKey),
+      3 => const GoalsScreen(),
+      4 => const MoreScreen(),
+      _ => const SizedBox.shrink(),
+    };
+  }
 
   @override
   void initState() {
@@ -138,11 +140,29 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
         },
         child: Stack(
           children: [
-            IndexedStack(index: _selectedIndex, children: _screens),
+            IndexedStack(
+              index: _selectedIndex,
+              children: List<Widget>.generate(5, (index) {
+                final selected = index == _selectedIndex;
+                final duration = MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 180);
+                return TickerMode(
+                  enabled: selected,
+                  child: IgnorePointer(
+                    ignoring: !selected,
+                    child: AnimatedOpacity(
+                      opacity: selected ? 1 : 0,
+                      duration: duration,
+                      curve: Curves.easeOutCubic,
+                      child: _screenForIndex(index),
+                    ),
+                  ),
+                );
+              }),
+            ),
             if (_locked)
               const ModalBarrier(dismissible: false, color: Color(0xDDFFFFFF)),
-            if (_isSwitchingSection)
-              const MovaLoadingOverlay(message: 'Cargando tu sección'),
           ],
         ),
       ),
@@ -161,75 +181,67 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
               ),
             ],
           ),
-          child: ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-              child: ColoredBox(
-                color: navigationSurface.withValues(alpha: .9),
-                child: IgnorePointer(
-                  ignoring: _isSwitchingSection || _locked,
-                  child: BottomNavigationBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    type: BottomNavigationBarType.fixed,
-                    selectedItemColor: isDark
-                        ? MovaDesign.darkText
-                        : MovaDesign.navy,
-                    unselectedItemColor: isDark
-                        ? const Color(0xFF91A7BA)
-                        : MovaDesign.muted,
-                    selectedFontSize: 11,
-                    unselectedFontSize: 10,
-                    iconSize: 22,
-                    currentIndex: _selectedIndex,
-                    onTap: (index) async {
-                      if (index == _selectedIndex) return;
-                      HapticFeedback.selectionClick();
-                      setState(() {
-                        _isSwitchingSection = true;
-                        _selectedIndex = index;
-                      });
-                      if (index == 0) {
-                        _homeKey.currentState?.refresh();
-                      }
+          child: ColoredBox(
+            color: navigationSurface,
+            child: IgnorePointer(
+              ignoring: _locked,
+              child: BottomNavigationBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                type: BottomNavigationBarType.fixed,
+                selectedItemColor: isDark
+                    ? MovaDesign.darkText
+                    : MovaDesign.navy,
+                unselectedItemColor: isDark
+                    ? const Color(0xFFA4A4A4)
+                    : MovaDesign.muted,
+                selectedFontSize: 11,
+                unselectedFontSize: 10,
+                iconSize: 22,
+                currentIndex: _selectedIndex,
+                onTap: (index) {
+                  if (index == _selectedIndex) return;
+                  HapticFeedback.selectionClick();
+                  final wasVisited = _visitedSections.contains(index);
+                  setState(() {
+                    _visitedSections.add(index);
+                    _selectedIndex = index;
+                  });
+                  if (index == 0) {
+                    _homeKey.currentState?.refresh();
+                  }
 
-                      if (index == 2) {
-                        _transactionKey.currentState?.refreshCategories();
-                      }
-                      await Future<void>.delayed(
-                        const Duration(milliseconds: 220),
-                      );
-                      if (mounted) setState(() => _isSwitchingSection = false);
-                    },
-                    items: const [
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.home_outlined),
-                        activeIcon: Icon(Icons.home_rounded),
-                        label: "Inicio",
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.insights_outlined),
-                        activeIcon: Icon(Icons.insights_rounded),
-                        label: "Análisis",
-                      ),
-                      BottomNavigationBarItem(
-                        icon: _AddNavigationIcon(),
-                        activeIcon: _AddNavigationIcon(selected: true),
-                        label: "Agregar",
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.flag_outlined),
-                        activeIcon: Icon(Icons.flag_rounded),
-                        label: "Metas",
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.grid_view_outlined),
-                        activeIcon: Icon(Icons.grid_view_rounded),
-                        label: "Más",
-                      ),
-                    ],
+                  if (index == 2 && wasVisited) {
+                    _transactionKey.currentState?.refreshCategories();
+                  }
+                },
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    activeIcon: Icon(Icons.home_rounded),
+                    label: "Inicio",
                   ),
-                ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.insights_outlined),
+                    activeIcon: Icon(Icons.insights_rounded),
+                    label: "Análisis",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: _AddNavigationIcon(),
+                    activeIcon: _AddNavigationIcon(selected: true),
+                    label: "Agregar",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.flag_outlined),
+                    activeIcon: Icon(Icons.flag_rounded),
+                    label: "Metas",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.grid_view_outlined),
+                    activeIcon: Icon(Icons.grid_view_rounded),
+                    label: "Más",
+                  ),
+                ],
               ),
             ),
           ),
@@ -256,7 +268,7 @@ class _AddNavigationIcon extends StatelessWidget {
             ? MovaDesign.navy
             : isDark
             ? MovaDesign.darkElevatedSurface
-            : const Color(0xFFE8F3F5),
+            : const Color(0xFFF1F1F1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(

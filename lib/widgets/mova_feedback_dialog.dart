@@ -26,7 +26,7 @@ Future<void> showMovaFeedback(
               decoration: BoxDecoration(
                 color:
                     (success
-                            ? const Color(0xFF16A34A)
+                            ? const Color(0xFF7F7F7F)
                             : const Color(0xFF0C2340))
                         .withValues(alpha: .12),
                 shape: BoxShape.circle,
@@ -34,7 +34,7 @@ Future<void> showMovaFeedback(
               child: Icon(
                 success ? Icons.check_rounded : Icons.info_outline_rounded,
                 color: success
-                    ? const Color(0xFF16A34A)
+                    ? const Color(0xFF7F7F7F)
                     : const Color(0xFF0C2340),
                 size: 34,
               ),
@@ -54,7 +54,7 @@ Future<void> showMovaFeedback(
               localizedMessage,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Color(0xFF64748B),
+                color: Color(0xFF727272),
                 fontSize: 14,
                 height: 1.4,
               ),

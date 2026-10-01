@@ -300,10 +300,10 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.text('upcoming_payments')),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           IconButton(
             tooltip: l10n.text('payment_filters'),
@@ -351,7 +351,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE9EEF5),
+                    color: const Color(0xFFEDEDED),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Row(
@@ -372,7 +372,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                     child: Text(
                       l10n.text('payment_not_expense_yet'),
                       style: const TextStyle(
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF727272),
                         fontSize: 12,
                       ),
                     ),
@@ -388,7 +388,7 @@ class _UpcomingPaymentsScreenState extends State<UpcomingPaymentsScreen> {
                           child: Text(
                             _dateHeading(context, group.first.dueDate),
                             style: const TextStyle(
-                              color: Color(0xFF475569),
+                              color: Color(0xFF535353),
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
                               letterSpacing: .5,
@@ -733,7 +733,7 @@ class _PaymentSummary extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             '${context.l10n.text('money_committed')} · ${_currencyTotals(next30)}',
-            style: const TextStyle(color: Color(0xFFD9E2F0), fontSize: 12),
+            style: const TextStyle(color: Color(0xFFE1E1E1), fontSize: 12),
           ),
         ],
       ),
@@ -755,7 +755,7 @@ class _SummaryAmount extends StatelessWidget {
         Text(
           title,
           maxLines: 2,
-          style: const TextStyle(color: Color(0xFFD9E2F0), fontSize: 10),
+          style: const TextStyle(color: Color(0xFFE1E1E1), fontSize: 10),
         ),
         const SizedBox(height: 4),
         Text(
@@ -809,7 +809,7 @@ class _UpcomingPaymentCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(17),
         side: BorderSide(
-          color: overdue ? const Color(0xFFFECACA) : const Color(0xFFE2E8F0),
+          color: overdue ? const Color(0xFFD5D5D5) : const Color(0xFFE7E7E7),
         ),
       ),
       child: InkWell(
@@ -823,7 +823,7 @@ class _UpcomingPaymentCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     backgroundColor: overdue
-                        ? const Color(0xFFFEF2F2)
+                        ? const Color(0xFFF5F5F5)
                         : MovaDesign.canvas,
                     child: Icon(
                       payment.isCardPayment
@@ -832,7 +832,7 @@ class _UpcomingPaymentCard extends StatelessWidget {
                           ? Icons.autorenew_rounded
                           : Icons.event_note_rounded,
                       color: overdue
-                          ? const Color(0xFFDC2626)
+                          ? const Color(0xFF4D4D4D)
                           : const Color(0xFF0C2340),
                     ),
                   ),
@@ -851,7 +851,7 @@ class _UpcomingPaymentCard extends StatelessWidget {
                         Text(
                           '${_formatMoney(payment.amount, payment.currency)} · $label',
                           style: const TextStyle(
-                            color: Color(0xFF475569),
+                            color: Color(0xFF535353),
                             fontSize: 12,
                           ),
                         ),
@@ -861,7 +861,7 @@ class _UpcomingPaymentCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              color: Color(0xFF64748B),
+                              color: Color(0xFF727272),
                               fontSize: 11,
                             ),
                           )
@@ -869,7 +869,7 @@ class _UpcomingPaymentCard extends StatelessWidget {
                           Text(
                             '${l10n.text('payment_method')}: ${l10n.text('payment_method_unspecified')}',
                             style: const TextStyle(
-                              color: Color(0xFF64748B),
+                              color: Color(0xFF727272),
                               fontSize: 11,
                             ),
                           ),
@@ -877,7 +877,7 @@ class _UpcomingPaymentCard extends StatelessWidget {
                           Text(
                             payment.category!,
                             style: const TextStyle(
-                              color: Color(0xFF64748B),
+                              color: Color(0xFF727272),
                               fontSize: 11,
                             ),
                           ),
@@ -891,8 +891,8 @@ class _UpcomingPaymentCard extends StatelessWidget {
                         _dateHeading(context, payment.dueDate),
                         style: TextStyle(
                           color: overdue
-                              ? const Color(0xFFDC2626)
-                              : const Color(0xFF334155),
+                              ? const Color(0xFF4D4D4D)
+                              : const Color(0xFF3F3F3F),
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                         ),
@@ -980,8 +980,8 @@ class _PaymentHistoryCard extends StatelessWidget {
       elevation: 0,
       child: ListTile(
         leading: const CircleAvatar(
-          backgroundColor: Color(0xFFDCFCE7),
-          child: Icon(Icons.check_rounded, color: Color(0xFF15803D)),
+          backgroundColor: Color(0xFFF4F4F4),
+          child: Icon(Icons.check_rounded, color: Color(0xFF646464)),
         ),
         title: Text(name, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(subtitle),
@@ -1003,7 +1003,7 @@ class _EmptyPayments extends StatelessWidget {
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
+      border: Border.all(color: const Color(0xFFE7E7E7)),
     ),
     child: Column(
       children: [
@@ -1119,7 +1119,7 @@ class _PaymentConfirmationDialogState
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   '${l10n.text('payment_card')}: ${payment.accountLabel}',
-                  style: const TextStyle(color: Color(0xFF64748B)),
+                  style: const TextStyle(color: Color(0xFF727272)),
                 ),
               ),
             if (widget.duplicateTransactionId != null) ...[
@@ -1527,12 +1527,12 @@ class _ScheduledPaymentFormScreenState
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           l10n.text(widget.payment == null ? 'add_payment' : 'edit_payment'),
         ),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
       body: FutureBuilder<List<FinancialAccount>>(
         future: _accounts,
@@ -1810,7 +1810,7 @@ class _ScheduledPaymentFormScreenState
     child: Text(
       value,
       style: const TextStyle(
-        color: Color(0xFF334155),
+        color: Color(0xFF3F3F3F),
         fontSize: 13,
         fontWeight: FontWeight.w700,
       ),
@@ -1823,11 +1823,11 @@ class _ScheduledPaymentFormScreenState
     fillColor: Colors.white,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(13),
-      borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+      borderSide: const BorderSide(color: Color(0xFFDFDFDF)),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(13),
-      borderSide: const BorderSide(color: Color(0xFFD7E0EA)),
+      borderSide: const BorderSide(color: Color(0xFFDFDFDF)),
     ),
   );
 }

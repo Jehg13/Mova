@@ -73,9 +73,9 @@ class AddSavingAction {
 
   final DatabaseHelper _database;
 
-  Future<void> execute(double amount) {
+  Future<void> execute(double amount, {required int accountId}) {
     _validateAmount(amount);
-    return _database.addUnassignedSavings(amount);
+    return _database.moveToUnassignedSavings(amount, accountId: accountId);
   }
 }
 

@@ -6,7 +6,6 @@ import 'package:mova/models/financial_account.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/services/subscription_reminder_service.dart';
-import 'package:mova/widgets/mova_design_system.dart';
 
 class SubscriptionsScreen extends StatefulWidget {
   const SubscriptionsScreen({super.key});
@@ -56,10 +55,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.text('my_subscriptions')),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           IconButton(
             tooltip: l10n.text('new_subscription'),
@@ -132,7 +131,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                           title: l10n.text('estimated_monthly_spend'),
                           amounts: monthlyByCurrency,
                           icon: Icons.calendar_month_outlined,
-                          accent: const Color(0xFF2563EB),
+                          accent: const Color(0xFF606060),
                         ),
                         _SummaryCard(
                           width: itemWidth,
@@ -142,7 +141,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                               entry.key: entry.value * 12,
                           },
                           icon: Icons.date_range_rounded,
-                          accent: const Color(0xFF7C3AED),
+                          accent: const Color(0xFF555555),
                         ),
                       ],
                     );
@@ -234,7 +233,7 @@ class _SummaryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: const Color(0xFFE7E7E7)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,7 +242,7 @@ class _SummaryCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+              style: const TextStyle(color: Color(0xFF727272), fontSize: 12),
             ),
             const SizedBox(height: 5),
             if (value != null)
@@ -303,11 +302,11 @@ class _EmptyCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
+      border: Border.all(color: const Color(0xFFE7E7E7)),
     ),
     child: Column(
       children: [
-        Icon(icon, size: 32, color: const Color(0xFF64748B)),
+        Icon(icon, size: 32, color: const Color(0xFF727272)),
         const SizedBox(height: 10),
         Text(text, textAlign: TextAlign.center),
         if (action != null) ...[const SizedBox(height: 14), action!],
@@ -333,15 +332,15 @@ class _UpcomingCard extends StatelessWidget {
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        side: const BorderSide(color: Color(0xFFE7E7E7)),
       ),
       child: ListTile(
         onTap: onTap,
         leading: const CircleAvatar(
-          backgroundColor: Color(0xFFEFF6FF),
+          backgroundColor: Color(0xFFF5F5F5),
           child: Icon(
             Icons.notifications_active_outlined,
-            color: Color(0xFF2563EB),
+            color: Color(0xFF606060),
           ),
         ),
         title: Text(
@@ -370,9 +369,9 @@ class _SubscriptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final status = subscription.status;
     final statusColor = switch (status) {
-      SubscriptionStatus.active => const Color(0xFF15803D),
-      SubscriptionStatus.paused => const Color(0xFFB45309),
-      SubscriptionStatus.cancelled => const Color(0xFF64748B),
+      SubscriptionStatus.active => const Color(0xFF646464),
+      SubscriptionStatus.paused => const Color(0xFF626262),
+      SubscriptionStatus.cancelled => const Color(0xFF727272),
     };
     final statusLabel = switch (status) {
       SubscriptionStatus.active => context.l10n.text('active'),
@@ -385,7 +384,7 @@ class _SubscriptionCard extends StatelessWidget {
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        side: const BorderSide(color: Color(0xFFE7E7E7)),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -396,7 +395,7 @@ class _SubscriptionCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 23,
-                backgroundColor: const Color(0xFFF1F5F9),
+                backgroundColor: const Color(0xFFF4F4F4),
                 child: Icon(
                   _categoryIcon(subscription.category),
                   color: const Color(0xFF0C2340),
@@ -417,7 +416,7 @@ class _SubscriptionCard extends StatelessWidget {
                     Text(
                       '${_money(subscription.amount, subscription.currency)} / ${_frequencyLabel(context, subscription.frequency)}',
                       style: const TextStyle(
-                        color: Color(0xFF475569),
+                        color: Color(0xFF535353),
                         fontSize: 13,
                       ),
                     ),
@@ -425,7 +424,7 @@ class _SubscriptionCard extends StatelessWidget {
                     Text(
                       '${context.l10n.text('next_charge')}: ${_dateLabel(context, subscription.nextChargeDate)}',
                       style: const TextStyle(
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF727272),
                         fontSize: 12,
                       ),
                     ),
@@ -436,7 +435,7 @@ class _SubscriptionCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF727272),
                           fontSize: 12,
                         ),
                       ),
@@ -658,7 +657,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           l10n.text(
@@ -667,7 +666,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                 : 'edit_subscription',
           ),
         ),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
       body: Form(
         key: _formKey,
@@ -1097,10 +1096,10 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     final subscription = _subscription;
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(subscription.name),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           IconButton(
             tooltip: l10n.text('edit_subscription'),
@@ -1142,7 +1141,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: const Color(0xFFE7E7E7)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1157,7 +1156,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                 ),
                 Text(
                   '${l10n.text('every')} ${_frequencyLabel(context, subscription.frequency)} · ${subscription.category}',
-                  style: const TextStyle(color: Color(0xFF64748B)),
+                  style: const TextStyle(color: Color(0xFF727272)),
                 ),
                 const Divider(height: 28),
                 _detailLine(
@@ -1254,12 +1253,12 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                     color: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
-                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                      side: const BorderSide(color: Color(0xFFE7E7E7)),
                     ),
                     child: ListTile(
                       leading: const Icon(
                         Icons.check_circle_outline,
-                        color: Color(0xFF15803D),
+                        color: Color(0xFF646464),
                       ),
                       title: Text(_dateLabel(context, paidAt)),
                       subtitle: Text(
@@ -1396,7 +1395,7 @@ Widget _fieldLabel(String label) => Padding(
   child: Text(
     label,
     style: const TextStyle(
-      color: Color(0xFF334155),
+      color: Color(0xFF3F3F3F),
       fontSize: 13,
       fontWeight: FontWeight.w700,
     ),
@@ -1410,11 +1409,11 @@ InputDecoration _inputDecoration(String hint) => InputDecoration(
   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
   border: OutlineInputBorder(
     borderRadius: BorderRadius.circular(14),
-    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
   ),
   enabledBorder: OutlineInputBorder(
     borderRadius: BorderRadius.circular(14),
-    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
   ),
 );
 
@@ -1423,7 +1422,7 @@ Widget _detailLine(IconData icon, String label, String value) => Padding(
   child: Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Icon(icon, size: 19, color: const Color(0xFF64748B)),
+      Icon(icon, size: 19, color: const Color(0xFF727272)),
       const SizedBox(width: 10),
       Expanded(
         child: Column(
@@ -1431,7 +1430,7 @@ Widget _detailLine(IconData icon, String label, String value) => Padding(
           children: [
             Text(
               label,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+              style: const TextStyle(color: Color(0xFF727272), fontSize: 12),
             ),
             const SizedBox(height: 3),
             Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),

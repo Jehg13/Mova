@@ -9,7 +9,6 @@ import 'package:mova/services/receipt_ocr_service.dart';
 import 'package:mova/services/receipt_parser.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
 import 'package:mova/widgets/receipt_image_preview.dart';
-import 'package:mova/widgets/mova_design_system.dart';
 
 bool get isReceiptScannerSupported =>
     !kIsWeb &&
@@ -185,10 +184,10 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
         ? const ['Otros']
         : widget.categories;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.text('receipt_scanner_title')),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: const Color(0xFF102A43),
         elevation: 0,
       ),
@@ -198,7 +197,7 @@ class _ReceiptScannerScreenState extends State<ReceiptScannerScreen> {
           children: [
             Text(
               l10n.text('receipt_scanner_help'),
-              style: const TextStyle(color: Color(0xFF64748B), height: 1.4),
+              style: const TextStyle(color: Color(0xFF727272), height: 1.4),
             ),
             const SizedBox(height: 16),
             if (_image == null)

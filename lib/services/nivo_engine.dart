@@ -479,7 +479,9 @@ class NivoEngine {
     final results = await Future.wait<Object>([
       _repository.getCategories(),
       if (intent == NivoIntent.aportarMeta) _repository.getGoals(),
-      if (intent == NivoIntent.crearGasto || intent == NivoIntent.crearIngreso)
+      if (intent == NivoIntent.crearGasto ||
+          intent == NivoIntent.crearIngreso ||
+          intent == NivoIntent.agregarAhorro)
         _repository.getAccounts(),
       if (intent == NivoIntent.agregarProductoLista)
         _repository.databaseHelper.getShoppingLists(),
@@ -489,7 +491,9 @@ class NivoEngine {
         ? results[index++] as List<Map<String, dynamic>>
         : const <Map<String, dynamic>>[];
     final accounts =
-        intent == NivoIntent.crearGasto || intent == NivoIntent.crearIngreso
+        intent == NivoIntent.crearGasto ||
+            intent == NivoIntent.crearIngreso ||
+            intent == NivoIntent.agregarAhorro
         ? results[index++] as List<FinancialAccount>
         : const <FinancialAccount>[];
     final lists = intent == NivoIntent.agregarProductoLista
@@ -644,16 +648,20 @@ class NivoEngine {
       }
     }
     if (action.intent == NivoIntent.crearGasto ||
-        action.intent == NivoIntent.crearIngreso) {
-      final category = _canonical(action.category, context.categories);
-      if (category == null) {
-        return _requestField(
-          action,
-          _PendingActionStep.category,
-          '¿En qué categoría quieres registrarlo? No asignaré una categoría que no hayas indicado.',
-        );
+        action.intent == NivoIntent.crearIngreso ||
+        action.intent == NivoIntent.agregarAhorro) {
+      if (action.intent == NivoIntent.crearGasto ||
+          action.intent == NivoIntent.crearIngreso) {
+        final category = _canonical(action.category, context.categories);
+        if (category == null) {
+          return _requestField(
+            action,
+            _PendingActionStep.category,
+            '¿En qué categoría quieres registrarlo? No asignaré una categoría que no hayas indicado.',
+          );
+        }
+        action.category = category;
       }
-      action.category = category;
       if (action.intent == NivoIntent.crearIngreso &&
           action.accountId == null &&
           action.accountName == null) {
@@ -674,34 +682,83 @@ class NivoEngine {
           );
         }
       }
-      if (action.accountId != null) {
-        final selectedAccount = _findAccountById(
-          action.accountId!,
-          context.accounts,
-        );
+      if (action.intent == NivoIntent.agregarAhorro) {
+        final homeCurrency = await _repository.databaseHelper.getCurrency();
+        final eligibleAccounts =
+            (await _repository.getAccounts(includeInactive: false))
+                .where(
+                  (account) =>
+                      account.type != FinancialAccountType.creditCard &&
+                      account.currency == homeCurrency,
+                )
+                .toList();
+        if (action.accountId == null && action.accountName == null) {
+          if (eligibleAccounts.isEmpty) {
+            _pendingAction = null;
+            return _actionResponse(
+              action,
+              'Necesitas una cuenta activa en la moneda principal para apartar el ahorro.',
+              requiresClarification: true,
+            );
+          }
+          if (eligibleAccounts.length == 1) {
+            action.accountId = eligibleAccounts.single.id;
+            action.accountName = eligibleAccounts.single.name;
+          } else {
+            return _requestField(
+              action,
+              _PendingActionStep.account,
+              '¿De qué cuenta aparto el dinero? ${eligibleAccounts.map((account) => account.name).join(', ')}.',
+            );
+          }
+        }
+        final selectedAccount = action.accountId == null
+            ? _findAccount(action.accountName!, eligibleAccounts)
+            : _findAccountById(action.accountId!, eligibleAccounts);
         if (selectedAccount == null) {
-          action.accountName = null;
           action.accountId = null;
+          action.accountName = null;
           return _requestField(
             action,
             _PendingActionStep.account,
-            'La cuenta asociada al comprobante ya no está activa. ¿Qué cuenta quieres usar o prefieres “sin cuenta”?',
+            'Elige una cuenta activa en la moneda principal desde la que apartar el dinero.',
           );
         }
+        action.accountId = selectedAccount.id;
+        action.accountName = selectedAccount.name;
         action.currency = selectedAccount.currency;
       }
-      if (action.accountName != null && action.accountId == null) {
-        final account = _findAccount(action.accountName!, context.accounts);
-        if (account == null) {
-          return _requestField(
-            action,
-            _PendingActionStep.account,
-            'No encontré esa cuenta activa. ¿Qué cuenta quieres usar? Puedes omitirla respondiendo “sin cuenta”.',
+      if (action.intent == NivoIntent.crearGasto ||
+          action.intent == NivoIntent.crearIngreso) {
+        if (action.accountId != null) {
+          final selectedAccount = _findAccountById(
+            action.accountId!,
+            context.accounts,
           );
+          if (selectedAccount == null) {
+            action.accountName = null;
+            action.accountId = null;
+            return _requestField(
+              action,
+              _PendingActionStep.account,
+              'La cuenta asociada al comprobante ya no está activa. ¿Qué cuenta quieres usar o prefieres “sin cuenta”?',
+            );
+          }
+          action.currency = selectedAccount.currency;
         }
-        action.accountId = account.id;
-        action.accountName = account.name;
-        action.currency = account.currency;
+        if (action.accountName != null && action.accountId == null) {
+          final account = _findAccount(action.accountName!, context.accounts);
+          if (account == null) {
+            return _requestField(
+              action,
+              _PendingActionStep.account,
+              'No encontré esa cuenta activa. ¿Qué cuenta quieres usar? Puedes omitirla respondiendo “sin cuenta”.',
+            );
+          }
+          action.accountId = account.id;
+          action.accountName = account.name;
+          action.currency = account.currency;
+        }
       }
     }
     if (action.intent == NivoIntent.aportarMeta) {
@@ -906,7 +963,8 @@ class NivoEngine {
             data: {'transaction_id': id},
           );
         case NivoIntent.agregarAhorro:
-          await AddSavingAction(database).execute(amount);
+          await AddSavingAction(database)
+              .execute(amount, accountId: action.accountId!);
           _pendingAction = null;
           return _actionResponse(
             action,
@@ -1024,7 +1082,8 @@ class NivoEngine {
             '${action.receiptImagePath == null ? '' : ' con el comprobante analizado'}.',
       NivoIntent.crearIngreso =>
         'Voy a registrar un ingreso de $amount por ${action.category}.',
-      NivoIntent.agregarAhorro => 'Voy a agregar $amount a tu ahorro sin meta.',
+      NivoIntent.agregarAhorro =>
+        'Voy a agregar $amount a tu ahorro sin meta desde ${action.accountName}.',
       NivoIntent.aportarMeta =>
         'Voy a agregar $amount a tu meta ${action.goalName}.',
       NivoIntent.crearMeta =>

@@ -3,7 +3,6 @@ import 'package:mova/database/database_helper.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/widgets/mova_feedback_dialog.dart';
-import 'package:mova/widgets/mova_design_system.dart';
 
 class ShoppingScreen extends StatefulWidget {
   const ShoppingScreen({super.key});
@@ -74,7 +73,7 @@ class _ShoppingScreenState extends State<ShoppingScreen>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         foregroundColor: const Color(0xFF102A43),
         title: Text(
@@ -85,13 +84,13 @@ class _ShoppingScreenState extends State<ShoppingScreen>
             letterSpacing: -0.5,
           ),
         ),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         bottom: TabBar(
           controller: _tabs,
           labelColor: const Color(0xFF0C2340),
-          unselectedLabelColor: const Color(0xFF94A3B8),
+          unselectedLabelColor: const Color(0xFFA1A1A1),
           indicatorColor: const Color(0xFF0C2340),
           indicatorWeight: 3,
           labelStyle: const TextStyle(fontWeight: FontWeight.w800),
@@ -155,7 +154,7 @@ class _ShoppingScreenState extends State<ShoppingScreen>
           ),
           FilledButton.icon(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFB42318),
+              backgroundColor: const Color(0xFF414141),
             ),
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.delete_outline),
@@ -166,7 +165,7 @@ class _ShoppingScreenState extends State<ShoppingScreen>
           movaText(
             '¿Quieres eliminar "${list['name']}"? Esta acción no se puede deshacer.',
           ),
-          style: const TextStyle(color: Color(0xFF475569), height: 1.4),
+          style: const TextStyle(color: Color(0xFF535353), height: 1.4),
         ),
       ),
     );
@@ -193,9 +192,9 @@ class _EmptyShoppingState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF6FA),
+                color: const Color(0xFFF4F4F4),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFD7EEEA)),
+                border: Border.all(color: const Color(0xFFE9E9E9)),
               ),
               child: const Icon(
                 Icons.shopping_basket_outlined,
@@ -223,7 +222,7 @@ class _EmptyShoppingState extends StatelessWidget {
                       'Organiza tus productos y controla cuánto vas a gastar.',
                     ),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF64748B), height: 1.4),
+              style: const TextStyle(color: Color(0xFF727272), height: 1.4),
             ),
             if (!history) ...[
               const SizedBox(height: 22),
@@ -274,7 +273,7 @@ class _ShoppingListCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFFE7E7E7)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0A0F172A),
@@ -298,8 +297,8 @@ class _ShoppingListCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: completed
-                            ? const [Color(0xFFE8F5E9), Color(0xFFE8F4FA)]
-                            : const [Color(0xFFEAF6FA), Color(0xFFE8F4FA)],
+                            ? const [Color(0xFFF1F1F1), Color(0xFFF2F2F2)]
+                            : const [Color(0xFFF4F4F4), Color(0xFFF2F2F2)],
                       ),
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -308,7 +307,7 @@ class _ShoppingListCard extends StatelessWidget {
                           ? Icons.task_alt_rounded
                           : Icons.shopping_basket_outlined,
                       color: completed
-                          ? const Color(0xFF2E7D32)
+                          ? const Color(0xFF676767)
                           : const Color(0xFF0C2340),
                     ),
                   ),
@@ -335,7 +334,7 @@ class _ShoppingListCard extends StatelessWidget {
                                     : movaText('Lista en curso'))
                               : store,
                           style: const TextStyle(
-                            color: Color(0xFF64748B),
+                            color: Color(0xFF727272),
                             fontSize: 12.5,
                           ),
                         ),
@@ -349,11 +348,11 @@ class _ShoppingListCard extends StatelessWidget {
                         tooltip: movaText('Eliminar lista'),
                         onPressed: onDelete,
                         icon: const Icon(Icons.delete_outline),
-                        color: const Color(0xFFB42318),
+                        color: const Color(0xFF414141),
                       ),
                       const Icon(
                         Icons.chevron_right_rounded,
-                        color: Color(0xFF94A3B8),
+                        color: Color(0xFFA1A1A1),
                       ),
                     ],
                   ),
@@ -373,7 +372,7 @@ class _ShoppingListCard extends StatelessWidget {
                   children: [
                     Text(
                       movaText('Total'),
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                      style: TextStyle(color: Color(0xFF727272), fontSize: 12),
                     ),
                     const Spacer(),
                     Text(
@@ -389,13 +388,13 @@ class _ShoppingListCard extends StatelessWidget {
                       Container(
                         width: 1,
                         height: 20,
-                        color: const Color(0xFFE2E8F0),
+                        color: const Color(0xFFE7E7E7),
                       ),
                       const SizedBox(width: 12),
                       Text(
                         movaText('Presupuesto ${money(budget)}'),
                         style: const TextStyle(
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF727272),
                           fontSize: 11,
                         ),
                       ),
@@ -471,7 +470,7 @@ class _ShoppingSummaryCard extends StatelessWidget {
               if (completed)
                 const Icon(
                   Icons.verified_rounded,
-                  color: Color(0xFFC7EAF4),
+                  color: Color(0xFFE3E3E3),
                   size: 21,
                 ),
             ],
@@ -518,8 +517,8 @@ class _ShoppingSummaryCard extends StatelessWidget {
                       ? Icons.trending_down_rounded
                       : Icons.trending_up_rounded,
                   color: difference >= 0
-                      ? const Color(0xFFC7EAF4)
-                      : const Color(0xFFFFD0C7),
+                      ? const Color(0xFFE3E3E3)
+                      : const Color(0xFFD9D9D9),
                   size: 18,
                 ),
                 const SizedBox(width: 7),
@@ -531,8 +530,8 @@ class _ShoppingSummaryCard extends StatelessWidget {
                         ),
                   style: TextStyle(
                     color: difference >= 0
-                        ? const Color(0xFFC7EAF4)
-                        : const Color(0xFFFFD0C7),
+                        ? const Color(0xFFE3E3E3)
+                        : const Color(0xFFD9D9D9),
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
                   ),
@@ -595,7 +594,7 @@ class _ShoppingProductCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: pending ? const Color(0xFFF3D7A4) : const Color(0xFFE2E8F0),
+          color: pending ? const Color(0xFFD9D9D9) : const Color(0xFFE7E7E7),
         ),
       ),
       child: Row(
@@ -615,8 +614,8 @@ class _ShoppingProductCard extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color: pending
-                  ? const Color(0xFFFFF7E8)
-                  : const Color(0xFFEAF6FA),
+                  ? const Color(0xFFF8F8F8)
+                  : const Color(0xFFF4F4F4),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -624,7 +623,7 @@ class _ShoppingProductCard extends StatelessWidget {
                   ? Icons.help_outline_rounded
                   : Icons.shopping_basket_outlined,
               color: pending
-                  ? const Color(0xFFB7791F)
+                  ? const Color(0xFF808080)
                   : const Color(0xFF0C2340),
             ),
           ),
@@ -649,7 +648,7 @@ class _ShoppingProductCard extends StatelessWidget {
                 Text(
                   '${product['quantity']} ${product['unit']}',
                   style: const TextStyle(
-                    color: Color(0xFF64748B),
+                    color: Color(0xFF727272),
                     fontSize: 12.5,
                   ),
                 ),
@@ -660,7 +659,7 @@ class _ShoppingProductCard extends StatelessWidget {
                   style: TextStyle(
                     color: purchased
                         ? const Color(0xFF0C2340)
-                        : const Color(0xFF94A3B8),
+                        : const Color(0xFFA1A1A1),
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -672,7 +671,7 @@ class _ShoppingProductCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Color(0xFF94A3B8),
+                      color: Color(0xFFA1A1A1),
                       fontSize: 11.5,
                       fontStyle: FontStyle.italic,
                     ),
@@ -689,7 +688,7 @@ class _ShoppingProductCard extends StatelessWidget {
                 pending ? movaText('Precio pendiente') : money(subtotal),
                 style: TextStyle(
                   color: pending
-                      ? const Color(0xFFB7791F)
+                      ? const Color(0xFF808080)
                       : const Color(0xFF1E3A5F),
                   fontSize: 13.5,
                   fontWeight: FontWeight.w800,
@@ -699,7 +698,7 @@ class _ShoppingProductCard extends StatelessWidget {
                 Text(
                   '${money(price)} / $priceUnit',
                   style: const TextStyle(
-                    color: Color(0xFF94A3B8),
+                    color: Color(0xFFA1A1A1),
                     fontSize: 10.5,
                   ),
                 ),
@@ -718,7 +717,7 @@ class _ShoppingProductCard extends StatelessWidget {
                       tooltip: movaText('Eliminar'),
                       onPressed: onDelete,
                       icon: const Icon(Icons.delete_outline, size: 18),
-                      color: const Color(0xFFB42318),
+                      color: const Color(0xFF414141),
                     ),
                   ],
                 ),
@@ -820,7 +819,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
               'Se registrará un gasto de ${appCurrencyController.format(total)} en la categoría Compras.',
             ),
           ),
-          style: const TextStyle(color: Color(0xFF475569), height: 1.4),
+          style: const TextStyle(color: Color(0xFF535353), height: 1.4),
         ),
       ),
     );
@@ -850,7 +849,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
         }
         final completed = list['status'] == 'completed';
         return Scaffold(
-          backgroundColor: MovaDesign.canvas,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
             foregroundColor: const Color(0xFF102A43),
             title: Text(
@@ -859,7 +858,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
-            backgroundColor: MovaDesign.canvas,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 0,
             scrolledUnderElevation: 0,
             actions: [
@@ -900,7 +899,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                         vertical: 11,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEAF6FA),
+                        color: const Color(0xFFF4F4F4),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
@@ -939,7 +938,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                   Container(
                                     padding: const EdgeInsets.all(18),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFEAF6FA),
+                                      color: const Color(0xFFF4F4F4),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: const Icon(
@@ -965,7 +964,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                       ),
                                     ),
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(color: Color(0xFF64748B)),
+                                    style: TextStyle(color: Color(0xFF727272)),
                                   ),
                                   const SizedBox(height: 18),
                                   FilledButton.icon(
@@ -1018,7 +1017,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                         FilledButton.icon(
                                           style: FilledButton.styleFrom(
                                             backgroundColor: const Color(
-                                              0xFFB42318,
+                                              0xFF414141,
                                             ),
                                           ),
                                           onPressed: () =>
@@ -1032,7 +1031,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                       child: Text(
                                         '¿Quieres quitar "${p['name']}" de esta lista?',
                                         style: const TextStyle(
-                                          color: Color(0xFF475569),
+                                          color: Color(0xFF535353),
                                           height: 1.4,
                                         ),
                                       ),
@@ -1057,7 +1056,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                     ),
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+                      border: Border(top: BorderSide(color: Color(0xFFE7E7E7))),
                     ),
                     child: Column(
                       children: [
@@ -1093,7 +1092,7 @@ class _ShoppingListEditorState extends State<ShoppingListEditor> {
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: const Color(0xFF0C2340),
                                     side: const BorderSide(
-                                      color: Color(0xFF8BC8BF),
+                                      color: Color(0xFFBABABA),
                                     ),
                                     minimumSize: const Size.fromHeight(52),
                                     shape: RoundedRectangleBorder(
@@ -1429,7 +1428,7 @@ class _ProductDialogState extends State<_ProductDialog> {
             child: Text(
               movaText('El precio se aplicará por:'),
               style: TextStyle(
-                color: Color(0xFF64748B),
+                color: Color(0xFF727272),
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
@@ -1484,11 +1483,11 @@ InputDecoration _inputDecoration(String label, IconData icon, String hint) =>
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -1738,7 +1737,7 @@ class _MovaDialog extends StatelessWidget {
                           height: 48,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFE8F4FA), Color(0xFFEAF6FA)],
+                              colors: [Color(0xFFF2F2F2), Color(0xFFF4F4F4)],
                             ),
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -1762,7 +1761,7 @@ class _MovaDialog extends StatelessWidget {
                                 subtitle,
                                 style: const TextStyle(
                                   fontSize: 12.5,
-                                  color: Color(0xFF64748B),
+                                  color: Color(0xFF727272),
                                 ),
                               ),
                             ],
@@ -1772,14 +1771,14 @@ class _MovaDialog extends StatelessWidget {
                           tooltip: movaText('Cerrar'),
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close_rounded),
-                          color: const Color(0xFF64748B),
+                          color: const Color(0xFF727272),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
                     child,
                     const SizedBox(height: 18),
-                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    const Divider(height: 1, color: Color(0xFFE7E7E7)),
                     const SizedBox(height: 14),
                     Align(
                       alignment: Alignment.centerRight,

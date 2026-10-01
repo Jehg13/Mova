@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +14,12 @@ import 'package:mova/services/receipt_storage.dart';
 
 class DatabaseHelper {
   DatabaseHelper({this.databaseName});
+
+  static final ValueNotifier<int> financialDataVersion = ValueNotifier(0);
+
+  static void notifyFinancialDataChanged() {
+    financialDataVersion.value++;
+  }
 
   final String? databaseName;
   Database? _instanceDatabase;
@@ -1367,7 +1374,7 @@ class DatabaseHelper {
     String? receiptReference,
   }) async {
     final db = await database;
-    return db.transaction((txn) async {
+    final transactionId = await db.transaction((txn) async {
       var transactionCurrency = currency;
       if (accountId != null) {
         final accountRows = await txn.query(
@@ -1417,6 +1424,8 @@ class DatabaseHelper {
         'receipt_reference': receiptReference,
       });
     });
+    notifyFinancialDataChanged();
+    return transactionId;
   }
 
   Future<List<Map<String, dynamic>>> findPossibleDuplicateReceipts({
@@ -1565,10 +1574,12 @@ class DatabaseHelper {
                 account.initialBalance > account.creditLimit!))) {
       throw ArgumentError('Revisa el saldo inicial y el límite de crédito.');
     }
-    return (await database).insert('accounts', {
+    final id = await (await database).insert('accounts', {
       ...account.toDatabaseMap(),
       'created_at': DateTime.now().toIso8601String(),
     });
+    notifyFinancialDataChanged();
+    return id;
   }
 
   Future<void> updateFinancialAccount(FinancialAccount account) async {
@@ -1596,6 +1607,7 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [account.id],
     );
+    notifyFinancialDataChanged();
   }
 
   Future<void> setFinancialAccountActive(int id, bool active) async {
@@ -1605,6 +1617,7 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+    notifyFinancialDataChanged();
   }
 
   Future<FinancialAccount?> getFinancialAccount(int id) async {
@@ -1670,7 +1683,11 @@ class DatabaseHelper {
     var balance = initialBalance;
     for (final transaction in transactions) {
       final category = transaction['category'] as String;
-      if (_isSavingsAllocationCategory(category)) continue;
+      if (_isSavingsAllocationCategory(category) &&
+          category != 'Ahorro sin meta' &&
+          category != 'Retiro de ahorro sin meta') {
+        continue;
+      }
       final amount = (transaction['amount'] as num).toDouble();
       final isIncome = transaction['is_income'] == 1;
       if (type == FinancialAccountType.creditCard.name) {
@@ -1817,6 +1834,7 @@ class DatabaseHelper {
         'description': description.trim(),
       });
     });
+    notifyFinancialDataChanged();
   }
 
   Future<Map<String, Map<String, double>>> getFinancialOverview({
@@ -1840,6 +1858,26 @@ class DatabaseHelper {
           ifAbsent: () => account.balance,
         );
       }
+    }
+    final allocatedSavingsTransactions = await (await database).rawQuery('''
+      SELECT currency, SUM(CASE
+        WHEN is_income = 0 AND category = 'Ahorro sin meta' THEN amount
+        WHEN is_income = 1 AND category = 'Retiro de ahorro sin meta' THEN -amount
+        ELSE 0
+      END) AS amount
+      FROM transactions
+      WHERE account_id IS NOT NULL
+        AND category IN ('Ahorro sin meta', 'Retiro de ahorro sin meta')
+      GROUP BY currency
+    ''');
+    for (final row in allocatedSavingsTransactions) {
+      final currency = row['currency'] as String? ?? homeCurrency;
+      final amount = (row['amount'] as num).toDouble();
+      assets.update(
+        currency,
+        (value) => value + amount,
+        ifAbsent: () => amount,
+      );
     }
     if (includeUnassignedTransactions) {
       final unassignedTransactions = await (await database).query(
@@ -2420,6 +2458,7 @@ class DatabaseHelper {
         );
       }
     });
+    notifyFinancialDataChanged();
   }
 
   Future<List<Map<String, Object?>>> getScheduledPaymentHistory() async =>
@@ -2658,6 +2697,7 @@ class DatabaseHelper {
         whereArgs: [id],
       );
     });
+    notifyFinancialDataChanged();
   }
 
   Future<List<Map<String, Object?>>> getSubscriptionHistory(int id) async {
@@ -2829,18 +2869,46 @@ class DatabaseHelper {
 
   Future<double> getUnassignedSavings() async {
     final db = await database;
-    final rows = await db.rawQuery('''
+    final currency = await getCurrency();
+    final rows = await db.rawQuery(
+      '''
       SELECT COALESCE(SUM(CASE
         WHEN is_income = 0 AND category = 'Ahorro sin meta' THEN amount
         WHEN is_income = 1 AND category = 'Retiro de ahorro sin meta' THEN -amount
         ELSE 0
       END), 0) AS total
-      FROM transactions
-    ''');
+      FROM transactions WHERE currency IS NULL OR currency = ?
+    ''',
+      [currency],
+    );
     return (rows.first['total'] as num).toDouble();
   }
 
+  Future<Map<int?, double>> getUnassignedSavingsByAccount() async {
+    final currency = await getCurrency();
+    final rows = await (await database).rawQuery(
+      '''
+      SELECT account_id, SUM(CASE
+        WHEN is_income = 0 THEN amount
+        ELSE -amount
+      END) AS amount
+      FROM transactions
+      WHERE category IN ('Ahorro sin meta', 'Retiro de ahorro sin meta')
+        AND (currency IS NULL OR currency = ?)
+      GROUP BY account_id
+      ''',
+      [currency],
+    );
+    return {
+      for (final row in rows)
+        row['account_id'] as int?: (row['amount'] as num).toDouble(),
+    };
+  }
+
   Future<void> addUnassignedSavings(double amount) async {
+    if (amount <= 0) {
+      throw ArgumentError('El importe debe ser mayor que cero.');
+    }
     await insertTransaction(
       amount: amount,
       isIncome: false,
@@ -2850,18 +2918,132 @@ class DatabaseHelper {
     );
   }
 
-  Future<void> withdrawUnassignedSavings(double amount) async {
-    final available = await getUnassignedSavings();
-    if (amount <= 0 || amount > available) {
-      throw StateError('El retiro supera el ahorro disponible');
+  Future<void> moveToUnassignedSavings(
+    double amount, {
+    required int accountId,
+  }) async {
+    if (amount <= 0) {
+      throw ArgumentError('El importe debe ser mayor que cero.');
     }
-    await insertTransaction(
-      amount: amount,
-      isIncome: true,
-      category: 'Retiro de ahorro sin meta',
-      description: 'Retiro de ahorro sin meta',
-      date: DateTime.now(),
-    );
+    final db = await database;
+    final homeCurrency = await getCurrency();
+    await db.transaction((txn) async {
+      final rows = await txn.query(
+        'accounts',
+        where: 'id = ? AND is_active = 1',
+        whereArgs: [accountId],
+        limit: 1,
+      );
+      if (rows.isEmpty) {
+        throw StateError('La cuenta seleccionada no está activa.');
+      }
+      final row = rows.first;
+      final type = row['type'] as String;
+      if (type == FinancialAccountType.creditCard.name) {
+        throw StateError(
+          'No se puede apartar dinero desde una tarjeta de crédito.',
+        );
+      }
+      final currency = row['currency'] as String;
+      if (currency != homeCurrency) {
+        throw StateError('La cuenta debe usar la moneda principal de MOVA.');
+      }
+      final balance = await _calculateFinancialAccountBalance(
+        txn,
+        accountId,
+        type,
+        (row['initial_balance'] as num).toDouble(),
+        currency,
+      );
+      if (amount > balance) {
+        throw StateError('La cuenta no tiene saldo suficiente.');
+      }
+      await txn.insert('transactions', {
+        'amount': amount,
+        'is_income': 0,
+        'category': 'Ahorro sin meta',
+        'description': 'Aporte de ahorro sin meta',
+        'date': DateTime.now().toIso8601String(),
+        'note': '',
+        'account_id': accountId,
+        'currency': currency,
+      });
+    });
+    notifyFinancialDataChanged();
+  }
+
+  Future<void> withdrawUnassignedSavings(
+    double amount, {
+    int? accountId,
+  }) async {
+    if (amount <= 0) {
+      throw ArgumentError('El importe debe ser mayor que cero.');
+    }
+    if (accountId == null) {
+      final available = await getUnassignedSavings();
+      if (amount > available) {
+        throw StateError('El retiro supera el ahorro disponible.');
+      }
+      await insertTransaction(
+        amount: amount,
+        isIncome: true,
+        category: 'Retiro de ahorro sin meta',
+        description: 'Retiro de ahorro sin meta',
+        date: DateTime.now(),
+      );
+      return;
+    }
+    final db = await database;
+    final homeCurrency = await getCurrency();
+    await db.transaction((txn) async {
+      final savingsRows = await txn.rawQuery(
+        '''
+        SELECT COALESCE(SUM(CASE
+          WHEN is_income = 0 AND category = 'Ahorro sin meta' THEN amount
+          WHEN is_income = 1 AND category = 'Retiro de ahorro sin meta' THEN -amount
+          ELSE 0
+        END), 0) AS total
+        FROM transactions
+        WHERE currency IS NULL OR currency = ?
+        ''',
+        [homeCurrency],
+      );
+      final available = (savingsRows.first['total'] as num).toDouble();
+      if (amount > available) {
+        throw StateError('El retiro supera el ahorro disponible.');
+      }
+      final rows = await txn.query(
+        'accounts',
+        where: 'id = ? AND is_active = 1',
+        whereArgs: [accountId],
+        limit: 1,
+      );
+      if (rows.isEmpty) {
+        throw StateError('La cuenta seleccionada no está activa.');
+      }
+      final row = rows.first;
+      final type = row['type'] as String;
+      if (type == FinancialAccountType.creditCard.name) {
+        throw StateError(
+          'No se puede retirar ahorro a una tarjeta de crédito.',
+        );
+      }
+      final currency = row['currency'] as String;
+      if (currency != homeCurrency) {
+        throw StateError('La cuenta debe usar la moneda principal de MOVA.');
+      }
+      await txn.insert('transactions', {
+        'amount': amount,
+        'is_income': 1,
+        'category': 'Retiro de ahorro sin meta',
+        'description': 'Retiro de ahorro sin meta',
+        'date': DateTime.now().toIso8601String(),
+        'note': '',
+        'account_id': accountId,
+        'currency': currency,
+      });
+    });
+    notifyFinancialDataChanged();
   }
 
   Future<int> updateGoalSavedAmount(int id, double savedAmount) async {
@@ -2876,7 +3058,7 @@ class DatabaseHelper {
     if (current.isEmpty) return 0;
     final previous = (current.first['saved_amount'] as num).toDouble();
     final difference = savedAmount - previous;
-    return db.transaction((txn) async {
+    final result = await db.transaction((txn) async {
       final result = await txn.update(
         'goals',
         {'saved_amount': savedAmount},
@@ -2908,6 +3090,8 @@ class DatabaseHelper {
       }
       return result;
     });
+    if (difference != 0) notifyFinancialDataChanged();
+    return result;
   }
 
   Future<void> deleteGoal(int id) async {
@@ -2937,6 +3121,7 @@ class DatabaseHelper {
       await txn.delete('goal_movements', where: 'goal_id = ?', whereArgs: [id]);
       await txn.delete('goals', where: 'id = ?', whereArgs: [id]);
     });
+    notifyFinancialDataChanged();
   }
 
   Future<List<Map<String, dynamic>>> getGoalMovements(int goalId) async {
@@ -3256,6 +3441,7 @@ class DatabaseHelper {
         });
       }
     });
+    if (total > 0) notifyFinancialDataChanged();
   }
 
   Future<void> _createTransactionsTable(DatabaseExecutor db) async {

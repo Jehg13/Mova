@@ -4,7 +4,6 @@ import 'package:mova/database/database_helper.dart';
 import 'package:mova/models/financial_account.dart';
 import 'package:mova/services/currency_controller.dart';
 import 'package:mova/services/mova_localizations.dart';
-import 'package:mova/widgets/mova_design_system.dart';
 
 class AccountsScreen extends StatefulWidget {
   const AccountsScreen({super.key});
@@ -17,11 +16,23 @@ class _AccountsScreenState extends State<AccountsScreen> {
   final _database = DatabaseHelper();
   late Future<List<FinancialAccount>> _accounts;
   late Future<Map<String, Map<String, double>>> _overview;
+  late Future<Map<int?, double>> _savingsByAccount;
 
   @override
   void initState() {
     super.initState();
+    DatabaseHelper.financialDataVersion.addListener(_onFinancialDataChanged);
     _load();
+  }
+
+  @override
+  void dispose() {
+    DatabaseHelper.financialDataVersion.removeListener(_onFinancialDataChanged);
+    super.dispose();
+  }
+
+  void _onFinancialDataChanged() {
+    if (mounted) setState(_load);
   }
 
   void _load() {
@@ -29,11 +40,12 @@ class _AccountsScreenState extends State<AccountsScreen> {
     _overview = _database.getFinancialOverview(
       homeCurrency: appCurrencyController.code,
     );
+    _savingsByAccount = _database.getUnassignedSavingsByAccount();
   }
 
   Future<void> _refresh() async {
     setState(_load);
-    await Future.wait([_accounts, _overview]);
+    await Future.wait([_accounts, _overview, _savingsByAccount]);
   }
 
   Future<void> _openForm([FinancialAccount? account]) async {
@@ -65,10 +77,10 @@ class _AccountsScreenState extends State<AccountsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.text('my_accounts')),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           IconButton(
             tooltip: l10n.text('new_account'),
@@ -100,100 +112,154 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   overviewSnapshot.data ??
                   const <String, Map<String, double>>{};
               final active = accounts.where((item) => item.isActive).toList();
-              final assets = _totalsByCurrency(
-                active.where(
-                  (item) => item.type != FinancialAccountType.creditCard,
-                ),
-              );
+              final assets = overview['assets'] ?? const <String, double>{};
               final debts = _totalsByCurrency(
                 active.where(
                   (item) => item.type == FinancialAccountType.creditCard,
                 ),
               );
-              return RefreshIndicator(
-                onRefresh: _refresh,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
-                  children: [
-                    _OverviewCard(
-                      title: l10n.text('available_to_spend'),
-                      values: overview['available'] ?? const <String, double>{},
-                      icon: Icons.account_balance_wallet_outlined,
-                      accent: const Color(0xFF0C2340),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
+              return FutureBuilder<Map<int?, double>>(
+                future: _savingsByAccount,
+                builder: (context, savingsSnapshot) {
+                  if (savingsSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (savingsSnapshot.hasError) {
+                    return Center(
+                      child: Text(l10n.text('accounts_load_error')),
+                    );
+                  }
+                  final savingsByAccount =
+                      savingsSnapshot.data ?? const <int?, double>{};
+                  final eligibleForLegacySavings = active
+                      .where(
+                        (account) =>
+                            account.type != FinancialAccountType.creditCard &&
+                            account.currency == appCurrencyController.code,
+                      )
+                      .toList();
+                  final unassignedSavings = savingsByAccount[null] ?? 0;
+                  final inferSingleAccountSavings =
+                      eligibleForLegacySavings.length == 1;
+                  return RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
                       children: [
-                        Expanded(
-                          child: _OverviewCard(
-                            title: l10n.text('money_in_accounts'),
-                            values: assets,
-                            icon: Icons.account_balance_outlined,
-                            accent: const Color(0xFF2563EB),
-                          ),
+                        _OverviewCard(
+                          title: l10n.text('available_to_spend'),
+                          values:
+                              overview['available'] ?? const <String, double>{},
+                          icon: Icons.account_balance_wallet_outlined,
+                          accent: const Color(0xFF0C2340),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: _OverviewCard(
-                            title: l10n.text('credit_debt'),
-                            values: debts,
-                            icon: Icons.credit_card_outlined,
-                            accent: const Color(0xFFDC2626),
-                          ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _OverviewCard(
+                                title: l10n.text('money_in_accounts'),
+                                values: assets,
+                                icon: Icons.account_balance_outlined,
+                                accent: const Color(0xFF606060),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _OverviewCard(
+                                title: l10n.text('credit_debt'),
+                                values: debts,
+                                icon: Icons.credit_card_outlined,
+                                accent: const Color(0xFF4D4D4D),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    _OverviewCard(
-                      title: l10n.text('allocated_savings_and_goals'),
-                      values: overview['allocated_savings'] ?? const {},
-                      icon: Icons.savings_outlined,
-                      accent: const Color(0xFF15803D),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            l10n.text('my_accounts'),
-                            style: const TextStyle(
-                              color: Color(0xFF0F172A),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 18,
+                        const SizedBox(height: 10),
+                        _OverviewCard(
+                          title: l10n.text('allocated_savings_and_goals'),
+                          values: overview['allocated_savings'] ?? const {},
+                          icon: Icons.savings_outlined,
+                          accent: const Color(0xFF646464),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                l10n.text('my_accounts'),
+                                style: const TextStyle(
+                                  color: Color(0xFF0F172A),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: !_canTransfer(active)
+                                  ? null
+                                  : () => _openTransfer(active),
+                              icon: const Icon(
+                                Icons.swap_horiz_rounded,
+                                size: 18,
+                              ),
+                              label: Text(l10n.text('transfer')),
+                            ),
+                          ],
+                        ),
+                        if (accounts.isEmpty)
+                          _EmptyAccountsCard(onCreate: () => _openForm())
+                        else
+                          ...accounts.map((account) {
+                            final linkedSavings =
+                                savingsByAccount[account.id] ?? 0;
+                            final inferredSavings =
+                                inferSingleAccountSavings &&
+                                    account.id ==
+                                        eligibleForLegacySavings.single.id
+                                ? unassignedSavings
+                                : 0.0;
+                            final allocatedSavings =
+                                linkedSavings + inferredSavings;
+                            return _AccountCard(
+                              account: account,
+                              realBalance:
+                                  account.balance +
+                                  (linkedSavings > 0 ? linkedSavings : 0),
+                              allocatedSavings: allocatedSavings,
+                              availableBalance:
+                                  account.balance - inferredSavings,
+                              onTap: () => _openDetail(account),
+                            );
+                          }),
+                        if (unassignedSavings > 0 && !inferSingleAccountSavings)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4, bottom: 12),
+                            child: Text(
+                              '${l10n.text('unassigned_savings_account_label')}: '
+                              '${_money(unassignedSavings, appCurrencyController.code)}',
+                              style: const TextStyle(
+                                color: Color(0xFF727272),
+                                fontSize: 12,
+                              ),
                             ),
                           ),
-                        ),
-                        TextButton.icon(
-                          onPressed: !_canTransfer(active)
-                              ? null
-                              : () => _openTransfer(active),
-                          icon: const Icon(Icons.swap_horiz_rounded, size: 18),
-                          label: Text(l10n.text('transfer')),
+                        const SizedBox(height: 8),
+                        FilledButton.icon(
+                          onPressed: () => _openForm(),
+                          icon: const Icon(Icons.add),
+                          label: Text(l10n.text('new_account')),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF0C2340),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
                         ),
                       ],
                     ),
-                    if (accounts.isEmpty)
-                      _EmptyAccountsCard(onCreate: () => _openForm())
-                    else
-                      ...accounts.map(
-                        (account) => _AccountCard(
-                          account: account,
-                          onTap: () => _openDetail(account),
-                        ),
-                      ),
-                    const SizedBox(height: 8),
-                    FilledButton.icon(
-                      onPressed: () => _openForm(),
-                      icon: const Icon(Icons.add),
-                      label: Text(l10n.text('new_account')),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF0C2340),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               );
             },
           );
@@ -221,7 +287,7 @@ class _OverviewCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
+      border: Border.all(color: const Color(0xFFE7E7E7)),
     ),
     child: Row(
       children: [
@@ -233,7 +299,7 @@ class _OverviewCard extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF727272)),
               ),
               const SizedBox(height: 4),
               if (values.isEmpty)
@@ -257,8 +323,17 @@ class _OverviewCard extends StatelessWidget {
 }
 
 class _AccountCard extends StatelessWidget {
-  const _AccountCard({required this.account, required this.onTap});
+  const _AccountCard({
+    required this.account,
+    required this.realBalance,
+    required this.allocatedSavings,
+    required this.availableBalance,
+    required this.onTap,
+  });
   final FinancialAccount account;
+  final double realBalance;
+  final double allocatedSavings;
+  final double availableBalance;
   final VoidCallback onTap;
 
   @override
@@ -266,14 +341,14 @@ class _AccountCard extends StatelessWidget {
     final credit = account.type == FinancialAccountType.creditCard;
     final color = account.isActive
         ? const Color(0xFF0C2340)
-        : const Color(0xFF94A3B8);
+        : const Color(0xFFA1A1A1);
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        side: const BorderSide(color: Color(0xFFE7E7E7)),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -283,7 +358,7 @@ class _AccountCard extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: MovaDesign.canvas,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 child: Icon(_accountIcon(account.type), color: color),
               ),
               const SizedBox(width: 12),
@@ -300,7 +375,7 @@ class _AccountCard extends StatelessWidget {
                       '${context.l10n.text('account_type_${account.type.name}')}'
                       '${account.institution.isEmpty ? '' : ' · ${account.institution}'}',
                       style: const TextStyle(
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF727272),
                         fontSize: 12,
                       ),
                     ),
@@ -308,7 +383,7 @@ class _AccountCard extends StatelessWidget {
                       Text(
                         context.l10n.text('inactive'),
                         style: const TextStyle(
-                          color: Color(0xFFB45309),
+                          color: Color(0xFF626262),
                           fontSize: 11,
                         ),
                       ),
@@ -319,18 +394,45 @@ class _AccountCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  if (!credit && account.isActive && allocatedSavings > 0)
+                    Text(
+                      context.l10n.text('account_real_balance_label'),
+                      style: const TextStyle(
+                        color: Color(0xFF727272),
+                        fontSize: 10,
+                      ),
+                    ),
                   Text(
-                    _money(account.balance, account.currency),
+                    _money(realBalance, account.currency),
                     style: TextStyle(
-                      color: credit ? const Color(0xFFB42318) : color,
+                      color: credit ? const Color(0xFF414141) : color,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+                  if (!credit && account.isActive && allocatedSavings > 0)
+                    Text(
+                      '${context.l10n.text('account_available_label')}: '
+                      '${_money(availableBalance, account.currency)}',
+                      style: const TextStyle(
+                        color: Color(0xFF0C2340),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  if (!credit && account.isActive && allocatedSavings > 0)
+                    Text(
+                      '${context.l10n.text('account_allocated_label')}: '
+                      '${_money(allocatedSavings, account.currency)}',
+                      style: const TextStyle(
+                        color: Color(0xFF727272),
+                        fontSize: 10,
+                      ),
+                    ),
                   if (credit)
                     Text(
                       '${context.l10n.text('credit_available')}: ${_money(account.availableCredit, account.currency)}',
                       style: const TextStyle(
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF727272),
                         fontSize: 10,
                       ),
                     ),
@@ -354,7 +456,7 @@ class _EmptyAccountsCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
+      border: Border.all(color: const Color(0xFFE7E7E7)),
     ),
     child: Column(
       children: [
@@ -459,12 +561,12 @@ class _FinancialAccountFormScreenState
     final l10n = context.l10n;
     final credit = _type == FinancialAccountType.creditCard;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           l10n.text(widget.account == null ? 'new_account' : 'edit_account'),
         ),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
       body: Form(
         key: _formKey,
@@ -641,10 +743,10 @@ class _FinancialAccountDetailsScreenState
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(widget.account.name),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           IconButton(
             tooltip: l10n.text('edit_account'),
@@ -675,21 +777,21 @@ class _FinancialAccountDetailsScreenState
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: const Color(0xFFE7E7E7)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         l10n.text('account_type_${account.type.name}'),
-                        style: const TextStyle(color: Color(0xFF64748B)),
+                        style: const TextStyle(color: Color(0xFF727272)),
                       ),
                       const SizedBox(height: 5),
                       Text(
                         _money(account.balance, account.currency),
                         style: TextStyle(
                           color: credit
-                              ? const Color(0xFFB42318)
+                              ? const Color(0xFF414141)
                               : const Color(0xFF0C2340),
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
@@ -699,7 +801,7 @@ class _FinancialAccountDetailsScreenState
                         const SizedBox(height: 5),
                         Text(
                           '${l10n.text('credit_available')}: ${_money(account.availableCredit, account.currency)} / ${_money(account.creditLimit ?? 0, account.currency)}',
-                          style: const TextStyle(color: Color(0xFF64748B)),
+                          style: const TextStyle(color: Color(0xFF727272)),
                         ),
                       ],
                       const Divider(height: 24),
@@ -770,7 +872,7 @@ class _FinancialAccountDetailsScreenState
                           color: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
-                            side: const BorderSide(color: Color(0xFFE2E8F0)),
+                            side: const BorderSide(color: Color(0xFFE7E7E7)),
                           ),
                           child: ListTile(
                             leading: Icon(
@@ -780,8 +882,8 @@ class _FinancialAccountDetailsScreenState
                                   ? Icons.south_west_rounded
                                   : Icons.arrow_outward_rounded,
                               color: isOutflow
-                                  ? const Color(0xFFDC2626)
-                                  : const Color(0xFF15803D),
+                                  ? const Color(0xFF4D4D4D)
+                                  : const Color(0xFF646464),
                             ),
                             title: Text(title),
                             subtitle: Text(
@@ -884,10 +986,10 @@ class _TransferScreenState extends State<TransferScreen> {
         )
         .toList();
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.text('transfer_money')),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
       body: Form(
         key: _formKey,
@@ -1057,7 +1159,7 @@ Widget _label(String value) => Padding(
   child: Text(
     value,
     style: const TextStyle(
-      color: Color(0xFF334155),
+      color: Color(0xFF3F3F3F),
       fontSize: 13,
       fontWeight: FontWeight.w700,
     ),
@@ -1071,11 +1173,11 @@ InputDecoration _decoration(String hint) => InputDecoration(
   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
   border: OutlineInputBorder(
     borderRadius: BorderRadius.circular(14),
-    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
   ),
   enabledBorder: OutlineInputBorder(
     borderRadius: BorderRadius.circular(14),
-    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    borderSide: const BorderSide(color: Color(0xFFE7E7E7)),
   ),
 );
 
@@ -1084,7 +1186,7 @@ Widget _detail(String label, String value) => Padding(
   child: Row(
     children: [
       Expanded(
-        child: Text(label, style: const TextStyle(color: Color(0xFF64748B))),
+        child: Text(label, style: const TextStyle(color: Color(0xFF727272))),
       ),
       Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
     ],

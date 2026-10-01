@@ -1,38 +1,40 @@
 import 'package:flutter/material.dart';
 
 abstract final class MovaDesign {
-  static const ink = Color(0xFF102A43);
-  static const navy = Color(0xFF0C2340);
-  static const deepBlue = Color(0xFF12365B);
-  static const blue = Color(0xFF1D496B);
-  static const softBlue = Color(0xFFE5F0F7);
-  static const blueGlow = Color(0x6639B8C8);
-  static const muted = Color(0xFF64748B);
-  static const canvas = Color(0xFFF3F6FA);
+  static const ink = Color(0xFF101828);
+  static const navy = Color(0xFF0B1F3A);
+  static const deepBlue = Color(0xFF102B4E);
+  static const blue = Color(0xFF203957);
+  static const softBlue = Color(0xFFF2F2F2);
+  static const blueGlow = Color(0x55344B68);
+  static const muted = Color(0xFF6F6F6F);
+  static const canvas = Color(0xFFF5F6F8);
   static const surface = Colors.white;
-  static const elevatedSurface = Color(0xFFFBFCFE);
-  static const border = Color(0xFFE3EAF1);
-  static const borderHighlight = Color(0xFFB9DDE4);
-  static const accent = Color(0xFF20A6B5);
-  static const positive = Color(0xFF16845B);
-  static const positiveSoft = Color(0xFFE7F3ED);
-  static const negative = Color(0xFFB42318);
-  static const negativeSoft = Color(0xFFFBECEB);
-  static const warning = Color(0xFFB96A19);
-  static const warningSoft = Color(0xFFFFF3E3);
-  static const darkCanvas = Color(0xFF081A2B);
-  static const darkSurface = Color(0xFF142B45);
-  static const darkElevatedSurface = Color(0xFF1B3856);
-  static const darkBorder = Color(0xFF29445E);
-  static const darkText = Color(0xFFE6F4F8);
+  static const elevatedSurface = Color(0xFFFCFCFD);
+  static const border = Color(0xFFE7E7E7);
+  static const borderHighlight = Color(0xFFA1A1A1);
+  static const accent = navy;
+  static const positive = Color(0xFF182B46);
+  static const positiveSoft = Color(0xFFF2F2F2);
+  static const negative = Color(0xFF101828);
+  static const negativeSoft = Color(0xFFEEEEEE);
+  static const warning = Color(0xFF3F3F3F);
+  static const warningSoft = Color(0xFFF4F4F4);
+  static const darkCanvas = Color(0xFF0D0D0D);
+  static const darkSurface = Color(0xFF111B2B);
+  static const darkElevatedSurface = Color(0xFF1A2638);
+  static const darkBorder = Color(0xFF3F3F3F);
+  static const darkText = Color(0xFFF4F4F4);
 
   static const primaryGradient = LinearGradient(
     colors: [navy, deepBlue, blue],
+    stops: [0, .58, 1],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
   static const accentGradient = LinearGradient(
-    colors: [deepBlue, accent],
+    colors: [navy, Color(0xFF263B57)],
+    stops: [0, 1],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
@@ -50,8 +52,8 @@ class MovaSurface extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.radius = MovaDesign.radiusMedium,
-    this.color = MovaDesign.surface,
-    this.borderColor = MovaDesign.border,
+    this.color,
+    this.borderColor,
     this.elevation = false,
     this.clipBehavior = Clip.none,
   });
@@ -59,31 +61,40 @@ class MovaSurface extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final double radius;
-  final Color color;
+  final Color? color;
   final Color? borderColor;
   final bool elevation;
   final Clip clipBehavior;
 
   @override
-  Widget build(BuildContext context) => Container(
-    clipBehavior: clipBehavior,
-    padding: padding,
-    decoration: BoxDecoration(
-      color: color,
-      borderRadius: BorderRadius.circular(radius),
-      border: borderColor == null ? null : Border.all(color: borderColor!),
-      boxShadow: elevation
-          ? const [
-              BoxShadow(
-                color: Color(0x0C0C2340),
-                blurRadius: 18,
-                offset: Offset(0, 6),
-              ),
-            ]
-          : null,
-    ),
-    child: child,
-  );
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      clipBehavior: clipBehavior,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: color ?? (isDark ? MovaDesign.darkSurface : MovaDesign.surface),
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color:
+              borderColor ??
+              (isDark ? MovaDesign.darkBorder : MovaDesign.border),
+        ),
+        boxShadow: elevation
+            ? [
+                BoxShadow(
+                  color: isDark
+                      ? const Color(0x44000000)
+                      : const Color(0x0C0C2340),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
+      ),
+      child: child,
+    );
+  }
 }
 
 class MovaSectionHeader extends StatelessWidget {
@@ -105,7 +116,7 @@ class MovaSectionHeader extends StatelessWidget {
         child: Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: MovaDesign.ink,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w800,
             letterSpacing: -.15,
           ),
@@ -122,56 +133,62 @@ class MovaProgressBar extends StatelessWidget {
     required this.value,
     this.height = 8,
     this.color = MovaDesign.accent,
-    this.backgroundColor = const Color(0xFFE7EDF3),
+    this.backgroundColor,
     this.duration = const Duration(milliseconds: 450),
   });
 
   final double value;
   final double height;
   final Color color;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final Duration duration;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) => Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(height),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(height),
-        child: TweenAnimationBuilder<double>(
-          tween: Tween<double>(end: value.clamp(0, 1)),
-          duration: duration,
-          curve: Curves.easeOutCubic,
-          builder: (context, animatedValue, _) => Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              width: constraints.maxWidth * animatedValue,
-              height: height,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [color, Color.lerp(color, Colors.white, .18)!],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.circular(height),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: .24),
-                    blurRadius: 7,
-                    offset: const Offset(0, 1),
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final trackColor =
+        backgroundColor ??
+        (isDark ? MovaDesign.darkElevatedSurface : const Color(0xFFECECEC));
+    return LayoutBuilder(
+      builder: (context, constraints) => Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: trackColor,
+          borderRadius: BorderRadius.circular(height),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(height),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(end: value.clamp(0, 1)),
+            duration: duration,
+            curve: Curves.easeOutCubic,
+            builder: (context, animatedValue, _) => Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                width: constraints.maxWidth * animatedValue,
+                height: height,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [color, Color.lerp(color, Colors.white, .18)!],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
-                ],
+                  borderRadius: BorderRadius.circular(height),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: .24),
+                      blurRadius: 7,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class MovaAmbientGlow extends StatelessWidget {
@@ -193,6 +210,30 @@ class MovaAmbientGlow extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
+        ),
+      ),
+    ),
+  );
+}
+
+class MovaRadialHighlight extends StatelessWidget {
+  const MovaRadialHighlight({super.key, this.color = MovaDesign.accent});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: const Alignment(0.85, -0.9),
+          radius: 1.25,
+          colors: [
+            color.withValues(alpha: .2),
+            color.withValues(alpha: .07),
+            color.withValues(alpha: 0),
+          ],
+          stops: const [0, .42, 1],
         ),
       ),
     ),
@@ -226,7 +267,7 @@ class MovaEmptyState extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: const BoxDecoration(
-              color: Color(0xFFE8F3F5),
+              color: MovaDesign.softBlue,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: MovaDesign.accent, size: 29),
@@ -235,8 +276,10 @@ class MovaEmptyState extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium
-                ?.copyWith(color: MovaDesign.ink, fontWeight: FontWeight.w800),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 6),
           Text(

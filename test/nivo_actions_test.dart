@@ -320,10 +320,28 @@ void main() {
     });
 
     test('adds general savings through MOVA savings handling', () async {
+      final accountId = await database.createFinancialAccount(
+        FinancialAccount(
+          id: 0,
+          name: 'Efectivo',
+          type: FinancialAccountType.cash,
+          currency: 'MXN',
+          initialBalance: 1000,
+          institution: '',
+          lastFour: '',
+          icon: 'payments',
+          isActive: true,
+          creditLimit: null,
+          createdAt: now,
+        ),
+      );
+      expect((await database.getFinancialAccounts()).single.currency, 'MXN');
+      expect(await database.getCurrency(), 'MXN');
       final response = await engine.ask('Agrega \$300 a mi ahorro sin meta.');
 
       expect(response.text, contains('a tu ahorro sin meta'));
       expect(await database.getUnassignedSavings(), 300);
+      expect((await database.getFinancialAccount(accountId))!.balance, 700);
     });
 
     test(

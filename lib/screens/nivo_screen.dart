@@ -212,9 +212,9 @@ class _NivoScreenState extends State<NivoScreen> {
         if (!didPop) Navigator.of(context).pop(_completedAction);
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4F7FB),
+        backgroundColor: const Color(0xFFF3F6FA),
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF4F7FB),
+          backgroundColor: const Color(0xFFF3F6FA),
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
@@ -224,7 +224,7 @@ class _NivoScreenState extends State<NivoScreen> {
             style: IconButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: _navy,
-              side: const BorderSide(color: Color(0xFFE4EBF2)),
+              side: const BorderSide(color: Color(0xFFE1E7EF)),
             ),
             icon: const Icon(Icons.arrow_back_rounded),
           ),
@@ -246,8 +246,10 @@ class _NivoScreenState extends State<NivoScreen> {
                   ),
                   Text(
                     context.l10n.nivoText('Tu asistente financiero local'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Color(0xFF64748B),
+                      color: Color(0xFF667085),
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                     ),
@@ -256,10 +258,10 @@ class _NivoScreenState extends State<NivoScreen> {
               ),
             ],
           ),
-          actions: const [
+          actions: [
             Padding(
-              padding: EdgeInsets.only(right: 18),
-              child: _LocalStatusMark(),
+              padding: const EdgeInsets.only(right: 18),
+              child: _LocalStatusMark(label: context.l10n.nivoText('Privado')),
             ),
           ],
         ),
@@ -296,11 +298,10 @@ class _NivoScreenState extends State<NivoScreen> {
   Widget _buildEmptyState() {
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 26),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: constraints.maxHeight - 38),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _WelcomeCard(
@@ -309,50 +310,62 @@ class _NivoScreenState extends State<NivoScreen> {
                   'Puedo ayudarte a entender tus finanzas. Pregúntame sobre tus movimientos, metas o próximos pagos.',
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 27),
               Row(
                 children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE2F4F6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.touch_app_rounded,
-                      color: Color(0xFF16899B),
-                      size: 19,
+                  Expanded(
+                    child: Text(
+                      context.l10n.nivoText('Prueba preguntando'),
+                      style: const TextStyle(
+                        color: Color(0xFF0C2340),
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -.25,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 11),
-                  Text(
-                    context.l10n.nivoText('Prueba preguntando'),
-                    style: const TextStyle(
-                      color: _navy,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  const Icon(
+                    Icons.bolt_rounded,
+                    size: 19,
+                    color: Color(0xFF526B89),
                   ),
                 ],
               ),
-              const SizedBox(height: 13),
-              ..._suggestions.map((suggestion) {
-                final index = _suggestions.indexOf(suggestion);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _SuggestionButton(
-                    text: context.l10n.nivoText(suggestion),
-                    icon: switch (index) {
-                      0 => Icons.trending_down_rounded,
-                      1 => Icons.account_balance_wallet_rounded,
-                      2 => Icons.flag_rounded,
-                      _ => Icons.event_available_rounded,
-                    },
-                    onPressed: () => _send(suggestion),
-                  ),
-                );
-              }),
+              const SizedBox(height: 4),
+              Text(
+                context.l10n.nivoText('Elige una consulta para empezar'),
+                style: const TextStyle(
+                  color: Color(0xFF667085),
+                  fontSize: 12.5,
+                ),
+              ),
+              const SizedBox(height: 14),
+              LayoutBuilder(
+                builder: (context, gridConstraints) {
+                  final itemWidth = (gridConstraints.maxWidth - 10) / 2;
+                  return Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      for (var index = 0; index < _suggestions.length; index++)
+                        SizedBox(
+                          width: itemWidth,
+                          child: _SuggestionButton(
+                            compact: true,
+                            text: context.l10n.nivoText(_suggestions[index]),
+                            icon: switch (index) {
+                              0 => Icons.trending_down_rounded,
+                              1 => Icons.account_balance_wallet_rounded,
+                              2 => Icons.flag_rounded,
+                              _ => Icons.event_available_rounded,
+                            },
+                            onPressed: () => _send(_suggestions[index]),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -372,66 +385,113 @@ class _WelcomeCard extends StatelessWidget {
     width: double.infinity,
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        colors: [Color(0xFF0C2340), Color(0xFF1D496B), Color(0xFF197D8D)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
+      color: const Color(0xFF0C2340),
       borderRadius: BorderRadius.circular(28),
       boxShadow: const [
         BoxShadow(
-          color: Color(0x260C2340),
-          blurRadius: 22,
-          offset: Offset(0, 10),
+          color: Color(0x24102038),
+          blurRadius: 24,
+          offset: Offset(0, 12),
         ),
       ],
     ),
     child: Stack(
       children: [
-        const Positioned(
-          top: -44,
-          right: -22,
-          child: _GlowOrb(size: 150, opacity: .09),
+        Positioned(
+          top: -76,
+          right: -64,
+          child: Container(
+            width: 230,
+            height: 230,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: .08),
+                width: 1,
+              ),
+            ),
+          ),
         ),
-        const Positioned(
-          bottom: -64,
-          left: 90,
-          child: _GlowOrb(size: 170, opacity: .07),
+        Positioned(
+          top: -35,
+          right: -23,
+          child: Container(
+            width: 150,
+            height: 150,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: .08),
+                width: 1,
+              ),
+            ),
+          ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(22, 24, 22, 25),
+          padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const _NivoMark(size: 52, prominent: true),
-                  const SizedBox(width: 13),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 23,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -.4,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .1),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: .13),
                       ),
                     ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFB9D4EF),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+                        Text(
+                          context.l10n.nivoText('ASISTENTE FINANCIERO'),
+                          style: const TextStyle(
+                            color: Color(0xFFD7E4F2),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const Icon(
-                    Icons.auto_awesome_rounded,
-                    color: Color(0xFF8CE1E8),
-                    size: 23,
-                  ),
+                  const Spacer(),
+                  const _NivoMark(size: 38, prominent: true),
                 ],
               ),
               const SizedBox(height: 19),
               Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 27,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -.8,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
                 description,
                 style: const TextStyle(
-                  color: Color(0xFFE1F0F5),
-                  fontSize: 14,
-                  height: 1.55,
+                  color: Color(0xFFD3DCE8),
+                  fontSize: 13.5,
+                  height: 1.5,
                 ),
               ),
               const SizedBox(height: 20),
@@ -440,23 +500,6 @@ class _WelcomeCard extends StatelessWidget {
           ),
         ),
       ],
-    ),
-  );
-}
-
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.size, required this.opacity});
-
-  final double size;
-  final double opacity;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: Colors.white.withValues(alpha: opacity),
     ),
   );
 }
@@ -475,7 +518,7 @@ class _LocalPill extends StatelessWidget {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.lock_rounded, color: Color(0xFF8CE1E8), size: 14),
+        const Icon(Icons.lock_rounded, color: Color(0xFFC8D7E8), size: 14),
         const SizedBox(width: 6),
         Text(
           context.l10n.nivoText('Tu asistente financiero local'),
@@ -491,21 +534,30 @@ class _LocalPill extends StatelessWidget {
 }
 
 class _LocalStatusMark extends StatelessWidget {
-  const _LocalStatusMark();
+  const _LocalStatusMark({required this.label});
+
+  final String label;
 
   @override
   Widget build(BuildContext context) => Center(
-    child: Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: const Color(0xFFE2F4F6),
-        borderRadius: BorderRadius.circular(13),
-      ),
-      child: const Icon(
-        Icons.lock_outline_rounded,
-        color: Color(0xFF16899B),
-        size: 18,
+    child: Semantics(
+      label: label,
+      child: Tooltip(
+        message: label,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFFE1E7EF)),
+          ),
+          child: const Icon(
+            Icons.lock_outline_rounded,
+            color: Color(0xFF0C2340),
+            size: 17,
+          ),
+        ),
       ),
     ),
   );
@@ -522,27 +574,21 @@ class _NivoMark extends StatelessWidget {
     width: size,
     height: size,
     decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: prominent
-            ? const [Color(0xFF8CE1E8), Color(0xFF39B8C8)]
-            : const [Color(0xFFE2F4F6), Color(0xFFD5EAF0)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
+      color: prominent ? Colors.white : const Color(0xFFEAF0F7),
       borderRadius: BorderRadius.circular(size * .34),
       boxShadow: prominent
           ? const [
               BoxShadow(
-                color: Color(0x3339B8C8),
-                blurRadius: 14,
-                offset: Offset(0, 5),
+                color: Color(0x22000000),
+                blurRadius: 10,
+                offset: Offset(0, 3),
               ),
             ]
           : null,
     ),
     child: Icon(
       Icons.insights_rounded,
-      color: prominent ? const Color(0xFF0C2340) : const Color(0xFF16899B),
+      color: const Color(0xFF0C2340),
       size: size * .53,
     ),
   );
@@ -552,81 +598,104 @@ class _SuggestionButton extends StatelessWidget {
   const _SuggestionButton({
     required this.text,
     required this.onPressed,
+    this.compact = false,
     this.icon = Icons.arrow_forward_rounded,
   });
 
   final String text;
   final VoidCallback? onPressed;
+  final bool compact;
   final IconData icon;
 
   @override
   Widget build(BuildContext context) => Material(
-    color: onPressed == null ? const Color(0xFFF8FAFC) : Colors.white,
-    borderRadius: BorderRadius.circular(19),
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(compact ? 18 : 19),
     child: InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(19),
+      borderRadius: BorderRadius.circular(compact ? 18 : 19),
       child: Ink(
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
+        padding: EdgeInsets.all(compact ? 13 : 12),
         decoration: BoxDecoration(
           border: Border.all(
             color: onPressed == null
-                ? const Color(0xFFE8EDF2)
-                : const Color(0xFFDCE8ED),
+                ? const Color(0xFFE8EDF3)
+                : const Color(0xFFDFE6EF),
           ),
-          borderRadius: BorderRadius.circular(19),
-          boxShadow: onPressed == null
-              ? null
-              : const [
-                  BoxShadow(
-                    color: Color(0x090C2340),
-                    blurRadius: 10,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFE5F5F6), Color(0xFFDDF0F3)],
-                ),
-                borderRadius: BorderRadius.circular(13),
-              ),
-              child: Icon(icon, color: const Color(0xFF16899B), size: 19),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: Color(0xFF1E334A),
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  height: 1.3,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              width: 29,
-              height: 29,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F6F8),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Color(0xFF36577D),
-                size: 16,
-              ),
+          borderRadius: BorderRadius.circular(compact ? 18 : 19),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x080C2340),
+              blurRadius: 12,
+              offset: Offset(0, 4),
             ),
           ],
         ),
+        child: compact
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAF0F7),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: const Color(0xFF0C2340), size: 19),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    text,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF182230),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Icon(
+                    Icons.arrow_outward_rounded,
+                    color: Color(0xFF526B89),
+                    size: 16,
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAF0F7),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: Icon(icon, color: const Color(0xFF0C2340), size: 19),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: const TextStyle(
+                        color: Color(0xFF1E334A),
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Color(0xFF526B89),
+                    size: 17,
+                  ),
+                ],
+              ),
       ),
     ),
   );
@@ -689,7 +758,7 @@ class _MessageBubble extends StatelessWidget {
                     const Text(
                       'Nivo',
                       style: TextStyle(
-                        color: Color(0xFF36577D),
+                        color: Color(0xFF535353),
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -704,17 +773,10 @@ class _MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 14),
               decoration: BoxDecoration(
                 color: isUser
-                    ? null
+                    ? const Color(0xFF0C2340)
                     : message.isError
-                    ? const Color(0xFFFFF7ED)
+                    ? const Color(0xFFFFF7F5)
                     : Colors.white,
-                gradient: isUser
-                    ? const LinearGradient(
-                        colors: [Color(0xFF12365B), Color(0xFF0C2340)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
@@ -725,8 +787,8 @@ class _MessageBubble extends StatelessWidget {
                     ? null
                     : Border.all(
                         color: message.isError
-                            ? const Color(0xFFFED7AA)
-                            : const Color(0xFFE3EBF0),
+                            ? const Color(0xFFFECACA)
+                            : const Color(0xFFE1E7EF),
                       ),
                 boxShadow: const [
                   BoxShadow(
@@ -742,7 +804,7 @@ class _MessageBubble extends StatelessWidget {
                   color: isUser
                       ? Colors.white
                       : message.isError
-                      ? const Color(0xFF9A3412)
+                      ? const Color(0xFF7A271A)
                       : const Color(0xFF1E293B),
                   fontSize: 14,
                   height: 1.45,
@@ -755,7 +817,7 @@ class _MessageBubble extends StatelessWidget {
                 child: Text(
                   context.l10n.nivoText(message.suggestionsError!),
                   style: const TextStyle(
-                    color: Color(0xFF9A3412),
+                    color: Color(0xFF474747),
                     fontSize: 12,
                   ),
                 ),
@@ -765,8 +827,8 @@ class _MessageBubble extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 9, left: 4, bottom: 2),
                 child: Text(
                   context.l10n.nivoText('Puedes consultar también:'),
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -812,7 +874,7 @@ class _ProcessingIndicator extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFE3EBF0)),
+                border: Border.all(color: const Color(0xFFEAEAEA)),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x0D0C2340),
@@ -829,14 +891,14 @@ class _ProcessingIndicator extends StatelessWidget {
                     height: 15,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Color(0xFF16899B),
+                      color: Color(0xFF727272),
                     ),
                   ),
                   const SizedBox(width: 9),
                   Text(
                     context.l10n.nivoText('Nivo está pensando…'),
                     style: const TextStyle(
-                      color: Color(0xFF36577D),
+                      color: Color(0xFF535353),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),

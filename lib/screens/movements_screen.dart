@@ -22,11 +22,22 @@ class _MovementsScreenState extends State<MovementsScreen> {
   @override
   void initState() {
     super.initState();
+    DatabaseHelper.financialDataVersion.addListener(_refresh);
     _load();
+  }
+
+  @override
+  void dispose() {
+    DatabaseHelper.financialDataVersion.removeListener(_refresh);
+    super.dispose();
   }
 
   void _load() {
     _transactions = _database.getTransactions();
+  }
+
+  void _refresh() {
+    if (mounted) setState(_load);
   }
 
   bool _matchesFilter(Map<String, dynamic> transaction) {
@@ -55,13 +66,13 @@ class _MovementsScreenState extends State<MovementsScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           l10n.text('movements'),
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: MovaDesign.canvas,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: MovaDesign.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -102,7 +113,7 @@ class _MovementsScreenState extends State<MovementsScreen> {
                         width: 42,
                         height: 42,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE5F1F4),
+                          color: const Color(0xFFEFEFEF),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
@@ -168,7 +179,7 @@ class _MovementsScreenState extends State<MovementsScreen> {
                               selected: _filter == filter,
                               onSelected: (_) =>
                                   setState(() => _filter = filter),
-                              selectedColor: const Color(0xFFE2F1F3),
+                              selectedColor: const Color(0xFFEEEEEE),
                               labelStyle: TextStyle(
                                 color: _filter == filter
                                     ? MovaDesign.navy
@@ -177,7 +188,7 @@ class _MovementsScreenState extends State<MovementsScreen> {
                               ),
                               side: BorderSide(
                                 color: _filter == filter
-                                    ? const Color(0xFFB8DDE1)
+                                    ? const Color(0xFFD5D5D5)
                                     : MovaDesign.border,
                               ),
                               shape: RoundedRectangleBorder(

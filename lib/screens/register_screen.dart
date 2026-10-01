@@ -151,10 +151,11 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   OutlineInputBorder _buildBorder({
     Color color = RegisterScreen.inputBorderGrey,
+    double width = 1,
   }) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: color, width: 1.2),
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: color, width: width),
     );
   }
 
@@ -165,15 +166,37 @@ class _RegisterScreenState extends State<RegisterScreen>
   }) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-      prefixIcon: Icon(prefixIcon, color: Color(0xFF94A3B8), size: 20),
+      hintStyle: const TextStyle(
+        color: Color(0xFF98A2B3),
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      prefixIcon: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+        child: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: const Color(0xFFE9EFF6),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(prefixIcon, color: RegisterScreen.darkNavy, size: 20),
+        ),
+      ),
+      prefixIconConstraints: const BoxConstraints(minWidth: 62, minHeight: 56),
       suffixIcon: suffixIcon,
+      suffixIconConstraints: const BoxConstraints(minWidth: 52, minHeight: 52),
       filled: true,
-      fillColor: Color(0xFFF8FAFC),
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      fillColor: const Color(0xFFF8FAFC),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
       border: _buildBorder(),
-      enabledBorder: _buildBorder(),
-      focusedBorder: _buildBorder(color: RegisterScreen.primaryTeal),
+      enabledBorder: _buildBorder(color: const Color(0xFFD7E0EB)),
+      focusedBorder: _buildBorder(color: RegisterScreen.darkNavy, width: 1.8),
+      errorBorder: _buildBorder(color: const Color(0xFF475467)),
+      focusedErrorBorder: _buildBorder(
+        color: const Color(0xFF101828),
+        width: 1.7,
+      ),
     );
   }
 
@@ -452,32 +475,29 @@ class _RegisterScreenState extends State<RegisterScreen>
         child: LayoutBuilder(
           builder: (context, constraints) {
             final l10n = context.l10n;
-            final compact = constraints.maxHeight < 730;
-            final bottomInset =
-                MediaQuery.viewPaddingOf(context).bottom +
-                MediaQuery.viewInsetsOf(context).bottom;
+            final keyboardIsOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+            final compact = constraints.maxHeight < 820;
             return FadeTransition(
               opacity: _fadeAnimation,
               child: SingleChildScrollView(
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
-                physics: AlwaysScrollableScrollPhysics(),
+                physics: keyboardIsOpen
+                    ? const ClampingScrollPhysics()
+                    : const NeverScrollableScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   horizontal: compact ? 16 : 20,
                   vertical: compact ? 8 : 16,
-                ).copyWith(bottom: (compact ? 8 : 16) + bottomInset),
+                ),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight:
-                        constraints.maxHeight -
-                        (compact ? 16 : 32) -
-                        bottomInset,
+                    minHeight: constraints.maxHeight - (compact ? 16 : 32),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        margin: EdgeInsets.only(top: compact ? 2 : 8),
+                        margin: EdgeInsets.only(top: compact ? 0 : 8),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(22),
                           boxShadow: [
@@ -494,16 +514,16 @@ class _RegisterScreenState extends State<RegisterScreen>
                           borderRadius: BorderRadius.circular(22),
                           child: Image.asset(
                             'assets/images/logo.png',
-                            height: compact ? 58 : 82,
-                            width: compact ? 58 : 82,
+                            height: compact ? 50 : 76,
+                            width: compact ? 50 : 76,
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                      SizedBox(height: compact ? 8 : 16),
+                      SizedBox(height: compact ? 6 : 16),
                       Container(
                         width: double.infinity,
-                        padding: EdgeInsets.all(compact ? 16 : 24),
+                        padding: EdgeInsets.all(compact ? 14 : 24),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
@@ -533,11 +553,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 _stepBadge('3', true),
                               ],
                             ),
-                            SizedBox(height: 12),
+                            SizedBox(height: compact ? 8 : 12),
                             Text(
                               l10n.text('create_your_account'),
                               style: TextStyle(
-                                fontSize: compact ? 20 : 22,
+                                fontSize: compact ? 19 : 22,
                                 fontWeight: FontWeight.bold,
                                 color: RegisterScreen.darkNavy,
                                 letterSpacing: -0.5,
@@ -552,22 +572,39 @@ class _RegisterScreenState extends State<RegisterScreen>
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            SizedBox(height: compact ? 12 : 24),
+                            SizedBox(height: compact ? 8 : 24),
                             _buildLabel(l10n.text('name')),
-                            SizedBox(height: 6),
+                            SizedBox(height: compact ? 4 : 6),
                             TextField(
                               controller: _nameController,
+                              textCapitalization: TextCapitalization.words,
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.name],
+                              cursorColor: RegisterScreen.primaryTeal,
+                              style: const TextStyle(
+                                color: Color(0xFF101828),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
                               decoration: _inputDecoration(
                                 hintText: l10n.text('enter_name'),
                                 prefixIcon: Icons.person_outline,
                               ),
                             ),
-                            SizedBox(height: compact ? 9 : 16),
+                            SizedBox(height: compact ? 6 : 16),
                             _buildLabel(l10n.text('email')),
-                            SizedBox(height: 6),
+                            SizedBox(height: compact ? 4 : 6),
                             TextField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.email],
+                              cursorColor: RegisterScreen.primaryTeal,
+                              style: const TextStyle(
+                                color: Color(0xFF101828),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
                               onChanged: (_) => setState(() {
                                 _emailTouched = true;
                               }),
@@ -580,19 +617,28 @@ class _RegisterScreenState extends State<RegisterScreen>
                                             ? Icons.check_circle_rounded
                                             : Icons.error_outline_rounded,
                                         color: _validEmail
-                                            ? Color(0xFF16A34A)
-                                            : Color(0xFFDC2626),
+                                            ? Color(0xFF0C2340)
+                                            : Color(0xFF667085),
                                         size: 19,
                                       )
                                     : null,
                               ),
                             ),
-                            SizedBox(height: compact ? 9 : 16),
+                            SizedBox(height: compact ? 6 : 16),
                             _buildLabel(l10n.text('password')),
-                            SizedBox(height: 6),
+                            SizedBox(height: compact ? 4 : 6),
                             TextField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.next,
+                              autofillHints: const [AutofillHints.newPassword],
+                              cursorColor: RegisterScreen.primaryTeal,
+                              style: const TextStyle(
+                                color: Color(0xFF101828),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: .2,
+                              ),
                               onChanged: (_) => setState(() {
                                 _passwordTouched = true;
                               }),
@@ -615,7 +661,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 ),
                               ),
                             ),
-                            SizedBox(height: 7),
+                            SizedBox(height: compact ? 5 : 7),
                             Row(
                               children: [
                                 Expanded(
@@ -626,11 +672,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                                       value: _passwordTouched
                                           ? _passwordScore / 4
                                           : 0,
-                                      backgroundColor: Color(0xFFE8EEF4),
+                                      backgroundColor: Color(0xFFE4E7EC),
                                       valueColor: AlwaysStoppedAnimation(
                                         _passwordScore >= 3
-                                            ? Color(0xFF16A34A)
-                                            : Color(0xFFF59E0B),
+                                            ? Color(0xFF0C2340)
+                                            : Color(0xFF98A2B3),
                                       ),
                                     ),
                                   ),
@@ -646,18 +692,26 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
                                     color: _passwordScore >= 3
-                                        ? Color(0xFF16A34A)
+                                        ? Color(0xFF0C2340)
                                         : RegisterScreen.subtitleGrey,
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: compact ? 9 : 16),
+                            SizedBox(height: compact ? 6 : 16),
                             _buildLabel(l10n.text('repeat_password')),
-                            SizedBox(height: 6),
+                            SizedBox(height: compact ? 4 : 6),
                             TextField(
                               controller: _confirmPasswordController,
                               obscureText: _obscureConfirmPassword,
+                              textInputAction: TextInputAction.done,
+                              cursorColor: RegisterScreen.primaryTeal,
+                              style: const TextStyle(
+                                color: Color(0xFF101828),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: .2,
+                              ),
                               decoration: _inputDecoration(
                                 hintText: l10n.text('repeat_password'),
                                 prefixIcon: Icons.lock_outline,
@@ -678,7 +732,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 ),
                               ),
                             ),
-                            SizedBox(height: 16),
+                            SizedBox(height: compact ? 8 : 16),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -747,7 +801,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 ),
                               ],
                             ),
-                            SizedBox(height: 24),
+                            SizedBox(height: compact ? 12 : 24),
                             Container(
                               width: double.infinity,
                               height: 52,
@@ -805,7 +859,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                       ),
                       Column(
                         children: [
-                          SizedBox(height: 12),
+                          SizedBox(height: compact ? 6 : 12),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -836,7 +890,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                               ),
                             ],
                           ),
-                          SizedBox(height: 12),
+                          SizedBox(height: compact ? 6 : 12),
                         ],
                       ),
                     ],
@@ -856,9 +910,10 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
           color: RegisterScreen.darkNavy,
+          letterSpacing: .15,
         ),
       ),
     );
@@ -916,10 +971,12 @@ class _LegalDocumentSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const navy = Color(0xFF0C2340);
+    const muted = Color(0xFF667085);
     return FractionallySizedBox(
       heightFactor: .9,
       child: Material(
-        color: Color(0xFFF7FAFC),
+        color: const Color(0xFFF4F7FB),
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         child: SafeArea(
           top: false,
@@ -930,127 +987,217 @@ class _LegalDocumentSheet extends StatelessWidget {
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Color(0xFFCBD5E1),
+                  color: const Color(0xFFCBD5E1),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(22, 20, 16, 18),
-                child: Row(
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                padding: const EdgeInsets.fromLTRB(20, 18, 14, 18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF183B60), navy],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: navy.withValues(alpha: .18),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF1D466F), Color(0xFF0C2340)],
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: .12),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: .16),
+                            ),
+                          ),
+                          child: Icon(icon, color: Colors.white, size: 23),
                         ),
-                        borderRadius: BorderRadius.circular(17),
-                      ),
-                      child: Icon(icon, color: Colors.white, size: 26),
-                    ),
-                    SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: TextStyle(
-                              color: RegisterScreen.darkNavy,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -.35,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                movaText('INFORMACIÓN LEGAL DE MOVA'),
+                                style: const TextStyle(
+                                  color: Color(0xFFC8D7E8),
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 5),
-                          Text(
-                            movaText('Actualizado el 23 de septiembre de 2026'),
-                            style: TextStyle(
-                              color: RegisterScreen.subtitleGrey,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w600,
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          tooltip: movaText('Cerrar'),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.white.withValues(
+                              alpha: .12,
                             ),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(38, 38),
                           ),
-                        ],
+                          icon: const Icon(Icons.close_rounded, size: 19),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Color(0xFFE0E8F1),
+                        fontSize: 12,
+                        height: 1.4,
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Color(0xFFEAF0F5),
-                      ),
-                      icon: Icon(
-                        Icons.close_rounded,
-                        color: RegisterScreen.darkNavy,
-                        size: 19,
-                      ),
+                    const SizedBox(height: 13),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.verified_user_outlined,
+                          color: Color(0xFFC8D7E8),
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          movaText('Actualizado el 23 de septiembre de 2026'),
+                          style: const TextStyle(
+                            color: Color(0xFFC8D7E8),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 22),
-                padding: EdgeInsets.all(13),
-                decoration: BoxDecoration(
-                  color: Color(0xFFEAF2F8),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Color(0xFFD8E5F0)),
-                ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 0, 22, 2),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      color: RegisterScreen.primaryTeal,
-                      size: 19,
+                    Text(
+                      movaText('CONTENIDO'),
+                      style: const TextStyle(
+                        color: muted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      ),
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: RegisterScreen.darkNavy,
-                          fontSize: 11.5,
-                          height: 1.35,
-                        ),
+                      child: Container(
+                        height: 1,
+                        color: const Color(0xFFE1E7EF),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${sections.length} ${movaText('secciones')}',
+                      style: const TextStyle(
+                        color: muted,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Expanded(
                 child: ListView.separated(
-                  padding: EdgeInsets.fromLTRB(22, 8, 22, 22),
+                  padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
                   itemCount: sections.length,
-                  separatorBuilder: (_, index) => SizedBox(height: 8),
+                  separatorBuilder: (_, index) => const SizedBox(height: 9),
                   itemBuilder: (context, index) {
                     final section = sections[index];
                     return Container(
-                      padding: EdgeInsets.fromLTRB(16, 15, 16, 16),
+                      padding: const EdgeInsets.fromLTRB(14, 14, 16, 15),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Color(0xFFE3EBF2)),
+                        borderRadius: BorderRadius.circular(17),
+                        border: Border.all(color: const Color(0xFFE5EAF1)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: navy.withValues(alpha: .035),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      child: Column(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            section.title,
-                            style: TextStyle(
-                              color: RegisterScreen.darkNavy,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
+                          Container(
+                            width: 32,
+                            height: 32,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEAF0F7),
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                            child: Text(
+                              '${index + 1}'.padLeft(2, '0'),
+                              style: const TextStyle(
+                                color: navy,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: .3,
+                              ),
                             ),
                           ),
-                          SizedBox(height: 7),
-                          Text(
-                            movaText(section.body),
-                            style: TextStyle(
-                              color: RegisterScreen.subtitleGrey,
-                              fontSize: 12,
-                              height: 1.48,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  section.title,
+                                  style: const TextStyle(
+                                    color: navy,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.25,
+                                  ),
+                                ),
+                                const SizedBox(height: 7),
+                                Text(
+                                  movaText(section.body),
+                                  style: const TextStyle(
+                                    color: muted,
+                                    fontSize: 12,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -1060,25 +1207,45 @@ class _LegalDocumentSheet extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(22, 0, 22, 14),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: RegisterScreen.primaryTeal,
-                      foregroundColor: Colors.white,
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(19),
+                    boxShadow: [
+                      BoxShadow(
+                        color: navy.withValues(alpha: .1),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                    child: Text(
-                      movaText('Entendido'),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
+                    ],
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: navy,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(17),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.check_rounded, size: 19),
+                          const SizedBox(width: 8),
+                          Text(
+                            movaText('Entendido'),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

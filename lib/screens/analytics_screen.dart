@@ -6,7 +6,6 @@ import 'package:mova/services/currency_controller.dart';
 import 'package:mova/services/mova_localizations.dart';
 import 'package:mova/models/subscription.dart';
 import 'package:mova/screens/subscriptions_screen.dart';
-import 'package:mova/widgets/mova_design_system.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -24,7 +23,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   void initState() {
     super.initState();
+    DatabaseHelper.financialDataVersion.addListener(_refresh);
     _load();
+  }
+
+  @override
+  void dispose() {
+    DatabaseHelper.financialDataVersion.removeListener(_refresh);
+    super.dispose();
   }
 
   void _load() {
@@ -76,12 +82,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MovaDesign.canvas,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: FutureBuilder<List<Map<String, dynamic>>>(
           future: _transactions,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
@@ -217,7 +224,7 @@ class _SubscriptionAnalyticsCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: const Color(0xFFE7E7E7)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,7 +251,7 @@ class _SubscriptionAnalyticsCard extends StatelessWidget {
                 '${active.length} ${l10n.text('active').toLowerCase()} · '
                 '${all.where((item) => item.status == SubscriptionStatus.cancelled).length} '
                 '${l10n.text('cancelled').toLowerCase()}',
-                style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                style: const TextStyle(color: Color(0xFF727272), fontSize: 12),
               ),
               if (byCategory.isNotEmpty) ...[
                 const SizedBox(height: 12),
@@ -312,7 +319,7 @@ class _Header extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: const Color(0xFFD8E1EB)),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x0A0C2340),
@@ -417,7 +424,7 @@ class _Header extends StatelessWidget {
                 l10n.text('analysis_subtitle'),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                style: TextStyle(color: Color(0xFF727272), fontSize: 12),
               ),
             ],
           ),
@@ -432,7 +439,7 @@ class _Header extends StatelessWidget {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF0C2340), Color(0xFF36577D)],
+                            colors: [Color(0xFF0C2340), Color(0xFF535353)],
                           ),
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -456,7 +463,7 @@ class _Header extends StatelessWidget {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF0C2340), Color(0xFF36577D)],
+                        colors: [Color(0xFF0C2340), Color(0xFF535353)],
                       ),
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -494,13 +501,13 @@ class _PeriodOptionLabel extends StatelessWidget {
               ? Icons.today_rounded
               : Icons.history_rounded,
           size: 17,
-          color: selected ? const Color(0xFF0C2340) : const Color(0xFF64748B),
+          color: selected ? const Color(0xFF0C2340) : const Color(0xFF727272),
         ),
         const SizedBox(width: 9),
         Text(
           label,
           style: TextStyle(
-            color: selected ? const Color(0xFF0C2340) : const Color(0xFF334E68),
+            color: selected ? const Color(0xFF0C2340) : const Color(0xFF4A4A4A),
             fontSize: 13,
             fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
           ),
@@ -521,7 +528,7 @@ class _PeriodBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8EEF5),
+        color: const Color(0xFFEDEDED),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -600,12 +607,12 @@ class _SummaryCard extends StatelessWidget {
               _Stat(
                 l10n.text('expenses'),
                 money(expenses),
-                const Color(0xFF2563EB),
+                const Color(0xFF606060),
               ),
               _Stat(
                 l10n.text('balance'),
                 money(balance),
-                const Color(0xFFD97706),
+                const Color(0xFF848484),
               ),
             ],
           ),
@@ -638,7 +645,7 @@ class _Stat extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+              style: const TextStyle(color: Color(0xFF727272), fontSize: 11),
             ),
             const SizedBox(height: 5),
             Text(
@@ -718,7 +725,7 @@ class _DailyChartCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               _Legend(
-                color: const Color(0xFF2563EB),
+                color: const Color(0xFF606060),
                 label: l10n.text('expenses'),
               ),
             ],
@@ -755,7 +762,7 @@ class _DailyChartCard extends StatelessWidget {
               child: Center(
                 child: Text(
                   l10n.text('no_period_movements'),
-                  style: TextStyle(color: Color(0xFF64748B)),
+                  style: TextStyle(color: Color(0xFF727272)),
                 ),
               ),
             ),
@@ -800,7 +807,7 @@ class _DayBars extends StatelessWidget {
       children: [
         _Bar(value: day.income, max: max, color: const Color(0xFF0C2340)),
         const SizedBox(width: 3),
-        _Bar(value: day.expense, max: max, color: const Color(0xFF2563EB)),
+        _Bar(value: day.expense, max: max, color: const Color(0xFF606060)),
       ],
     );
   }
@@ -847,7 +854,7 @@ class _Legend extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(color: Color(0xFF64748B), fontSize: 10),
+          style: const TextStyle(color: Color(0xFF727272), fontSize: 10),
         ),
       ],
     );
@@ -855,7 +862,7 @@ class _Legend extends StatelessWidget {
 }
 
 class _ChartLabel {
-  static const style = TextStyle(color: Color(0xFF94A3B8), fontSize: 10);
+  static const style = TextStyle(color: Color(0xFFA1A1A1), fontSize: 10);
 }
 
 class _CategorySection extends StatelessWidget {
@@ -895,7 +902,7 @@ class _CategorySection extends StatelessWidget {
           if (categories.isEmpty)
             Text(
               context.l10n.text('no_period_expenses'),
-              style: TextStyle(color: Color(0xFF64748B)),
+              style: TextStyle(color: Color(0xFF727272)),
             )
           else
             ...categories
@@ -937,7 +944,7 @@ class _CategoryRow extends StatelessWidget {
               child: Text(
                 name,
                 style: const TextStyle(
-                  color: Color(0xFF334E68),
+                  color: Color(0xFF4A4A4A),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -952,7 +959,7 @@ class _CategoryRow extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               '${(percentage * 100).round()}%',
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+              style: const TextStyle(color: Color(0xFF727272), fontSize: 11),
             ),
           ],
         ),
@@ -961,7 +968,7 @@ class _CategoryRow extends StatelessWidget {
           value: percentage,
           minHeight: 7,
           borderRadius: BorderRadius.circular(8),
-          backgroundColor: const Color(0xFFE2E8F0),
+          backgroundColor: const Color(0xFFE7E7E7),
           color: const Color(0xFF0C2340),
         ),
       ],
@@ -1001,9 +1008,9 @@ class _InsightCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF6FA),
+        color: const Color(0xFFF4F4F4),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFD4EEF3)),
+        border: Border.all(color: const Color(0xFFE9E9E9)),
       ),
       child: Row(
         children: [
@@ -1033,7 +1040,7 @@ class _Panel extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFFE7E7E7)),
         boxShadow: const [
           BoxShadow(
             color: Color(0x090C2340),

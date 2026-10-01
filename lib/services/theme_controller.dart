@@ -1,44 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:mova/database/database_helper.dart';
 import 'package:mova/widgets/mova_design_system.dart';
 
-class ThemeController extends ChangeNotifier {
-  ThemeController(this._database);
+class MovaPageTransitionsBuilder extends PageTransitionsBuilder {
+  const MovaPageTransitionsBuilder();
 
-  final DatabaseHelper _database;
-  ThemeMode mode = ThemeMode.system;
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
 
-  Future<void> load() async {
-    final stored = await _database.getThemeMode();
-    mode = switch (stored) {
-      'light' => ThemeMode.light,
-      'dark' => ThemeMode.dark,
-      _ => ThemeMode.system,
-    };
-    notifyListeners();
-  }
+    final curvedAnimation = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    final slideAnimation = Tween<Offset>(
+      begin: const Offset(.025, 0),
+      end: Offset.zero,
+    ).animate(curvedAnimation);
 
-  Future<void> setMode(ThemeMode value) async {
-    mode = value;
-    notifyListeners();
-    await _database.setThemeMode(switch (value) {
-      ThemeMode.light => 'light',
-      ThemeMode.dark => 'dark',
-      ThemeMode.system => 'system',
-    });
+    return FadeTransition(
+      opacity: curvedAnimation,
+      child: SlideTransition(position: slideAnimation, child: child),
+    );
   }
 }
-
-late ThemeController appThemeController;
 
 ThemeData movaLightTheme() {
   return ThemeData(
     brightness: Brightness.light,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: MovaDesign.navy,
-      brightness: Brightness.light,
+    colorScheme: const ColorScheme.light(
+      primary: MovaDesign.navy,
+      onPrimary: Colors.white,
+      secondary: MovaDesign.blue,
+      onSecondary: Colors.white,
+      surface: Colors.white,
+      onSurface: MovaDesign.ink,
+      error: MovaDesign.negative,
+      onError: Colors.white,
     ),
     scaffoldBackgroundColor: MovaDesign.canvas,
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: MovaPageTransitionsBuilder(),
+        TargetPlatform.iOS: MovaPageTransitionsBuilder(),
+        TargetPlatform.linux: MovaPageTransitionsBuilder(),
+        TargetPlatform.macOS: MovaPageTransitionsBuilder(),
+        TargetPlatform.windows: MovaPageTransitionsBuilder(),
+      },
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: MovaDesign.canvas,
       foregroundColor: MovaDesign.ink,
@@ -86,7 +101,7 @@ ThemeData movaLightTheme() {
         minimumSize: const Size(0, 50),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         foregroundColor: const Color(0xFF0C2340),
-        side: const BorderSide(color: Color(0xFF39B8C8), width: 1.4),
+        side: const BorderSide(color: MovaDesign.navy, width: 1.2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
       ),
@@ -95,7 +110,7 @@ ThemeData movaLightTheme() {
       style: TextButton.styleFrom(
         minimumSize: const Size(44, 44),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        foregroundColor: const Color(0xFF16899B),
+        foregroundColor: MovaDesign.navy,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
       ),
@@ -104,8 +119,8 @@ ThemeData movaLightTheme() {
       style: IconButton.styleFrom(
         minimumSize: const Size(46, 46),
         padding: const EdgeInsets.all(11),
-        foregroundColor: const Color(0xFF36577D),
-        backgroundColor: const Color(0xFFEAF3F7),
+        foregroundColor: MovaDesign.navy,
+        backgroundColor: MovaDesign.softBlue,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
     ),
@@ -155,7 +170,7 @@ ThemeData movaLightTheme() {
     ),
     chipTheme: ChipThemeData(
       backgroundColor: Colors.white,
-      selectedColor: const Color(0xFFE5F3F5),
+      selectedColor: MovaDesign.softBlue,
       side: const BorderSide(color: MovaDesign.border),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       labelStyle: const TextStyle(
@@ -169,9 +184,9 @@ ThemeData movaLightTheme() {
       space: 1,
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: MovaDesign.accent,
-      linearTrackColor: Color(0xFFE7EDF3),
-      circularTrackColor: Color(0xFFE7EDF3),
+      color: MovaDesign.navy,
+      linearTrackColor: Color(0xFFE7E7E7),
+      circularTrackColor: Color(0xFFE7E7E7),
     ),
     textTheme: const TextTheme(
       displaySmall: TextStyle(
@@ -296,7 +311,7 @@ ThemeData movaDarkTheme() {
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: MovaDesign.darkSurface,
       selectedItemColor: MovaDesign.darkText,
-      unselectedItemColor: Color(0xFF91A7BA),
+      unselectedItemColor: Color(0xFFA4A4A4),
       selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
       unselectedLabelStyle: TextStyle(
         fontSize: 10,
@@ -309,8 +324,8 @@ ThemeData movaDarkTheme() {
       filled: true,
       fillColor: MovaDesign.darkElevatedSurface,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-      hintStyle: const TextStyle(color: Color(0xFF91A7BA)),
-      labelStyle: const TextStyle(color: Color(0xFFB6C8D7)),
+      hintStyle: const TextStyle(color: Color(0xFFA4A4A4)),
+      labelStyle: const TextStyle(color: Color(0xFFC5C5C5)),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(MovaDesign.radiusSmall),
         borderSide: const BorderSide(color: MovaDesign.darkBorder),
@@ -357,8 +372,8 @@ ThemeData movaDarkTheme() {
         fontWeight: FontWeight.w700,
       ),
       bodyLarge: TextStyle(color: MovaDesign.darkText, fontSize: 15),
-      bodyMedium: TextStyle(color: Color(0xFFD0DDE7), fontSize: 14),
-      bodySmall: TextStyle(color: Color(0xFF91A7BA), fontSize: 12),
+      bodyMedium: TextStyle(color: Color(0xFFDBDBDB), fontSize: 14),
+      bodySmall: TextStyle(color: Color(0xFFA4A4A4), fontSize: 12),
       labelLarge: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
     ),
     useMaterial3: true,

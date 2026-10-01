@@ -88,7 +88,6 @@ class _MovaAppState extends State<MovaApp> with WidgetsBindingObserver {
           GlobalCupertinoLocalizations.delegate,
         ],
         theme: movaLightTheme(),
-        darkTheme: movaDarkTheme(),
         themeMode: ThemeMode.light,
         home: SplashScreen(),
       ),
